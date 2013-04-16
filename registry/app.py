@@ -20,7 +20,7 @@ def first_request():
                 subject='Docker registry exception',
                 credentials=(info['smtp_login'], info['smtp_password']))
         mail_handler.setLevel(logging.ERROR)
-#        app.logger.addHandler(mail_handler)
+        app.logger.addHandler(mail_handler)
 
 
 @app.route('/_ping')
@@ -30,4 +30,5 @@ def ping():
 
 @app.route('/')
 def root():
-    return response('docker-registry server')
+    cfg = config.load()
+    return response('docker-registry server ({0})'.format(cfg.flavor))
