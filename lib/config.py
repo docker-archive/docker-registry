@@ -27,5 +27,6 @@ def load():
     config = data.get('common', {})
     flavor = os.environ.get('SETTINGS_FLAVOR', 'dev')
     config.update(data.get(flavor, {}))
+    config['flavor'] = flavor
     _config = Config(config)
     return _config
