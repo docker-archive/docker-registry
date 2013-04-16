@@ -1,2 +1,4 @@
 boto==2.8.0
-flask==0.9
+Flask==0.9
+PyYAML==3.10
+simplejson==3.0.7
