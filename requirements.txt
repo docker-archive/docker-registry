@@ -1,6 +1,2 @@
 boto==2.8.0
-flask >=0.9,<1.0
-sqlalchemy >=0.8.0,<0.9.0
-mysql-python>=1.2,<1.3
-unittest2
-rfc3339
+flask==0.9
