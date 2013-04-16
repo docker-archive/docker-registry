@@ -1,0 +1,9 @@
+#DISABLED UNTIL READY FOR PROD
+
+#api:
+#    type: python
+#    config:
+#        python_version: v2.7
+
+#db:
+#    type: mysql

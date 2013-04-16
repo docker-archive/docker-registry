@@ -1,0 +1,23 @@
+
+common:
+    s3_access_key: REPLACEME
+    s3_secret_key: REPLACEME
+    s3_bucket: REPLACEME
+
+dev:
+    storage: local
+    storage_path: /tmp/registry
+
+prod:
+    storage: s3
+    storage_path: /prod
+    email_exceptions:
+        smtp_host: REPLACEME
+        smtp_login: REPLACEME
+        smtp_password: REPLACEME
+        from_addr: docker-registry@localdomain.local
+        to_addr: noise+dockerregistry@localdomain.local
+
+test:
+    storage: local
+    storage_path: /tmp/test

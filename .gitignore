@@ -1,0 +1,16 @@
+*.log
+*.pot
+*.pyc
+*.sw[p-z]
+*.db
+.DS_Store
+.dotcloud/*
+old/.dotcloud/*
+config.yml
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
