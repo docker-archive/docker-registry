@@ -5,7 +5,8 @@
 *.db
 .DS_Store
 .dotcloud/*
-old/.dotcloud/*
+.coverage
+htmlcov
 config.yml
 
 # Packages
