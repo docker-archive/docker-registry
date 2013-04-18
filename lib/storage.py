@@ -25,6 +25,9 @@ class Storage(object):
     def image_json_path(self, image_id):
         return '{0}/{1}/json'.format(self.images, image_id)
 
+    def image_mark_path(self, image_id):
+        return '{0}/{1}/inprogress'.format(self.images, image_id)
+
     def image_layer_path(self, image_id):
         return '{0}/{1}/layer'.format(self.images, image_id)
 

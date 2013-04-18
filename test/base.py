@@ -29,20 +29,21 @@ class TestCase(unittest.TestCase):
             for x in range(length)])
 
     def upload_image(self, image_id, parent_id, layer):
+        layer_checksum = 'sha256:{0}'.format(hashlib.sha256(layer).hexdigest())
         json_data = {
             'id': image_id,
+            'checksum': layer_checksum
             }
         if parent_id:
             json_data['parent'] = parent_id
         resp = self.http_client.put('/v1/images/{0}/json'.format(image_id),
                 data=json.dumps(json_data))
         self.assertEqual(resp.status_code, 200, resp.data)
+        # Make sure I cannot download the image before push is complete
+        resp = self.http_client.get('/v1/images/{0}/json'.format(image_id))
+        self.assertEqual(resp.status_code, 400, resp.data)
         layer_file = StringIO(layer)
-        headers = {
-                'X-Docker-Checksum': hashlib.sha256(layer).hexdigest(),
-                'X-Docker-Algorithm': 'sha256'
-                }
         resp = self.http_client.put('/v1/images/{0}/layer'.format(image_id),
-                input_stream=layer_file, headers=headers)
+                input_stream=layer_file)
         layer_file.close()
         self.assertEqual(resp.status_code, 200, resp.data)
