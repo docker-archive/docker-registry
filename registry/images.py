@@ -101,8 +101,8 @@ def check_images_list(image_id):
         # otherwise it means that the auth is disabled.
         return True
     try:
-        images_list = json.loads(store.get_content(path))
         path = self.images_list_path(*full_repos_name.split('/'))
+        images_list = json.loads(store.get_content(path))
     except IOError:
         return False
     return (image_id in images_list)
