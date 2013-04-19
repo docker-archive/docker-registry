@@ -22,11 +22,15 @@ class Storage(object):
     images = 'images'
     buffer_size = 4096
 
+    def images_list_path(self, namespace, repository):
+        return '{0}/{1}/{2}/_images_list'.format(self.repositories, namespace,
+            repository)
+
     def image_json_path(self, image_id):
         return '{0}/{1}/json'.format(self.images, image_id)
 
     def image_mark_path(self, image_id):
-        return '{0}/{1}/inprogress'.format(self.images, image_id)
+        return '{0}/{1}/_inprogress'.format(self.images, image_id)
 
     def image_layer_path(self, image_id):
         return '{0}/{1}/layer'.format(self.images, image_id)
