@@ -21,3 +21,4 @@ prod:
 test:
     storage: local
     storage_path: /tmp/test
+    disable_token_auth: true

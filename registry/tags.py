@@ -3,7 +3,7 @@ import simplejson as json
 import storage
 
 from flask import request
-from toolkit import response, api_error
+from toolkit import response, api_error, requires_auth
 from .app import app
 
 
@@ -11,6 +11,7 @@ store = storage.load()
 
 
 @app.route('/v1/repositories/<namespace>/<repository>/tags', methods=['GET'])
+@requires_auth
 def get_tags(namespace, repository):
     data = {}
     try:
@@ -25,6 +26,7 @@ def get_tags(namespace, repository):
 
 
 @app.route('/v1/repositories/<namespace>/<repository>/tags/<tag>', methods=['GET'])
+@requires_auth
 def get_tag(namespace, repository, tag):
     data = None
     try:
@@ -35,6 +37,7 @@ def get_tag(namespace, repository, tag):
 
 
 @app.route('/v1/repositories/<namespace>/<repository>/tags/<tag>', methods=['PUT'])
+@requires_auth
 def put_tag(namespace, repository, tag):
     data = None
     try:
@@ -50,6 +53,7 @@ def put_tag(namespace, repository, tag):
 
 
 @app.route('/v1/repositories/<namespace>/<repository>/tags/<tag>', methods=['DELETE'])
+@requires_auth
 def delete_tag(namespace, repository, tag):
     try:
         store.remove(store.tag_path(namespace, repository, tag))

@@ -1,16 +1,39 @@
 # -*- coding: utf-8 -*-
 
-from flask import Flask
+import time
+from flask import Flask, session
 
 import config
-from toolkit import response
+from toolkit import response, gen_random_string, requires_auth
+
 
 app = Flask('docker-registry')
+cfg = config.load()
 
 
-@app.before_first_request
-def first_request():
-    cfg = config.load()
+@app.route('/_ping')
+def ping():
+    return response()
+
+
+@app.route('/_test')
+@requires_auth
+def test_auth(namespace=None, repository=None):
+    return response()
+
+
+@app.route('/')
+def root():
+    return response('docker-registry server ({0})'.format(cfg.flavor))
+
+
+def init():
+    # Configure the secret key
+    if cfg.secret_key:
+        Flask.secret_key = cfg.secret_key
+    else:
+        Flask.secret_key = gen_random_string(64)
+    # Configure the email exceptions
     info = cfg.email_exceptions
     if info:
         import logging
@@ -23,12 +46,4 @@ def first_request():
         app.logger.addHandler(mail_handler)
 
 
-@app.route('/_ping')
-def ping():
-    return response()
-
-
-@app.route('/')
-def root():
-    cfg = config.load()
-    return response('docker-registry server ({0})'.format(cfg.flavor))
+init()

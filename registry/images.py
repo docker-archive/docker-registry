@@ -2,10 +2,10 @@
 import hashlib
 import functools
 import simplejson as json
-from flask import request, Response
+from flask import request, Response, session
 
 import storage
-from toolkit import response, api_error
+from toolkit import response, api_error, requires_auth
 from .app import app
 
 
@@ -23,6 +23,7 @@ def require_completion(f):
 
 
 @app.route('/v1/images/<image_id>/layer', methods=['GET'])
+@requires_auth
 @require_completion
 def get_image_layer(image_id):
     try:
@@ -40,6 +41,7 @@ def compute_image_checksum(image_id, algo):
 
 
 @app.route('/v1/images/<image_id>/layer', methods=['PUT'])
+@requires_auth
 def put_image_layer(image_id):
     try:
         info = json.loads(store.get_content(store.image_json_path(image_id)))
@@ -60,6 +62,7 @@ def put_image_layer(image_id):
 
 
 @app.route('/v1/images/<image_id>/json', methods=['GET'])
+@requires_auth
 @require_completion
 def get_image_json(image_id):
     try:
@@ -70,6 +73,7 @@ def get_image_json(image_id):
 
 
 @app.route('/v1/images/<image_id>/ancestry', methods=['GET'])
+@requires_auth
 @require_completion
 def get_image_ancestry(image_id):
     try:
@@ -90,7 +94,22 @@ def generate_ancestry(image_id, parent_id=None):
     store.put_content(store.image_ancestry_path(image_id), json.dumps(data))
 
 
+def check_images_list(image_id):
+    full_repos_name = session.get('repository')
+    if not full_repos_name:
+        # We only enforce this check when there is a repos name in the session
+        # otherwise it means that the auth is disabled.
+        return True
+    try:
+        images_list = json.loads(store.get_content(path))
+        path = self.images_list_path(*full_repos_name.split('/'))
+    except IOError:
+        return False
+    return (image_id in images_list)
+
+
 @app.route('/v1/images/<image_id>/json', methods=['PUT'])
+@requires_auth
 def put_image_json(image_id):
     try:
         data = json.loads(request.data)
@@ -106,6 +125,8 @@ def put_image_json(image_id):
         return api_error('Invalid JSON format for `checksum\'')
     if image_id != data['id']:
         return api_error('JSON data contains invalid id')
+    if check_images_list(image_id) is False:
+        return api_error('This image does not belong to the repository')
     parent_id = data.get('parent')
     if parent_id and not store.exists(store.image_json_path(data['parent'])):
         return api_error('Image depends on a non existing parent')

@@ -19,5 +19,6 @@ class TestTags(base.TestCase):
         self.assertEqual(ancestry[1], parent_id)
 
     def test_notfound(self):
-        resp = self.http_client.get('/v1/images/NOTFOUND/json')
+        resp = self.http_client.get('/v1/images/{0}/json'.format(
+            self.gen_random_string()))
         self.assertEqual(resp.status_code, 404, resp.data)
