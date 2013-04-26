@@ -15,6 +15,9 @@ class Config(object):
         if key in self._config:
             return self._config[key]
 
+    def get(self, *args, **kwargs):
+        return self._config.get(*args, **kwargs)
+
 
 _config = None
 def load():

@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
 
 import time
+import logging
 from flask import Flask, session
 
 import config
@@ -9,16 +9,13 @@ from toolkit import response, gen_random_string, requires_auth
 
 app = Flask('docker-registry')
 cfg = config.load()
+loglevel = getattr(logging, cfg.get('loglevel', 'INFO').upper())
+logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
+        level=loglevel)
 
 
 @app.route('/_ping')
 def ping():
-    return response()
-
-
-@app.route('/_test')
-@requires_auth
-def test_auth(namespace=None, repository=None):
     return response()
 
 

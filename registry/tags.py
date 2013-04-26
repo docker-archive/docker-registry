@@ -33,7 +33,7 @@ def get_tag(namespace, repository, tag):
         data = store.get_content(store.tag_path(namespace, repository, tag))
     except IOError:
         return api_error('Tag not found', 404)
-    return response(json.dumps(data))
+    return response(data)
 
 
 @app.route('/v1/repositories/<namespace>/<repository>/tags/<tag>', methods=['PUT'])

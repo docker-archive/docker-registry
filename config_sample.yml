@@ -7,6 +7,7 @@ common:
 dev:
     storage: local
     storage_path: /tmp/registry
+    loglevel: debug
 
 prod:
     storage: s3

@@ -26,7 +26,7 @@ class TestCase(unittest.TestCase):
 
     def gen_random_string(self, length=16):
         return ''.join([random.choice(string.ascii_uppercase + string.digits)
-            for x in range(length)])
+            for x in range(length)]).lower()
 
     def upload_image(self, image_id, parent_id, layer):
         layer_checksum = 'sha256:{0}'.format(hashlib.sha256(layer).hexdigest())
