@@ -1,5 +1,6 @@
 
 import os
+from cStringIO import StringIO
 import json
 import hashlib
 import requests
@@ -13,13 +14,24 @@ class TestWorkflow(base.TestCase):
 
     # Dev server needs to run on port 5000 in order to run this test
     registry_endpoint = 'https://registrystaging-docker.dotcloud.com'
+    #registry_endpoint = 'http://localhost:5000'
     index_endpoint = 'https://indexstaging-docker.dotcloud.com'
     # export DOCKER_CREDS="login:password"
     user_credentials = os.environ['DOCKER_CREDS'].split(':')
     cookies = None
 
+    def generate_chunk(self, data):
+        bufsize = 1024
+        io = StringIO(data)
+        while True:
+            buf = io.read(bufsize)
+            if not buf:
+                return
+            yield buf
+        io.close()
+
     def upload_image(self, image_id, parent_id, token):
-        layer = self.gen_random_string(256)
+        layer = self.gen_random_string(7 * 1024 * 1024)
         layer_checksum = 'sha256:{0}'.format(hashlib.sha256(layer).hexdigest())
         json_data = {
             'id': image_id,
@@ -36,7 +48,7 @@ class TestWorkflow(base.TestCase):
         self.cookies = resp.cookies
         resp = requests.put('{0}/v1/images/{1}/layer'.format(
             self.registry_endpoint, image_id),
-            data=layer,
+            data=self.generate_chunk(layer),
             headers={'Authorization': 'Token ' + token},
             cookies=self.cookies)
         self.assertEqual(resp.status_code, 200, resp.text)

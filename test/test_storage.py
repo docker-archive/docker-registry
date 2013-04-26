@@ -26,7 +26,8 @@ class TestLocalStorage(base.TestCase):
 
     def test_stream(self):
         filename = self.gen_random_string()
-        content = self.gen_random_string()
+        # test 7MB
+        content = self.gen_random_string(7 * 1024 * 1024)
         # test exists
         io = StringIO(content)
         self.assertFalse(self._storage.exists(filename))

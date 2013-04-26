@@ -78,8 +78,8 @@ def validate_token(auth):
         images_list = [i['id'] for i in json.loads(resp.text)]
         store.put_content(store.images_list_path(*full_repos_name),
                 json.dumps(images_list))
-        logger.debug('validate_token: Wrong images_list')
     except json.JSONDecodeError:
+        logger.debug('validate_token: Wrong format for images_list')
         return False
     return True
 

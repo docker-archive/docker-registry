@@ -1,4 +1,5 @@
 
+import logging
 import hashlib
 import functools
 import simplejson as json
@@ -10,6 +11,7 @@ from .app import app
 
 
 store = storage.load()
+logger = logging.getLogger(__name__)
 
 
 def require_completion(f):
@@ -51,10 +53,16 @@ def put_image_layer(image_id):
     mark_path = store.image_mark_path(image_id)
     if store.exists(layer_path) and not store.exists(mark_path):
         return api_error('Image already exists')
-    store.stream_write(layer_path, request.stream)
+    input_stream = request.stream
+    if request.headers.get('transfer-encoding') == 'chunked':
+        # Careful, might work only with WSGI servers supporting chunked
+        # encoding (Gunicorn)
+        input_stream = request.environ['wsgi.input']
+    store.stream_write(layer_path, input_stream)
     # FIXME(sam): Compute the checksum while uploading the image to save time
     (algo, checksum) = info['checksum'].split(':')
     if compute_image_checksum(image_id, algo) != checksum.lower():
+        logger.debug('put_image_layer: Wrong checksum')
         return api_error('Checksum mismatch, ignoring the layer')
     # The checksum is ok, we remove the marker
     store.remove(mark_path)

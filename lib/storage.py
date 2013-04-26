@@ -188,11 +188,15 @@ class S3Storage(Storage):
             yield buf
 
     def stream_write(self, path, fp):
+        # Minimum size of upload part size on S3 is 5MB
+        buffer_size = 5 * 1024 * 1024
+        if self.buffer_size > buffer_size:
+            buffer_size = self.buffer_size
         path = self._init_path(path)
         mp = self._s3_bucket.initiate_multipart_upload(path)
         num_part = 1
         while True:
-            buf = fp.read(self.buffer_size)
+            buf = fp.read(buffer_size)
             if not buf:
                 break
             io = StringIO(buf)
