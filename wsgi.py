@@ -25,3 +25,5 @@ else:
             logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))
     registry.app.logger.addHandler(stderr_logger)
     application = registry.app
+    # uwsgi
+    app = application

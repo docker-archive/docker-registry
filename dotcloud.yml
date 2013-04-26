@@ -1,4 +1,13 @@
+## nginx + uwsgi
+#api:
+#    type: python
+#    config:
+#        python_version: v2.7
+
 api:
-    type: python
-    config:
-        python_version: v2.7
+    type: custom
+    buildscript: ./build.sh
+    processes:
+        api: gunicorn --max-requests 100 -b 0.0.0.0:$PORT_WWW -w 8 wsgi:application
+    ports:
+        www: http
