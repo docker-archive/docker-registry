@@ -12,8 +12,8 @@ cfg = config.load()
 class TestWorkflow(base.TestCase):
 
     # Dev server needs to run on port 5000 in order to run this test
-    registry_endpoint = 'http://localhost:5000'
-    index_endpoint = cfg.index_endpoint
+    registry_endpoint = 'https://registrystaging-docker.dotcloud.com'
+    index_endpoint = 'https://indexstaging-docker.dotcloud.com'
     # export DOCKER_CREDS="login:password"
     user_credentials = os.environ['DOCKER_CREDS'].split(':')
     cookies = None

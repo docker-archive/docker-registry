@@ -41,12 +41,15 @@ def check_session():
         session['timestamp'] = 0
         return False
     if not session:
+        logger.debug('check_session: Session is empty')
         return False
     now = int(time.time())
     if (now - session.get('timestamp', 0)) > 3600:
         # Session expires after 1 hour
+        logger.debug('check_session: Session expired')
         return invalidate_session()
-    if request.remote_addr != session.get('from'):
+    if get_remote_ip() != session.get('from'):
+        logger.debug('check_session: Wrong source ip address')
         return invalidate_session()
     # Session is valid, refresh it for one more hour
     session['timestamp'] = now
@@ -79,6 +82,12 @@ def validate_token(auth):
     except json.JSONDecodeError:
         return False
     return True
+
+
+def get_remote_ip():
+    if 'x-real-ip' in request.headers:
+        return request.headers['x-real-ip']
+    return request.remote_addr
 
 
 _auth_exp = re.compile(r'(\w+)[:=][\s"]?([^",]+)"?')
@@ -115,7 +124,7 @@ def check_token(args):
     # Fetch checksums and store it to Storage:/repositories/foo/bar/checksums
     # Then for every image push, we can fetch the file and see if it's in the checksum
     # Token is valid, we create a session
-    session['from'] = request.remote_addr
+    session['from'] = get_remote_ip()
     session['timestamp'] = int(time.time())
     session['repository'] = auth.get('repository')
     return True
