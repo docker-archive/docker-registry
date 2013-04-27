@@ -115,7 +115,6 @@ class TestWorkflow(base.TestCase):
         self.assertEqual(resp.status_code, 200)
         token = resp.headers.get('x-docker-token')
         # Here we should use the 'X-Endpoints' returned in a real environment
-        images_json = json.loads(resp.text)
         # Docker -> Registry
         resp = requests.get('{0}/v1/repositories/{1}/{2}/tags/latest'.format(
                 self.registry_endpoint, namespace, repos),

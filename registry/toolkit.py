@@ -4,7 +4,6 @@ import logging
 import string
 import random
 import time
-import json
 import re
 
 from flask import current_app, request, session

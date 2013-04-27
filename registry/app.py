@@ -1,10 +1,9 @@
 
-import time
 import logging
-from flask import Flask, session
+from flask import Flask
 
 import config
-from toolkit import response, gen_random_string, requires_auth
+from toolkit import response, gen_random_string
 
 
 app = Flask('docker-registry')
