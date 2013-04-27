@@ -2,6 +2,7 @@
 
 import os
 import sys
+import hashlib
 
 import simplejson as json
 
@@ -22,10 +23,9 @@ def warning(msg):
 
 
 def get_image_parent(image_id):
-    global images_cache
     if image_id in images_cache:
         return images_cache[image_id]
-    image_json = os.path.join(store.images, image_id, 'json')
+    image_json = store.image_json_path(image_id)
     parent_id = None
     try:
         info = json.loads(store.get_content(image_json))
@@ -51,7 +51,7 @@ def create_image_ancestry(image_id):
             break
         ancestry.append(parent_id)
         create_image_ancestry(parent_id)
-    ancestry_path = os.path.join(store.images, image_id, 'ancestry')
+    ancestry_path = store.image_ancestry_path(image_id)
     if dry_run is False:
         store.put_content(ancestry_path, json.dumps(ancestry))
     ancestry_cache[image_id] = True
@@ -62,29 +62,56 @@ def create_image_ancestry(image_id):
 def resolve_all_tags():
     for namespace in store.list_directory(store.repositories):
         for repos in store.list_directory(namespace):
-            for tag in store.list_directory(repos):
-                yield store.get_content(tag)
+            try:
+                for tag in store.list_directory(repos):
+                    fname = tag.split('/').pop()
+                    if not fname.startswith('tag_'):
+                        continue
+                    yield store.get_content(tag)
+            except OSError:
+                pass
 
 
-def is_invalid_image(image_id):
+def compute_image_checksum(image_id, info):
+    layer_path = store.image_layer_path(image_id)
+    if not store.exists(layer_path):
+        warning('{0} is broken (no layer)'.format(image_id))
+        return
+    print 'Writing checksum for {0}'.format(image_id)
+    if dry_run:
+        return
+    for buf in store.stream_read(layer_path):
+        h = hashlib.sha256()
+        h.update(buf)
+    info['checksum'] = 'sha256:{0}'.format(h.hexdigest())
+    json_path = store.image_json_path(image_id)
+    store.put_content(json_path, json.dumps(info))
+
+
+def load_image_json(image_id):
     try:
-        image_json = os.path.join(store.images, image_id, 'json')
-        info = json.loads(store.get_content(image_json))
-        image_id_json = info['id']
-        if image_id_json != image_id:
-            return True
+        json_path = store.image_json_path(image_id)
+        info = json.loads(store.get_content(json_path))
+        if image_id != info['id']:
+            warning('{0} is broken (json\'s id mismatch)'.format(image_id))
+            return
+        return info
     except (IOError, json.JSONDecodeError):
-        return True
-    return False
+        warning('{0} is broken (invalid json)'.format(image_id))
 
 
-def find_invalid_and_orphans():
+def compute_missing_checksums():
     for image in store.list_directory(store.images):
         image_id = image.split('/').pop()
-        if is_invalid_image(image_id):
-            warning('{0} is broken'.format(image_id))
-        elif image_id not in ancestry_cache:
+        if image_id not in ancestry_cache:
             warning('{0} is orphan'.format(image_id))
+        info = load_image_json(image_id)
+        if not info:
+            continue
+        if not info.get('checksum'):
+            # We compute the checksum only if it's not here
+            # comment this if to override all checksums
+            compute_image_checksum(image_id, info)
 
 
 if __name__ == '__main__':
@@ -92,7 +119,7 @@ if __name__ == '__main__':
         dry_run = False
     for image_id in resolve_all_tags():
         create_image_ancestry(image_id)
-    find_invalid_and_orphans()
+    compute_missing_checksums()
     if dry_run:
         print '-------'
         print '/!\ No modification has been made (dry-run)'
