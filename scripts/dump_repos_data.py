@@ -33,16 +33,16 @@ def walk_ancestry(image_id):
         ancestry = json.loads(ancestry_data)
         return iter(ancestry)
     except IOError:
-        print ('An ancestry file is missing, you can re-generate all ancestry '
-                'files by running `create_ancestry.py\'')
+        print 'Ancestry file for {0} is missing'.format(image_id)
+    return []
 
 
 def get_image_checksum(image_id):
-    json_path = store.image_json_path(image_id)
-    if not store.exists(json_path):
+    checksum_path = store.image_checksum_path(image_id)
+    if not store.exists(checksum_path):
         return
-    image_json = json.loads(store.get_content(json_path))
-    return image_json.get('checksum')
+    checksum = store.get_content(checksum_path)
+    return checksum.strip()
 
 
 def dump_json(all_repos, all_checksums, filename):

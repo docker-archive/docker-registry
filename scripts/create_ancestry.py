@@ -80,12 +80,12 @@ def compute_image_checksum(image_id, info):
     print 'Writing checksum for {0}'.format(image_id)
     if dry_run:
         return
+    h = hashlib.sha256(json.dumps(info, sort_keys=True) + '\n')
     for buf in store.stream_read(layer_path):
-        h = hashlib.sha256()
         h.update(buf)
-    info['checksum'] = 'sha256:{0}'.format(h.hexdigest())
-    json_path = store.image_json_path(image_id)
-    store.put_content(json_path, json.dumps(info))
+    checksum = 'sha256:{0}'.format(h.hexdigest())
+    checksum_path = store.image_checksum_path(image_id)
+    store.put_content(checksum_path, checksum)
 
 
 def load_image_json(image_id):
@@ -108,10 +108,11 @@ def compute_missing_checksums():
         info = load_image_json(image_id)
         if not info:
             continue
-        if not info.get('checksum'):
-            # We compute the checksum only if it's not here
-            # comment this if to override all checksums
-            compute_image_checksum(image_id, info)
+        checksum_path = store.image_checksum_path(image_id)
+        if store.exists(checksum_path):
+            # Checksum already there, skipping
+            continue
+        compute_image_checksum(image_id, info)
 
 
 if __name__ == '__main__':

@@ -29,13 +29,14 @@ class TestCase(unittest.TestCase):
             for x in range(length)]).lower()
 
     def upload_image(self, image_id, parent_id, layer):
-        layer_checksum = 'sha256:{0}'.format(hashlib.sha256(layer).hexdigest())
         json_data = {
-            'id': image_id,
-            'checksum': layer_checksum
+            'id': image_id
             }
         if parent_id:
             json_data['parent'] = parent_id
+        h = hashlib.sha256(json.dumps(json_data, sort_keys=True) + '\n')
+        h.update(layer)
+        layer_checksum = 'sha256:{0}'.format(h.hexdigest())
         resp = self.http_client.put('/v1/images/{0}/json'.format(image_id),
                 data=json.dumps(json_data))
         self.assertEqual(resp.status_code, 200, resp.data)
@@ -44,6 +45,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(resp.status_code, 400, resp.data)
         layer_file = StringIO(layer)
         resp = self.http_client.put('/v1/images/{0}/layer'.format(image_id),
-                input_stream=layer_file)
+                input_stream=layer_file,
+                headers={'X-Docker-Checksum': layer_checksum})
         layer_file.close()
         self.assertEqual(resp.status_code, 200, resp.data)

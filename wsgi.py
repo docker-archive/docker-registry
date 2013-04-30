@@ -16,6 +16,8 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT_WWW', 5000))
     registry.app.debug = True
     registry.app.run(host='0.0.0.0', port=port)
+    # Or you can run:
+    # gunicorn --log-level debug --debug -b 0.0.0.0:5000 -w 1 wsgi:application
 else:
     # For uwsgi
     registry.app.logger.setLevel(logging.INFO)

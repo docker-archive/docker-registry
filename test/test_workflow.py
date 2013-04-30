@@ -13,8 +13,8 @@ cfg = config.load()
 class TestWorkflow(base.TestCase):
 
     # Dev server needs to run on port 5000 in order to run this test
-    registry_endpoint = 'https://registrystaging-docker.dotcloud.com'
-    #registry_endpoint = 'http://localhost:5000'
+    #registry_endpoint = 'https://registrystaging-docker.dotcloud.com'
+    registry_endpoint = 'http://localhost:5000'
     index_endpoint = 'https://indexstaging-docker.dotcloud.com'
     # export DOCKER_CREDS="login:password"
     user_credentials = os.environ['DOCKER_CREDS'].split(':')
@@ -32,13 +32,14 @@ class TestWorkflow(base.TestCase):
 
     def upload_image(self, image_id, parent_id, token):
         layer = self.gen_random_string(7 * 1024 * 1024)
-        layer_checksum = 'sha256:{0}'.format(hashlib.sha256(layer).hexdigest())
         json_data = {
-            'id': image_id,
-            'checksum': layer_checksum
+            'id': image_id
             }
         if parent_id:
             json_data['parent'] = parent_id
+        h = hashlib.sha256(json.dumps(json_data, sort_keys=True) + '\n')
+        h.update(layer)
+        layer_checksum = 'sha256:{0}'.format(h.hexdigest())
         resp = requests.put('{0}/v1/images/{1}/json'.format(
             self.registry_endpoint, image_id),
             data=json.dumps(json_data),
@@ -49,7 +50,9 @@ class TestWorkflow(base.TestCase):
         resp = requests.put('{0}/v1/images/{1}/layer'.format(
             self.registry_endpoint, image_id),
             data=self.generate_chunk(layer),
-            headers={'Authorization': 'Token ' + token},
+            headers={
+                'Authorization': 'Token ' + token,
+                'X-Docker-Checksum': layer_checksum},
             cookies=self.cookies)
         self.assertEqual(resp.status_code, 200, resp.text)
         self.cookies = resp.cookies

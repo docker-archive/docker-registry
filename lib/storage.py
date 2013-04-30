@@ -32,6 +32,9 @@ class Storage(object):
     def image_mark_path(self, image_id):
         return '{0}/{1}/_inprogress'.format(self.images, image_id)
 
+    def image_checksum_path(self, image_id):
+        return '{0}/{1}/_checksum'.format(self.images, image_id)
+
     def image_layer_path(self, image_id):
         return '{0}/{1}/layer'.format(self.images, image_id)
 
