@@ -16,7 +16,7 @@ import storage
 logger = logging.getLogger(__name__)
 
 
-def response(data=None, code=200, headers=None):
+def response(data=None, code=200, headers=None, raw=False):
     if data is None:
         data = True
     h = {
@@ -28,8 +28,8 @@ def response(data=None, code=200, headers=None):
     if headers:
         h.update(headers)
     try:
-        data = json.dumps(data, indent=4, sort_keys=True, skipkeys=True)
-        h['Content-Type'] = 'application/json'
+        if raw is False:
+            data = json.dumps(data, indent=4, sort_keys=True, skipkeys=True)
     except TypeError:
         data = str(data)
     return current_app.make_response((data, code, h))
@@ -63,7 +63,7 @@ def validate_token(auth):
     cfg = config.load()
     index_endpoint = cfg.index_endpoint
     if index_endpoint is None:
-        index_endpoint = 'https://api.docker.io'
+        index_endpoint = 'https://index.docker.io'
     index_endpoint = index_endpoint.strip('/')
     url = '{0}/v1/repositories/{1}/{2}/images'.format(index_endpoint,
             full_repos_name[0], full_repos_name[1])
@@ -118,10 +118,6 @@ def check_token(args):
         return False
     if validate_token(auth) is False:
         return False
-    # TODO(sam) implement token check on the Index
-    # When implementing the token check, we'll get the checksums back
-    # Fetch checksums and store it to Storage:/repositories/foo/bar/checksums
-    # Then for every image push, we can fetch the file and see if it's in the checksum
     # Token is valid, we create a session
     session['from'] = get_remote_ip()
     session['timestamp'] = int(time.time())

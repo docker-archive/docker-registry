@@ -72,7 +72,7 @@ def resolve_all_tags():
                 pass
 
 
-def compute_image_checksum(image_id, info):
+def compute_image_checksum(image_id, json_data):
     layer_path = store.image_layer_path(image_id)
     if not store.exists(layer_path):
         warning('{0} is broken (no layer)'.format(image_id))
@@ -80,7 +80,7 @@ def compute_image_checksum(image_id, info):
     print 'Writing checksum for {0}'.format(image_id)
     if dry_run:
         return
-    h = hashlib.sha256(json.dumps(info, sort_keys=True) + '\n')
+    h = hashlib.sha256(json_data + '\n')
     for buf in store.stream_read(layer_path):
         h.update(buf)
     checksum = 'sha256:{0}'.format(h.hexdigest())
@@ -91,11 +91,12 @@ def compute_image_checksum(image_id, info):
 def load_image_json(image_id):
     try:
         json_path = store.image_json_path(image_id)
-        info = json.loads(store.get_content(json_path))
+        json_data = store.get_content(json_path)
+        info = json.loads(json_data)
         if image_id != info['id']:
             warning('{0} is broken (json\'s id mismatch)'.format(image_id))
             return
-        return info
+        return json_data
     except (IOError, json.JSONDecodeError):
         warning('{0} is broken (invalid json)'.format(image_id))
 
@@ -105,14 +106,14 @@ def compute_missing_checksums():
         image_id = image.split('/').pop()
         if image_id not in ancestry_cache:
             warning('{0} is orphan'.format(image_id))
-        info = load_image_json(image_id)
-        if not info:
+        json_data = load_image_json(image_id)
+        if not json_data:
             continue
         checksum_path = store.image_checksum_path(image_id)
         if store.exists(checksum_path):
             # Checksum already there, skipping
             continue
-        compute_image_checksum(image_id, info)
+        compute_image_checksum(image_id, json_data)
 
 
 if __name__ == '__main__':

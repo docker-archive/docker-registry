@@ -35,8 +35,7 @@ def get_image_layer(image_id):
         return api_error('Image not found', 404)
 
 
-def compute_image_checksum(algo, image_id, image_info):
-    json_data = json.dumps(image_info, sort_keys=True)
+def compute_image_checksum(algo, image_id, json_data):
     algolib = getattr(hashlib, algo.lower())(json_data + '\n')
     for data in store.stream_read(store.image_layer_path(image_id)):
         algolib.update(data)
@@ -47,7 +46,7 @@ def compute_image_checksum(algo, image_id, image_info):
 @requires_auth
 def put_image_layer(image_id):
     try:
-        info = json.loads(store.get_content(store.image_json_path(image_id)))
+        json_data = store.get_content(store.image_json_path(image_id))
         checksum = store.get_content(store.image_checksum_path(image_id))
     except IOError:
         return api_error('JSON\'s image not found', 404)
@@ -64,7 +63,7 @@ def put_image_layer(image_id):
     # FIXME(sam): Compute the checksum while uploading the image to save time
     checksum_parts = checksum.split(':')
     computed_checksum = compute_image_checksum(checksum_parts[0], image_id,
-            info)
+            json_data)
     if computed_checksum != checksum_parts[1].lower():
         logger.debug('put_image_layer: Wrong checksum')
         return api_error('Checksum mismatch, ignoring the layer')
@@ -81,7 +80,7 @@ def get_image_json(image_id):
         data = store.get_content(store.image_json_path(image_id))
     except IOError:
         return api_error('Image not found', 404)
-    return response(json.loads(data))
+    return response(data, raw=True)
 
 
 @app.route('/v1/images/<image_id>/ancestry', methods=['GET'])
@@ -157,7 +156,7 @@ def put_image_json(image_id):
         return api_error('Image already exists')
     # If we reach that point, it means that this is a new image or a retry
     # on a failed push
-    store.put_content(mark_path, request.data)
+    store.put_content(mark_path, 'true')
     store.put_content(json_path, request.data)
     generate_ancestry(image_id, parent_id)
     return response()
