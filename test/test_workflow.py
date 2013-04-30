@@ -13,8 +13,8 @@ cfg = config.load()
 class TestWorkflow(base.TestCase):
 
     # Dev server needs to run on port 5000 in order to run this test
-    #registry_endpoint = 'https://registrystaging-docker.dotcloud.com'
-    registry_endpoint = 'http://localhost:5000'
+    registry_endpoint = 'https://registrystaging-docker.dotcloud.com'
+    #registry_endpoint = 'http://localhost:5000'
     index_endpoint = 'https://indexstaging-docker.dotcloud.com'
     # export DOCKER_CREDS="login:password"
     user_credentials = os.environ['DOCKER_CREDS'].split(':')
@@ -43,16 +43,15 @@ class TestWorkflow(base.TestCase):
         resp = requests.put('{0}/v1/images/{1}/json'.format(
             self.registry_endpoint, image_id),
             data=json.dumps(json_data),
-            headers={'Authorization': 'Token ' + token},
+            headers={'Authorization': 'Token ' + token,
+                'X-Docker-Checksum': layer_checksum},
             cookies=self.cookies)
         self.assertEqual(resp.status_code, 200, resp.text)
         self.cookies = resp.cookies
         resp = requests.put('{0}/v1/images/{1}/layer'.format(
             self.registry_endpoint, image_id),
             data=self.generate_chunk(layer),
-            headers={
-                'Authorization': 'Token ' + token,
-                'X-Docker-Checksum': layer_checksum},
+            headers={'Authorization': 'Token ' + token},
             cookies=self.cookies)
         self.assertEqual(resp.status_code, 200, resp.text)
         self.cookies = resp.cookies

@@ -48,20 +48,13 @@ def compute_image_checksum(algo, image_id, image_info):
 def put_image_layer(image_id):
     try:
         info = json.loads(store.get_content(store.image_json_path(image_id)))
+        checksum = store.get_content(store.image_checksum_path(image_id))
     except IOError:
         return api_error('JSON\'s image not found', 404)
     layer_path = store.image_layer_path(image_id)
     mark_path = store.image_mark_path(image_id)
     if store.exists(layer_path) and not store.exists(mark_path):
         return api_error('Image already exists')
-    checksum = request.headers.get('x-docker-checksum', '')
-    if not checksum:
-        return api_error('Missing Image\'s checksum')
-    checksum_parts = checksum.split(':')
-    if len(checksum_parts) != 2:
-        return api_error('Invalid checksum format')
-    if checksum_parts[0] not in hashlib.algorithms:
-        return api_error('Checksum algorithm not supported')
     input_stream = request.stream
     if request.headers.get('transfer-encoding') == 'chunked':
         # Careful, might work only with WSGI servers supporting chunked
@@ -69,15 +62,13 @@ def put_image_layer(image_id):
         input_stream = request.environ['wsgi.input']
     store.stream_write(layer_path, input_stream)
     # FIXME(sam): Compute the checksum while uploading the image to save time
+    checksum_parts = checksum.split(':')
     computed_checksum = compute_image_checksum(checksum_parts[0], image_id,
             info)
     if computed_checksum != checksum_parts[1].lower():
         logger.debug('put_image_layer: Wrong checksum')
         return api_error('Checksum mismatch, ignoring the layer')
-    # Checksum is ok, we store it in a meta-data file
-    checksum_path = store.image_checksum_path(image_id)
-    store.put_content(checksum_path, checksum)
-    # ... and we remove the marker
+    # Checksum is ok, we remove the marker
     store.remove(mark_path)
     return response()
 
@@ -141,6 +132,18 @@ def put_image_json(image_id):
     for key in ['id']:
         if key not in data:
             return api_error('Missing key `{0}\' in JSON'.format(key))
+    # Read the checksum
+    checksum = request.headers.get('x-docker-checksum', '')
+    if not checksum:
+        return api_error('Missing Image\'s checksum')
+    checksum_parts = checksum.split(':')
+    if len(checksum_parts) != 2:
+        return api_error('Invalid checksum format')
+    if checksum_parts[0] not in hashlib.algorithms:
+        return api_error('Checksum algorithm not supported')
+    # We store the checksum
+    checksum_path = store.image_checksum_path(image_id)
+    store.put_content(checksum_path, checksum)
     if image_id != data['id']:
         return api_error('JSON data contains invalid id')
     if check_images_list(image_id) is False:

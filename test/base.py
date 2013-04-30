@@ -38,6 +38,7 @@ class TestCase(unittest.TestCase):
         h.update(layer)
         layer_checksum = 'sha256:{0}'.format(h.hexdigest())
         resp = self.http_client.put('/v1/images/{0}/json'.format(image_id),
+                headers={'X-Docker-Checksum': layer_checksum},
                 data=json.dumps(json_data))
         self.assertEqual(resp.status_code, 200, resp.data)
         # Make sure I cannot download the image before push is complete
@@ -45,7 +46,6 @@ class TestCase(unittest.TestCase):
         self.assertEqual(resp.status_code, 400, resp.data)
         layer_file = StringIO(layer)
         resp = self.http_client.put('/v1/images/{0}/layer'.format(image_id),
-                input_stream=layer_file,
-                headers={'X-Docker-Checksum': layer_checksum})
+                input_stream=layer_file)
         layer_file.close()
         self.assertEqual(resp.status_code, 200, resp.data)

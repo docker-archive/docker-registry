@@ -140,6 +140,7 @@ def requires_auth(f):
 
 
 def api_error(message, code=400, headers=None):
+    logger.debug('api_error: {0}'.format(message))
     return response({'error': message}, code, headers)
 
 
