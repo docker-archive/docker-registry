@@ -109,10 +109,13 @@ class LocalStorage(Storage):
         path = self._init_path(path, create=True)
         with open(path, mode='wb') as f:
             while True:
-                buf = fp.read(self.buffer_size)
-                if not buf:
+                try:
+                    buf = fp.read(self.buffer_size)
+                    if not buf:
+                        break
+                    f.write(buf)
+                except IOError:
                     break
-                f.write(buf)
 
     def list_directory(self, path=None):
         path = self._init_path(path)
@@ -199,13 +202,16 @@ class S3Storage(Storage):
         mp = self._s3_bucket.initiate_multipart_upload(path)
         num_part = 1
         while True:
-            buf = fp.read(buffer_size)
-            if not buf:
+            try:
+                buf = fp.read(buffer_size)
+                if not buf:
+                    break
+                io = StringIO(buf)
+                mp.upload_part_from_file(io, num_part)
+                num_part += 1
+                io.close()
+            except IOError:
                 break
-            io = StringIO(buf)
-            mp.upload_part_from_file(io, num_part)
-            num_part += 1
-            io.close()
         mp.complete_upload()
 
     def list_directory(self, path=None):
