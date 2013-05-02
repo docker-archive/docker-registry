@@ -92,8 +92,9 @@ def import_tags(sess, store):
             tag_name = tag.name
             repos_namespace = tag.repository.user.username
             image_id = tag.revision.id
-            path = os.path.join('repositories', repos_namespace, repos_name,
-                    'tag_{0}'.format(tag_name))
+            path = store.tag_path(repos_namespace, repos_name, tag_name)
+            if store.exists(path):
+                continue
             dest = store.put_content(path, image_id)
             print '{0} -> {1}'.format(dest, image_id)
         except AttributeError as e:
