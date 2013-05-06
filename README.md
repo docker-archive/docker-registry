@@ -10,6 +10,24 @@ $ cp config_sample.yml config.yml
 
 Edit the configuration with your information.
 
+Each key in the configuration (except "common") is flavor. You can specify the flavor by setting the environment
+variable "SETTINGS_FLAVOR". If there is no variable set, the default one is "dev".
+
+Run the Registry
+----------------
+
+```
+pip install -r requirements.txt
+./wsgi.py
+```
+
+The recommended setting to run the Registry in a prod environment is gunicorn behind a nginx server which supports
+chunked transfer-encoding (nginx >= 1.3.9).
+
+```
+gunicorn -b 0.0.0.0:5000 -w 1 wsgi:application
+```
+
 Run tests
 ---------
 
