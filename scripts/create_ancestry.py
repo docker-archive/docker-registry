@@ -53,7 +53,8 @@ def create_image_ancestry(image_id):
         create_image_ancestry(parent_id)
     ancestry_path = store.image_ancestry_path(image_id)
     if dry_run is False:
-        store.put_content(ancestry_path, json.dumps(ancestry))
+        if not store.exists(ancestry_path):
+            store.put_content(ancestry_path, json.dumps(ancestry))
     ancestry_cache[image_id] = True
     print 'Generated ancestry (size: {0}) for image_id: {1}'.format(
             len(ancestry), image_id)
