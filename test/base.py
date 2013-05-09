@@ -50,3 +50,6 @@ class TestCase(unittest.TestCase):
                 input_stream=layer_file)
         layer_file.close()
         self.assertEqual(resp.status_code, 200, resp.data)
+        resp = self.http_client.get('/v1/images/{0}/json'.format(image_id))
+        self.assertEqual(resp.status_code, 200, resp.data)
+        self.assertEqual(resp.headers['x-docker-checksum'], layer_checksum)

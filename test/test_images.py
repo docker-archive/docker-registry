@@ -11,7 +11,7 @@ class TestTags(base.TestCase):
         layer_data = self.gen_random_string(1024)
         self.upload_image(parent_id, parent_id=None, layer=layer_data)
         self.upload_image(image_id, parent_id=parent_id, layer=layer_data)
-        # test adding a tag
+        # test fetching the ancestry
         resp = self.http_client.get('/v1/images/{0}/ancestry'.format(image_id))
         ancestry = json.loads(resp.data)
         self.assertEqual(len(ancestry), 2)
