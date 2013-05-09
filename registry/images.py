@@ -80,7 +80,11 @@ def get_image_json(image_id):
         data = store.get_content(store.image_json_path(image_id))
     except IOError:
         return api_error('Image not found', 404)
-    return response(data, raw=True)
+    checksum_path = store.image_checksum_path(image_id)
+    headers = None
+    if store.exists(checksum_path):
+        headers = {'X-Docker-Checksum': store.get_content(checksum_path)}
+    return response(data, headers=headers, raw=True)
 
 
 @app.route('/v1/images/<image_id>/ancestry', methods=['GET'])
