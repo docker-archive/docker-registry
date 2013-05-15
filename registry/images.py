@@ -53,7 +53,7 @@ def put_image_layer(image_id):
     layer_path = store.image_layer_path(image_id)
     mark_path = store.image_mark_path(image_id)
     if store.exists(layer_path) and not store.exists(mark_path):
-        return api_error('Image already exists')
+        return api_error('Image already exists', 409)
     input_stream = request.stream
     if request.headers.get('transfer-encoding') == 'chunked':
         # Careful, might work only with WSGI servers supporting chunked
@@ -157,7 +157,7 @@ def put_image_json(image_id):
     json_path = store.image_json_path(image_id)
     mark_path = store.image_mark_path(image_id)
     if store.exists(json_path) and not store.exists(mark_path):
-        return api_error('Image already exists')
+        return api_error('Image already exists', 409)
     # If we reach that point, it means that this is a new image or a retry
     # on a failed push
     store.put_content(mark_path, 'true')
