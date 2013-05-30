@@ -8,6 +8,6 @@ api:
     type: custom
     buildscript: ./build.sh
     processes:
-        api: gunicorn --log-level debug --debug -k gevent --max-requests 100 -t 120 -b 0.0.0.0:$PORT_WWW -w 8 wsgi:application
+        api: gunicorn --log-level debug --debug -k gevent --max-requests 100 --graceful-timeout 120 -t 120 -b 0.0.0.0:$PORT_WWW -w 8 wsgi:application
     ports:
         www: http
