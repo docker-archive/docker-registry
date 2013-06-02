@@ -3,7 +3,7 @@ import json
 import base
 
 
-class TestTags(base.TestCase):
+class TestImages(base.TestCase):
 
     def test_simple(self):
         image_id = self.gen_random_string()

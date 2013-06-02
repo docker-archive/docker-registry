@@ -60,3 +60,13 @@ def delete_tag(namespace, repository, tag):
     except OSError:
         return api_error('Tag not found', 404)
     return response()
+
+
+@app.route('/v1/repositories/<namespace>/<repository>/', methods=['DELETE'])
+@requires_auth
+def delete_repository(namespace, repository):
+    try:
+        store.remove(store.tag_path(namespace, repository))
+    except OSError:
+        return api_error('Repository not found', 404)
+    return response()

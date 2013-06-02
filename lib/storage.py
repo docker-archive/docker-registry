@@ -1,5 +1,6 @@
 
 import os
+import shutil
 from cStringIO import StringIO
 
 import boto.s3.connection
@@ -136,7 +137,7 @@ class LocalStorage(Storage):
     def remove(self, path):
         path = self._init_path(path)
         if os.path.isdir(path):
-            os.rmdir(path)
+            shutil.rmtree(path)
             return
         os.remove(path)
 
@@ -240,9 +241,15 @@ class S3Storage(Storage):
     def remove(self, path):
         path = self._init_path(path)
         key = boto.s3.key.Key(self._s3_bucket, path)
-        if not key.exists():
-            raise OSError('No such key: \'{0}\''.format(path))
-        key.delete()
+        if key.exists():
+            # It's a file
+            key.delete()
+            return
+        # We assume it's a directory
+        if not path.endswith('/'):
+            path += '/'
+        for key in self._s3_bucket.list(prefix=path, delimiter='/'):
+            key.delete()
 
 
 _storage = {}
