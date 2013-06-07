@@ -20,6 +20,9 @@ class TestLocalStorage(base.TestCase):
         # test read / write
         ret = self._storage.get_content(filename)
         self.assertEqual(ret, content)
+        # test size
+        ret = self._storage.get_size(filename)
+        self.assertEqual(ret, len(content))
         # test remove
         self._storage.remove(filename)
         self.assertFalse(self._storage.exists(filename))
@@ -48,7 +51,7 @@ class TestLocalStorage(base.TestCase):
         self.assertRaises(IOError, self._storage.get_content, notexist)
         iterator = self._storage.list_directory(notexist)
         self.assertRaises(OSError, next, iterator)
-        self.assertRaises(OSError, self._storage.remove, notexist)
+        self.assertRaises(OSError, self._storage.get_size, notexist)
 
 
 class TestS3Storage(TestLocalStorage):

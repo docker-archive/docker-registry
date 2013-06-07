@@ -70,6 +70,9 @@ class Storage(object):
     def remove(self, path):
         raise NotImplemented
 
+    def get_size(self, path):
+        raise NotImplemented
+
 
 class LocalStorage(Storage):
 
@@ -140,6 +143,10 @@ class LocalStorage(Storage):
             shutil.rmtree(path)
             return
         os.remove(path)
+
+    def get_size(self, path):
+        path = self._init_path(path)
+        return os.path.getsize(path)
 
 
 class S3Storage(Storage):
@@ -250,6 +257,14 @@ class S3Storage(Storage):
             path += '/'
         for key in self._s3_bucket.list(prefix=path, delimiter='/'):
             key.delete()
+
+    def get_size(self, path):
+        path = self._init_path(path)
+        # Lookup does a HEAD HTTP Request on the object
+        key = self._s3_bucket.lookup(path)
+        if not key:
+            raise OSError('No such key: \'{0}\''.format(path))
+        return key.size
 
 
 _storage = {}

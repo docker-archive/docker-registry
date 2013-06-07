@@ -76,14 +76,19 @@ def put_image_layer(image_id):
 @requires_auth
 @require_completion
 def get_image_json(image_id):
+    headers = {}
     try:
         data = store.get_content(store.image_json_path(image_id))
     except IOError:
         return api_error('Image not found', 404)
+    try:
+        size = store.get_size(store.image_layer_path(image_id))
+        headers['X-Docker-Size'] = str(size)
+    except OSError:
+        pass
     checksum_path = store.image_checksum_path(image_id)
-    headers = None
     if store.exists(checksum_path):
-        headers = {'X-Docker-Checksum': store.get_content(checksum_path)}
+        headers['X-Docker-Checksum'] = store.get_content(checksum_path)
     return response(data, headers=headers, raw=True)
 
 
