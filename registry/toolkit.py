@@ -116,6 +116,9 @@ def check_token(args):
     if access == 'read' and request.method != 'GET':
         logger.debug('check_token: Wrong access value in the token')
         return False
+    if access == 'delete' and request.method != 'DELETE':
+        logger.debug('check_token: Wrong access value in the token')
+        return False
     if validate_token(auth) is False:
         return False
     # Token is valid, we create a session
