@@ -226,7 +226,9 @@ class S3Storage(Storage):
         path = self._init_path(path)
         if not path.endswith('/'):
             path += '/'
-        ln = len(self._root_path)
+        ln = 0
+        if self._root_path != '/':
+            ln = len(self._root_path)
         exists = False
         for key in self._s3_bucket.list(prefix=path, delimiter='/'):
             exists = True
