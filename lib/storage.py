@@ -49,6 +49,16 @@ class Storage(object):
         return '{0}/{1}/{2}/tag_{3}'.format(self.repositories, namespace,
             repository, tagname)
 
+    def repo_path(self, namespace, repository=None):
+      if not repository:
+        return '{0}/{1}/_index'.format(self.repositories, namespace)
+      return '{0}/{1}/{2}/_index'.format(self.repositories, namespace, repository)
+
+    def repo_images_path(self, namespace, repository=None):
+      if not repository:
+        return '{0}/{1}/_images'.format(self.repositories, namespace)
+      return '{0}/{1}/{2}/_images'.format(self.repositories, namespace, repository)
+
     def get_content(self, path):
         raise NotImplemented
 

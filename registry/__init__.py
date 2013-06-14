@@ -3,3 +3,4 @@
 from .app import app
 from .tags import *
 from .images import *
+from .index import *
