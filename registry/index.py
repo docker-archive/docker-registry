@@ -23,8 +23,9 @@ store = storage.load()
 
 def generate_headers(namespace, repository, access):
     cfg = config.load()
-    registry_endpoints = cfg.registry_endpoints if cfg.registry_endpoints \
-            else cfg.registry_endpoints
+    registry_endpoints = cfg.registry_endpoints
+    if not registry_endpoints:
+        registry_endpoints = socket.gethostname()
     # The token generated will be invalid against a real Index behind.
     token = 'Token signature={0},repository="{1}/{2}",access={3}'.format(
             gen_random_string(), namespace, repository, access)
@@ -51,9 +52,8 @@ def parse_repository_name(f):
 def get_post_users():
     if request.method == 'GET':
         return response('OK', 200)
-    data = None
     try:
-        data = json.loads(request.data)
+        json.loads(request.data)
     except json.JSONDecodeError:
         return api_error('Error Decoding JSON', 400)
     return response('User Created', 201)

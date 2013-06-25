@@ -15,7 +15,8 @@ store = storage.load()
 def get_tags(namespace, repository):
     data = {}
     try:
-        for fname in store.list_directory(store.tag_path(namespace, repository)):
+        for fname in store.list_directory(store.tag_path(namespace,
+                                                         repository)):
             tag_name = fname.split('/').pop()
             if not tag_name.startswith('tag_'):
                 continue
@@ -25,7 +26,8 @@ def get_tags(namespace, repository):
     return response(data)
 
 
-@app.route('/v1/repositories/<namespace>/<repository>/tags/<tag>', methods=['GET'])
+@app.route('/v1/repositories/<namespace>/<repository>/tags/<tag>',
+           methods=['GET'])
 @requires_auth
 def get_tag(namespace, repository, tag):
     data = None
@@ -36,7 +38,8 @@ def get_tag(namespace, repository, tag):
     return response(data)
 
 
-@app.route('/v1/repositories/<namespace>/<repository>/tags/<tag>', methods=['PUT'])
+@app.route('/v1/repositories/<namespace>/<repository>/tags/<tag>',
+           methods=['PUT'])
 @requires_auth
 def put_tag(namespace, repository, tag):
     data = None
@@ -52,7 +55,8 @@ def put_tag(namespace, repository, tag):
     return response()
 
 
-@app.route('/v1/repositories/<namespace>/<repository>/tags/<tag>', methods=['DELETE'])
+@app.route('/v1/repositories/<namespace>/<repository>/tags/<tag>',
+           methods=['DELETE'])
 @requires_auth
 def delete_tag(namespace, repository, tag):
     try:

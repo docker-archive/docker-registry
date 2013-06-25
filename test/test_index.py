@@ -15,20 +15,20 @@ class TestIndex(base.TestCase):
         self.assertEqual(resp.status_code, 200, resp.data)
         # POST
         resp = self.http_client.post('/v1/users/',
-                data=json.dumps('JSON DATA PLACEHOLDER'))
+                                     data=json.dumps('JSON DATA PLACEHOLDER'))
         self.assertEqual(resp.status_code, 201, resp.data)
         # PUT
         resp = self.http_client.put('/v1/users/{0}/'.format(
-            self.gen_random_string()))
+                                    self.gen_random_string()))
         self.assertEqual(resp.status_code, 204, resp.data)
 
     def test_repository_images(self):
         repo = 'test/{0}'.format(self.gen_random_string())
         images = [{'id': self.gen_random_string()},
-                {'id': self.gen_random_string()}]
+                  {'id': self.gen_random_string()}]
         # PUT
         resp = self.http_client.put('/v1/repositories/{0}/images'.format(repo),
-                data=json.dumps(images))
+                                    data=json.dumps(images))
         self.assertEqual(resp.status_code, 200)
         # GET
         resp = self.http_client.get('/v1/repositories/{0}/images'.format(repo))

@@ -24,7 +24,7 @@ else:
     stderr_logger = logging.StreamHandler()
     stderr_logger.setLevel(logging.INFO)
     stderr_logger.setFormatter(
-            logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))
+        logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))
     registry.app.logger.addHandler(stderr_logger)
     application = registry.app
     # uwsgi

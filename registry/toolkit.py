@@ -67,7 +67,8 @@ def validate_token(auth):
         index_endpoint = 'https://index.docker.io'
     index_endpoint = index_endpoint.strip('/')
     url = '{0}/v1/repositories/{1}/{2}/images'.format(index_endpoint,
-            full_repos_name[0], full_repos_name[1])
+                                                      full_repos_name[0],
+                                                      full_repos_name[1])
     headers = {'Authorization': request.headers.get('authorization')}
     resp = requests.get(url, verify=True, headers=headers)
     logger.debug('validate_token: Index returned {0}'.format(resp.status_code))
@@ -77,7 +78,7 @@ def validate_token(auth):
     try:
         images_list = [i['id'] for i in json.loads(resp.text)]
         store.put_content(store.images_list_path(*full_repos_name),
-                json.dumps(images_list))
+                          json.dumps(images_list))
     except json.JSONDecodeError:
         logger.debug('validate_token: Wrong format for images_list')
         return False
@@ -91,6 +92,8 @@ def get_remote_ip():
 
 
 _auth_exp = re.compile(r'(\w+)[:=][\s"]?([^",]+)"?')
+
+
 def check_token(args):
     cfg = config.load()
     if cfg.disable_token_auth is True or cfg.standalone is True:
@@ -146,4 +149,4 @@ def api_error(message, code=400, headers=None):
 
 def gen_random_string(length=16):
     return ''.join([random.choice(string.ascii_uppercase + string.digits)
-        for x in range(length)])
+                    for x in range(length)])

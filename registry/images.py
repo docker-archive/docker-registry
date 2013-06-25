@@ -62,8 +62,9 @@ def put_image_layer(image_id):
     store.stream_write(layer_path, input_stream)
     # FIXME(sam): Compute the checksum while uploading the image to save time
     checksum_parts = checksum.split(':')
-    computed_checksum = compute_image_checksum(checksum_parts[0], image_id,
-            json_data)
+    computed_checksum = compute_image_checksum(checksum_parts[0],
+                                               image_id,
+                                               json_data)
     if computed_checksum != checksum_parts[1].lower():
         logger.debug('put_image_layer: Wrong checksum')
         return api_error('Checksum mismatch, ignoring the layer')
@@ -106,7 +107,7 @@ def get_image_ancestry(image_id):
 def generate_ancestry(image_id, parent_id=None):
     if not parent_id:
         store.put_content(store.image_ancestry_path(image_id),
-            json.dumps([image_id]))
+                          json.dumps([image_id]))
         return
     data = store.get_content(store.image_ancestry_path(parent_id))
     data = json.loads(data)
