@@ -1,4 +1,5 @@
 
+import functools
 import socket
 
 import simplejson as json
@@ -20,20 +21,33 @@ store = storage.load()
 """
 
 
-def generate_headers(repository, access):
+def generate_headers(namespace, repository, access):
     cfg = config.load()
     registry_endpoints = cfg.registry_endpoints if cfg.registry_endpoints \
             else cfg.registry_endpoints
     # The token generated will be invalid against a real Index behind.
-    token = 'Token signature={0},repository="{1}",access={2}'.format(
-            gen_random_string(), repository, access)
+    token = 'Token signature={0},repository="{1}/{2}",access={3}'.format(
+            gen_random_string(), namespace, repository, access)
     return {'X-Docker-Endpoints': registry_endpoints,
             'WWW-Authenticate': token,
             'X-Docker-Token': token}
 
 
+def parse_repository_name(f):
+    @functools.wraps(f)
+    def wrapper(repository, *args, **kwargs):
+        parts = repository.split('/', 1)
+        if len(parts) < 2:
+            namespace = 'library'
+            repository = parts[0]
+        else:
+            (namespace, repository) = parts
+        return f(namespace, repository, *args, **kwargs)
+    return wrapper
+
+
 @app.route('/v1/users/', methods=['GET', 'POST'])
-def post_users():
+def get_post_users():
     if request.method == 'GET':
         return response('OK', 200)
     data = None
@@ -45,13 +59,32 @@ def post_users():
 
 
 @app.route('/v1/users/<username>/', methods=['PUT'])
-def put_user(username):
+def put_username(username):
     return response('', 204)
 
 
-@app.route('/v1/repositories/<namespace>/<repository>/', methods=['PUT'])
+def update_index_images(namespace, repository, data):
+    path = store.index_images_path(namespace, repository)
+    data = None
+    try:
+        images = {}
+        data += store.get_content(path)
+        for i in data:
+            iid = i['id']
+            if iid in images and 'checksum' in images[iid]:
+                continue
+            images[iid] = i
+        data = images.values()
+    except IOError:
+        pass
+    store.put_content(path, data)
+
+
+@app.route('/v1/repositories/<path:repository>/', methods=['PUT'])
+@app.route('/v1/repositories/<path:repository>/images', methods=['PUT'])
 @requires_auth
-def put_user_repo(namespace, repository):
+@parse_repository_name
+def put_repository(namespace, repository):
     data = None
     try:
         data = json.loads(request.data)
@@ -59,121 +92,37 @@ def put_user_repo(namespace, repository):
         return api_error('Error Decoding JSON', 400)
     if not data or not isinstance(data, list):
         return api_error('Invalid data')
-    store.put_content(store.repo_path(namespace, repository), request.data)
-    headers = generate_headers('{0}/{1}'.format(namespace, repository),
-            'write')
+    update_index_images(namespace, repository, request.data)
+    headers = generate_headers(namespace, repository, 'write')
     return response('', 200, headers)
 
 
-@app.route('/v1/repositories/<repository>/', methods=['PUT'])
+@app.route('/v1/repositories/<path:repository>/images', methods=['GET'])
 @requires_auth
-def put_library_repo(repository):
+@parse_repository_name
+def get_repository_images(namespace, repository):
     data = None
     try:
-        data = json.loads(request.data)
-    except json.JSONDecodeError:
-        return api_error('Error Decoding JSON', 400)
-    if not data or not isinstance(data, list):
-        return api_error('Invalid data')
-    store.put_content(store.repo_path(repository), request.data)
-    headers = generate_headers('library/{0}'.format(repository), 'write')
-    return response('', 200, headers)
-
-
-@app.route('/v1/repositories/<repository>/', methods=['DELETE'])
-@requires_auth
-def delete_library_repo(repository):
-    try:
-        store.remove(store.repo_path(repository))
-    except oserror:
-        return api_error('repo not found', 404)
-    headers = generate_headers('library/{0}'.format(repository), 'delete')
-    return response('', 200, headers)
-
-
-@app.route('/v1/repositories/<namespace>/<repository>/images', methods=['PUT'])
-@requires_auth
-def put_user_images(namespace, repository):
-    data = None
-    try:
-        data = json.loads(request.data)
-    except json.JSONDecodeError:
-        return api_error('Error Decoding JSON', 400)
-    if not data or not isinstance(data, list):
-        return api_error('Invalid data')
-    store.put_content(store.repo_images_path(namespace, repository),
-            request.data)
-    headers = generate_headers('{0}/{1}'.format(namespace, repository),
-            'write')
-    return response('', 204, headers)
-
-
-@app.route('/v1/repositories/<namespace>/<repository>/images', methods=['GET'])
-@requires_auth
-def get_user_images(namespace, repository):
-    data = None
-    try:
-        data = store.get_content(store.repo_images_path(namespace, repository))
+        path = store.index_images_path(namespace, repository)
+        data = store.get_content(path)
     except IOError:
         return api_error('images not found', 404)
-    headers = generate_headers('{0}/{1}'.format(namespace, repository), 'read')
+    headers = generate_headers(namespace, repository, 'read')
     return response(data, 200, headers, True)
 
 
-@app.route('/v1/repositories/<namespace>/<repository>/images', methods=['DELETE'])
+@app.route('/v1/repositories/<path:repository>/images', methods=['DELETE'])
 @requires_auth
-def delete_user_images(namespace, repository):
-    try:
-        store.remove(store.repo_images_path(namespace, repository))
-    except oserror:
-        return api_error('images not found', 404)
-    headers = generate_headers('{0}/{1}'.format(namespace, repository),
-            'delete')
+@parse_repository_name
+def delete_repository_images(namespace, repository):
+    # Does nothing, this file will be removed when DELETE on repos
+    headers = generate_headers(namespace, repository, 'delete')
     return response('', 204, headers)
 
 
-@app.route('/v1/repositories/<repository>/images', methods=['PUT'])
-@requires_auth
-def put_library_images(repository):
-    data = None
-    try:
-        data = json.loads(request.data)
-    except json.JSONDecodeError:
-        return api_error('Error Decoding JSON', 400)
-    if not data or not isinstance(data, list):
-        return api_error('Invalid data')
-    store.put_content(store.repo_images_path(repository), request.data)
-    return response('', 204, generate_headers(repository, 'write'))
-
-
-@app.route('/v1/repositories/<repository>/images', methods=['GET'])
-@requires_auth
-def get_library_images(repository):
-    data = None
-    try:
-        data = store.get_content(store.repo_images_path(repository))
-    except IOError:
-        return api_error('images not found', 404)
-    return response(data, 200, generate_headers(repository, 'read'), True)
-
-
-@app.route('/v1/repositories/<repository>/images', methods=['DELETE'])
-@requires_auth
-def delete_library_images(repository):
-    try:
-        store.remove(store.repo_images_path(repository))
-    except oserror:
-        return api_error('images not found', 404)
-    return response('', 204, generate_headers(repository, 'delete'))
-
-
-@app.route('/v1/repositories/<namespace>/<repository>/auth', methods=['PUT'])
-def put_user_repo_auth(namespace, repository):
-    return response('OK')
-
-
-@app.route('/v1/repositories/<repository>/auth', methods=['PUT'])
-def put_library_repo_auth(repository):
+@app.route('/v1/repositories/<path:repository>/auth', methods=['PUT'])
+@parse_repository_name
+def put_repository_auth(namespace, repository):
     return response('OK')
 
 
