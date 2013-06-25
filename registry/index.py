@@ -46,6 +46,7 @@ def parse_repository_name(f):
     return wrapper
 
 
+@app.route('/v1/users', methods=['GET', 'POST'])
 @app.route('/v1/users/', methods=['GET', 'POST'])
 def get_post_users():
     if request.method == 'GET':
@@ -65,19 +66,18 @@ def put_username(username):
 
 def update_index_images(namespace, repository, data):
     path = store.index_images_path(namespace, repository)
-    data = None
     try:
         images = {}
-        data += store.get_content(path)
+        data = json.loads(data) + store.get_content(data)
         for i in data:
             iid = i['id']
             if iid in images and 'checksum' in images[iid]:
                 continue
             images[iid] = i
         data = images.values()
+        store.put_content(path, json.dumps(data.values()))
     except IOError:
-        pass
-    store.put_content(path, data)
+        store.put_content(path, data)
 
 
 @app.route('/v1/repositories/<path:repository>/', methods=['PUT'])
