@@ -65,18 +65,6 @@ def put_user_repo(namespace, repository):
     return response('', 200, headers)
 
 
-@app.route('/v1/repositories/<namespace>/<repository>/', methods=['DELETE'])
-@requires_auth
-def delete_user_repo(namespace, repository):
-    try:
-        store.remove(store.repo_path(namespace, repository))
-    except oserror:
-        return api_error('repo not found', 404)
-    headers = generate_headers('{0}/{1}'.format(namespace, repository),
-            'delete')
-    return response('', 200, headers)
-
-
 @app.route('/v1/repositories/<repository>/', methods=['PUT'])
 @requires_auth
 def put_library_repo(repository):
