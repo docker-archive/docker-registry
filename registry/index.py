@@ -1,190 +1,190 @@
+
+import socket
+
+import simplejson as json
+from flask import request
+
 import config
-
-cfg = config.load().index
-
-if cfg and cfg['enabled']:
-  import simplejson as json
-  import storage
-  import socket
-
-  from flask import request
-  from toolkit import response, api_error, requires_auth
-  from .app import app
+import storage
+from toolkit import response, api_error, requires_auth, gen_random_string
+from .app import app
 
 
-  store = storage.load()
-  hostname = socket.gethostname()
-
-# TODO[jigish] add WWW-Authenticate signature and X-Docker-Token
-  def generate_headers(repository, access):
-    if not cfg['registry_endpoints']:
-      return {'X-Docker-Endpoints': hostname,
-          'WWW-Authenticate': 'Token signature=omgwtfbbq,repository="{0}",access={1}'.format(repository, access),
-          'X-Docker-Token': 'omgwtfbbq'}
-    return {'X-Docker-Endpoints': cfg['registry_endpoints'],
-        'WWW-Authenticate': 'Token signature=omgwtfbbq,repository="{0}",access={1}'.format(repository, access),
-        'X-Docker-Token': 'omgwtfbbq'}
+store = storage.load()
 
 
-### USER MANAGEMENT ###
+def generate_headers(repository, access):
+    cfg = config.load()
+    registry_endpoints = cfg.registry_endpoints if cfg.registry_endpoints \
+            else cfg.registry_endpoints
+    # The token generated will be invalid against a real Index behind.
+    token = 'Token signature={0},repository="{1}",access={2}'.format(
+            gen_random_string(), repository, access)
+    return {'X-Docker-Endpoints': registry_endpoints,
+            'WWW-Authenticate': token,
+            'X-Docker-Token': token}
 
-  @app.route('/v1/users/', methods=['POST'])
-  def post_users():
+
+@app.route('/v1/users/', methods=['POST'])
+def post_users():
     data = None
     try:
-      data = json.loads(request.data)
+        data = json.loads(request.data)
     except json.JSONDecodeError:
-      return api_error('Error Decoding JSON', 400)
+        return api_error('Error Decoding JSON', 400)
     return response('User Created', 201)
 
-  @app.route('/v1/users', methods=['GET'])
-  def get_users():
+
+@app.route('/v1/users', methods=['GET'])
+def get_users():
     return response('OK', 200)
 
-  @app.route('/v1/users/<username>/', methods=['PUT'])
-  def put_user():
+
+@app.route('/v1/users/<username>/', methods=['PUT'])
+def put_user(username):
     return response('', 204)
 
 
-### USER REPO MANAGEMENT ###
-
-  @app.route('/v1/repositories/<namespace>/<repository>/', methods=['PUT'])
-  @requires_auth
-  def put_user_repo(namespace, repository):
+@app.route('/v1/repositories/<namespace>/<repository>/', methods=['PUT'])
+@requires_auth
+def put_user_repo(namespace, repository):
     data = None
     try:
-      data = json.loads(request.data)
+        data = json.loads(request.data)
     except json.JSONDecodeError:
-      return api_error('Error Decoding JSON', 400)
+        return api_error('Error Decoding JSON', 400)
     if not data or not isinstance(data, list):
-      return api_error('Invalid data')
+        return api_error('Invalid data')
     store.put_content(store.repo_path(namespace, repository), request.data)
-    return response('', 200, generate_headers('{0}/{1}'.format(namespace, repository), 'write'))
+    headers = generate_headers('{0}/{1}'.format(namespace, repository),
+            'write')
+    return response('', 200, headers)
 
-  @app.route('/v1/repositories/<namespace>/<repository>/', methods=['DELETE'])
-  @requires_auth
-  def delete_user_repo(namespace, repository):
+
+@app.route('/v1/repositories/<namespace>/<repository>/', methods=['DELETE'])
+@requires_auth
+def delete_user_repo(namespace, repository):
     try:
-      store.remove(store.repo_path(namespace, repository))
+        store.remove(store.repo_path(namespace, repository))
     except oserror:
-      return api_error('repo not found', 404)
-    return response('', 200, generate_headers('{0}/{1}'.format(namespace, repository), 'delete'))
+        return api_error('repo not found', 404)
+    headers = generate_headers('{0}/{1}'.format(namespace, repository),
+            'delete')
+    return response('', 200, headers)
 
 
-### LIBRARY REPO MANAGEMENT ###
-
-  @app.route('/v1/repositories/<repository>/', methods=['PUT'])
-  @requires_auth
-  def put_library_repo(repository):
+@app.route('/v1/repositories/<repository>/', methods=['PUT'])
+@requires_auth
+def put_library_repo(repository):
     data = None
     try:
-      data = json.loads(request.data)
+        data = json.loads(request.data)
     except json.JSONDecodeError:
-      return api_error('Error Decoding JSON', 400)
+        return api_error('Error Decoding JSON', 400)
     if not data or not isinstance(data, list):
-      return api_error('Invalid data')
+        return api_error('Invalid data')
     store.put_content(store.repo_path(repository), request.data)
-    return response('', 200, generate_headers(repository, 'write'))
+    headers = generate_headers('library/{0}'.format(repository), 'write')
+    return response('', 200, headers)
 
-  @app.route('/v1/repositories/<repository>/', methods=['DELETE'])
-  @requires_auth
-  def delete_library_repo(repository):
+
+@app.route('/v1/repositories/<repository>/', methods=['DELETE'])
+@requires_auth
+def delete_library_repo(repository):
     try:
-      store.remove(store.repo_path(repository))
+        store.remove(store.repo_path(repository))
     except oserror:
-      return api_error('repo not found', 404)
-    return response('', 200, generate_headers(repository, 'delete'))
+        return api_error('repo not found', 404)
+    headers = generate_headers('library/{0}'.format(repository), 'delete')
+    return response('', 200, headers)
 
 
-### USER REPO IMAGE MANAGEMENT ###
-
-  @app.route('/v1/repositories/<namespace>/<repository>/images', methods=['PUT'])
-  @requires_auth
-  def put_user_images(namespace, repository):
+@app.route('/v1/repositories/<namespace>/<repository>/images', methods=['PUT'])
+@requires_auth
+def put_user_images(namespace, repository):
     data = None
     try:
-      data = json.loads(request.data)
+        data = json.loads(request.data)
     except json.JSONDecodeError:
-      return api_error('Error Decoding JSON', 400)
+        return api_error('Error Decoding JSON', 400)
     if not data or not isinstance(data, list):
-      return api_error('Invalid data')
-    store.put_content(store.repo_images_path(namespace, repository), request.data)
-    return response('', 204, generate_headers('{0}/{1}'.format(namespace, repository), 'write'))
-
-  @app.route('/v1/repositories/<namespace>/<repository>/images', methods=['GET'])
-  @requires_auth
-  def get_user_images(namespace, repository):
-      data = None
-      try:
-          data = store.get_content(store.repo_images_path(namespace, repository))
-      except IOError:
-          return api_error('images not found', 404)
-      return response(data, 200, generate_headers('{0}/{1}'.format(namespace, repository), 'read'), True)
-
-# TODO[jigish] is this required?
-  @app.route('/v1/repositories/<namespace>/<repository>/images', methods=['DELETE'])
-  @requires_auth
-  def delete_user_images(namespace, repository):
-    try:
-      store.remove(store.repo_images_path(namespace, repository))
-    except oserror:
-      return api_error('images not found', 404)
-    return response('', 204, generate_headers('{0}/{1}'.format(namespace, repository), 'delete'))
+        return api_error('Invalid data')
+    store.put_content(store.repo_images_path(namespace, repository),
+            request.data)
+    headers = generate_headers('{0}/{1}'.format(namespace, repository),
+            'write')
+    return response('', 204, headers)
 
 
-### LIBRARY REPO IMAGE MANAGEMENT ###
-
-  @app.route('/v1/repositories/<repository>/images', methods=['PUT'])
-  @requires_auth
-  def put_library_images(repository):
+@app.route('/v1/repositories/<namespace>/<repository>/images', methods=['GET'])
+@requires_auth
+def get_user_images(namespace, repository):
     data = None
     try:
-      data = json.loads(request.data)
+        data = store.get_content(store.repo_images_path(namespace, repository))
+    except IOError:
+        return api_error('images not found', 404)
+    headers = generate_headers('{0}/{1}'.format(namespace, repository), 'read')
+    return response(data, 200, headers, True)
+
+
+@app.route('/v1/repositories/<namespace>/<repository>/images', methods=['DELETE'])
+@requires_auth
+def delete_user_images(namespace, repository):
+    try:
+        store.remove(store.repo_images_path(namespace, repository))
+    except oserror:
+        return api_error('images not found', 404)
+    headers = generate_headers('{0}/{1}'.format(namespace, repository),
+            'delete')
+    return response('', 204, headers)
+
+
+@app.route('/v1/repositories/<repository>/images', methods=['PUT'])
+@requires_auth
+def put_library_images(repository):
+    data = None
+    try:
+        data = json.loads(request.data)
     except json.JSONDecodeError:
-      return api_error('Error Decoding JSON', 400)
+        return api_error('Error Decoding JSON', 400)
     if not data or not isinstance(data, list):
-      return api_error('Invalid data')
+        return api_error('Invalid data')
     store.put_content(store.repo_images_path(repository), request.data)
     return response('', 204, generate_headers(repository, 'write'))
 
-  @app.route('/v1/repositories/<repository>/images', methods=['GET'])
-  @requires_auth
-  def get_library_images(repository):
-      data = None
-      try:
-          data = store.get_content(store.repo_images_path(repository))
-      except IOError:
-          return api_error('images not found', 404)
-      return response(data, 200, generate_headers(repository, 'read'), True)
 
-# TODO[jigish] is this required?
-  @app.route('/v1/repositories/<repository>/images', methods=['DELETE'])
-  @requires_auth
-  def delete_library_images(repository):
+@app.route('/v1/repositories/<repository>/images', methods=['GET'])
+@requires_auth
+def get_library_images(repository):
+    data = None
     try:
-      store.remove(store.repo_images_path(repository))
+        data = store.get_content(store.repo_images_path(repository))
+    except IOError:
+        return api_error('images not found', 404)
+    return response(data, 200, generate_headers(repository, 'read'), True)
+
+
+@app.route('/v1/repositories/<repository>/images', methods=['DELETE'])
+@requires_auth
+def delete_library_images(repository):
+    try:
+        store.remove(store.repo_images_path(repository))
     except oserror:
-      return api_error('images not found', 404)
+        return api_error('images not found', 404)
     return response('', 204, generate_headers(repository, 'delete'))
 
 
-### USER REPO AUTH ###
-
-  @app.route('/v1/repositories/<namespace>/<repository>/auth', methods=['PUT'])
-  def put_user_repo_auth(namespace, repository):
+@app.route('/v1/repositories/<namespace>/<repository>/auth', methods=['PUT'])
+def put_user_repo_auth(namespace, repository):
     return response('OK')
 
 
-### LIBRARY REPO AUTH ###
-
-  @app.route('/v1/repositories/<repository>/auth', methods=['PUT'])
-  def put_library_repo_auth(repository):
+@app.route('/v1/repositories/<repository>/auth', methods=['PUT'])
+def put_library_repo_auth(repository):
     return response('OK')
 
 
-### SEARCH ###
-
-# TODO[jigish] implement
-  @app.route('/v1/search', methods=['GET'])
-  def get_search():
+@app.route('/v1/search', methods=['GET'])
+def get_search():
     return response('{}')
