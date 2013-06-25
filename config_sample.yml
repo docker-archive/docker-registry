@@ -23,3 +23,8 @@ test:
     storage: local
     storage_path: /tmp/test
     disable_token_auth: true
+
+standalone:
+    storage: local
+    storage_path: /tmp/registry
+    standalone: true

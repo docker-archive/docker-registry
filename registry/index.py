@@ -13,6 +13,13 @@ from .app import app
 store = storage.load()
 
 
+""" Those routes are loaded only when `standalone' is enabled in the config
+    file. The goal is to make the Registry working without the central Index
+    It's then possible to push images from Docker without talking to any other
+    entities. This module mimics the Index.
+"""
+
+
 def generate_headers(repository, access):
     cfg = config.load()
     registry_endpoints = cfg.registry_endpoints if cfg.registry_endpoints \
@@ -25,19 +32,16 @@ def generate_headers(repository, access):
             'X-Docker-Token': token}
 
 
-@app.route('/v1/users/', methods=['POST'])
+@app.route('/v1/users/', methods=['GET', 'POST'])
 def post_users():
+    if request.method == 'GET':
+        return response('OK', 200)
     data = None
     try:
         data = json.loads(request.data)
     except json.JSONDecodeError:
         return api_error('Error Decoding JSON', 400)
     return response('User Created', 201)
-
-
-@app.route('/v1/users', methods=['GET'])
-def get_users():
-    return response('OK', 200)
 
 
 @app.route('/v1/users/<username>/', methods=['PUT'])
