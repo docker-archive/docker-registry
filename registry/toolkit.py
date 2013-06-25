@@ -13,6 +13,7 @@ import requests
 import config
 import storage
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -92,7 +93,7 @@ def get_remote_ip():
 _auth_exp = re.compile(r'(\w+)[:=][\s"]?([^",]+)"?')
 def check_token(args):
     cfg = config.load()
-    if cfg.disable_token_auth is True:
+    if cfg.disable_token_auth is True or cfg.standalone is True:
         return True
     auth = request.headers.get('authorization', '')
     if auth.split(' ')[0].lower() != 'token':
