@@ -10,7 +10,7 @@ from .app import app
 store = storage.load()
 
 
-@app.route('/v1/repositories/<namespace>/<repository>/tags', methods=['GET'])
+@app.route('/v1/repositories/<namespace>/<path:repository>/tags', methods=['GET'])
 @requires_auth
 def get_tags(namespace, repository):
     data = {}
@@ -26,7 +26,7 @@ def get_tags(namespace, repository):
     return response(data)
 
 
-@app.route('/v1/repositories/<namespace>/<repository>/tags/<tag>',
+@app.route('/v1/repositories/<namespace>/<path:repository>/tags/<tag>',
            methods=['GET'])
 @requires_auth
 def get_tag(namespace, repository, tag):
@@ -38,7 +38,7 @@ def get_tag(namespace, repository, tag):
     return response(data)
 
 
-@app.route('/v1/repositories/<namespace>/<repository>/tags/<tag>',
+@app.route('/v1/repositories/<namespace>/<path:repository>/tags/<tag>',
            methods=['PUT'])
 @requires_auth
 def put_tag(namespace, repository, tag):
@@ -55,7 +55,7 @@ def put_tag(namespace, repository, tag):
     return response()
 
 
-@app.route('/v1/repositories/<namespace>/<repository>/tags/<tag>',
+@app.route('/v1/repositories/<namespace>/<path:repository>/tags/<tag>',
            methods=['DELETE'])
 @requires_auth
 def delete_tag(namespace, repository, tag):
@@ -66,7 +66,7 @@ def delete_tag(namespace, repository, tag):
     return response()
 
 
-@app.route('/v1/repositories/<namespace>/<repository>/', methods=['DELETE'])
+@app.route('/v1/repositories/<namespace>/<path:repository>/', methods=['DELETE'])
 @requires_auth
 def delete_repository(namespace, repository):
     try:
