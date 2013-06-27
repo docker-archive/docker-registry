@@ -56,8 +56,8 @@ def create_image_ancestry(image_id):
         if not store.exists(ancestry_path):
             store.put_content(ancestry_path, json.dumps(ancestry))
     ancestry_cache[image_id] = True
-    print 'Generated ancestry (size: {0}) for image_id: {1}'.format(
-            len(ancestry), image_id)
+    print ('Generated ancestry (size: {0}) '
+           'for image_id: {1}'.format(len(ancestry), image_id))
 
 
 def resolve_all_tags():

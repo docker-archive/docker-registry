@@ -34,7 +34,7 @@ class TestWorkflow(base.TestCase):
         layer = self.gen_random_string(7 * 1024 * 1024)
         json_obj = {
             'id': image_id
-            }
+        }
         if parent_id:
             json_obj['parent'] = parent_id
         json_data = json.dumps(json_obj)
@@ -45,7 +45,7 @@ class TestWorkflow(base.TestCase):
             self.registry_endpoint, image_id),
             data=json_data,
             headers={'Authorization': 'Token ' + token,
-                'X-Docker-Checksum': layer_checksum},
+                     'X-Docker-Checksum': layer_checksum},
             cookies=self.cookies)
         self.assertEqual(resp.status_code, 200, resp.text)
         self.cookies = resp.cookies
@@ -120,8 +120,8 @@ class TestWorkflow(base.TestCase):
         # Here we should use the 'X-Endpoints' returned in a real environment
         # Docker -> Registry
         resp = requests.get('{0}/v1/repositories/{1}/{2}/tags/latest'.format(
-                self.registry_endpoint, namespace, repos),
-                headers={'Authorization': 'Token ' + token})
+                            self.registry_endpoint, namespace, repos),
+                            headers={'Authorization': 'Token ' + token})
         self.assertEqual(resp.status_code, 200, resp.text)
         self.cookies = resp.cookies
         # Docker -> Registry

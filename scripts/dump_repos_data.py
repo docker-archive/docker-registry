@@ -55,7 +55,7 @@ def dump_json(all_repos, all_checksums, filename):
             'namespace': namespace,
             'repository': repos,
             'images': images_checksums
-            })
+        })
     with open(filename, 'w') as f:
         json.dump(data, f, indent=4)
 
