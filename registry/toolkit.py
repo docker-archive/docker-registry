@@ -3,9 +3,9 @@ import functools
 import logging
 import string
 import random
+import urllib
 import time
 import re
-import urllib
 
 from flask import current_app, request, session
 import simplejson as json
@@ -103,21 +103,17 @@ def check_token(args):
     if auth.split(' ')[0].lower() != 'token':
         logger.debug('check_token: Invalid token format')
         return False
-    logger.debug("args = {0}".format(args))
-    logger.debug("Auth Token = {0}".format(auth))
+    logger.debug('args = {0}'.format(args))
+    logger.debug('Auth Token = {0}'.format(auth))
     auth = dict(_auth_exp.findall(auth))
-    logger.debug("auth = {0}".format(auth))
+    logger.debug('auth = {0}'.format(auth))
     if not auth:
         return False
     if 'namespace' in args and 'repository' in args:
         # We're authorizing an action on a repository,
         # let's check that it matches the repos name provided in the token
-        arg_repo = urllib.quote_plus(args.get('repository'))
-        arg_namespace = args.get('namespace')
-        logger.debug("repo={0}, namespace={1}".format(arg_repo, arg_namespace))
-        full_repos_name = '{namespace}/{repository}'.format(
-            namespace=arg_namespace, repository=arg_repo)
-        logger.debug("full_repos_name  = {0}".format(full_repos_name))
+        full_repos_name = '{namespace}/{repository}'.format(**args)
+        logger.debug('full_repos_name  = {0}'.format(full_repos_name))
         if full_repos_name != auth.get('repository'):
             logger.debug('check_token: Wrong repository name in the token:'
                          '{0} != {1}'.format(full_repos_name,
@@ -161,3 +157,12 @@ def api_error(message, code=400, headers=None):
 def gen_random_string(length=16):
     return ''.join([random.choice(string.ascii_uppercase + string.digits)
                     for x in range(length)])
+
+
+def encode_repository_name(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        if 'repository' in kwargs:
+            kwargs['repository'] = urllib.quote_plus(kwargs['repository'])
+        return f(*args, **kwargs)
+    return wrapper

@@ -6,7 +6,8 @@ from flask import request
 
 import config
 import storage
-from toolkit import response, api_error, requires_auth, gen_random_string
+from toolkit import response, api_error, requires_auth, gen_random_string, \
+    encode_repository_name
 from .app import app
 
 
@@ -82,6 +83,7 @@ def update_index_images(namespace, repository, data):
 
 @app.route('/v1/repositories/<path:repository>', methods=['PUT'])
 @app.route('/v1/repositories/<path:repository>/images', methods=['PUT'])
+@encode_repository_name
 @requires_auth
 @parse_repository_name
 def put_repository(namespace, repository):
@@ -98,6 +100,7 @@ def put_repository(namespace, repository):
 
 
 @app.route('/v1/repositories/<path:repository>/images', methods=['GET'])
+@encode_repository_name
 @requires_auth
 @parse_repository_name
 def get_repository_images(namespace, repository):
@@ -112,6 +115,7 @@ def get_repository_images(namespace, repository):
 
 
 @app.route('/v1/repositories/<path:repository>/images', methods=['DELETE'])
+@encode_repository_name
 @requires_auth
 @parse_repository_name
 def delete_repository_images(namespace, repository):
@@ -121,6 +125,7 @@ def delete_repository_images(namespace, repository):
 
 
 @app.route('/v1/repositories/<path:repository>/auth', methods=['PUT'])
+@encode_repository_name
 @parse_repository_name
 def put_repository_auth(namespace, repository):
     return response('OK')
