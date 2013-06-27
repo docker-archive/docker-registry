@@ -10,7 +10,8 @@ from .app import app
 store = storage.load()
 
 
-@app.route('/v1/repositories/<namespace>/<path:repository>/tags', methods=['GET'])
+@app.route('/v1/repositories/<namespace>/<path:repository>/tags',
+           methods=['GET'])
 @requires_auth
 def get_tags(namespace, repository):
     data = {}
@@ -66,7 +67,8 @@ def delete_tag(namespace, repository, tag):
     return response()
 
 
-@app.route('/v1/repositories/<namespace>/<path:repository>/', methods=['DELETE'])
+@app.route('/v1/repositories/<namespace>/<path:repository>/tags',
+           methods=['DELETE'])
 @requires_auth
 def delete_repository(namespace, repository):
     try:
