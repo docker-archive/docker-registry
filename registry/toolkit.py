@@ -115,11 +115,9 @@ def check_token(args):
         arg_repo = urllib.quote_plus(args.get('repository'))
         arg_namespace = args.get('namespace')
         logger.debug("repo={0}, namespace={1}".format(arg_repo, arg_namespace))
-
         full_repos_name = '{namespace}/{repository}'.format(
             namespace=arg_namespace, repository=arg_repo)
         logger.debug("full_repos_name  = {0}".format(full_repos_name))
-
         if full_repos_name != auth.get('repository'):
             logger.debug('check_token: Wrong repository name in the token:'
                          '{0} != {1}'.format(full_repos_name,
