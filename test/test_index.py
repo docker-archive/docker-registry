@@ -29,24 +29,24 @@ class TestIndex(base.TestCase):
         # PUT
         resp = self.http_client.put('/v1/repositories/{0}/images'.format(repo),
                                     data=json.dumps(images))
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200, resp.data)
         # GET
         resp = self.http_client.get('/v1/repositories/{0}/images'.format(repo))
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200, resp.data)
         data = json.loads(resp.data)
         self.assertEqual(len(data), 2)
         self.assertTrue('id' in data[0])
         # DELETE
         resp = self.http_client.delete('/v1/repositories/{0}/images'.format(
             repo))
-        self.assertEqual(resp.status_code, 204)
+        self.assertEqual(resp.status_code, 204, resp.data)
 
     def test_auth(self):
         repo = 'test/{0}'.format(self.gen_random_string())
         resp = self.http_client.put('/v1/repositories/{0}/auth'.format(repo))
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200, resp.data)
 
     def test_search(self):
         search_term = self.gen_random_string()
         resp = self.http_client.get('/v1/search?q={0}'.format(search_term))
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200, resp.data)

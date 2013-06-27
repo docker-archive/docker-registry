@@ -1,6 +1,5 @@
 
 import functools
-import socket
 
 import simplejson as json
 from flask import request
@@ -25,7 +24,8 @@ def generate_headers(namespace, repository, access):
     cfg = config.load()
     registry_endpoints = cfg.registry_endpoints
     if not registry_endpoints:
-        registry_endpoints = socket.gethostname()
+        #registry_endpoints = socket.gethostname()
+        registry_endpoints = request.environ['HTTP_HOST']
     # The token generated will be invalid against a real Index behind.
     token = 'Token signature={0},repository="{1}/{2}",access={3}'.format(
             gen_random_string(), namespace, repository, access)
@@ -37,7 +37,7 @@ def generate_headers(namespace, repository, access):
 def parse_repository_name(f):
     @functools.wraps(f)
     def wrapper(repository, *args, **kwargs):
-        parts = repository.split('/', 1)
+        parts = repository.rstrip('/').split('/', 1)
         if len(parts) < 2:
             namespace = 'library'
             repository = parts[0]
@@ -80,7 +80,7 @@ def update_index_images(namespace, repository, data):
         store.put_content(path, data)
 
 
-@app.route('/v1/repositories/<path:repository>/', methods=['PUT'])
+@app.route('/v1/repositories/<path:repository>', methods=['PUT'])
 @app.route('/v1/repositories/<path:repository>/images', methods=['PUT'])
 @requires_auth
 @parse_repository_name
