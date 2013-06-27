@@ -5,6 +5,7 @@ import string
 import random
 import time
 import re
+import urllib
 
 from flask import current_app, request, session
 import simplejson as json
@@ -102,15 +103,27 @@ def check_token(args):
     if auth.split(' ')[0].lower() != 'token':
         logger.debug('check_token: Invalid token format')
         return False
+    logger.debug("args = {0}".format(args))
+    logger.debug("Auth Token = {0}".format(auth))
     auth = dict(_auth_exp.findall(auth))
+    logger.debug("auth = {0}".format(auth))
     if not auth:
         return False
     if 'namespace' in args and 'repository' in args:
         # We're authorizing an action on a repository,
         # let's check that it matches the repos name provided in the token
-        full_repos_name = '{namespace}/{repository}'.format(**args)
+        arg_repo = urllib.quote_plus(args.get('repository'))
+        arg_namespace = args.get('namespace')
+        logger.debug("repo={0}, namespace={1}".format(arg_repo, arg_namespace))
+
+        full_repos_name = '{namespace}/{repository}'.format(
+            namespace=arg_namespace, repository=arg_repo)
+        logger.debug("full_repos_name  = {0}".format(full_repos_name))
+
         if full_repos_name != auth.get('repository'):
-            logger.debug('check_token: Wrong repository name in the token')
+            logger.debug('check_token: Wrong repository name in the token:'
+                         '{0} != {1}'.format(full_repos_name,
+                                             auth.get('repository')))
             return False
     # Check that the token `access' variable is aligned with the HTTP method
     access = auth.get('access')
