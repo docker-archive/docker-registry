@@ -159,10 +159,15 @@ def gen_random_string(length=16):
                     for x in range(length)])
 
 
-def encode_repository_name(f):
+def parse_repository_name(f):
     @functools.wraps(f)
-    def wrapper(*args, **kwargs):
-        if 'repository' in kwargs:
-            kwargs['repository'] = urllib.quote_plus(kwargs['repository'])
-        return f(*args, **kwargs)
+    def wrapper(repository, *args, **kwargs):
+        parts = repository.rstrip('/').split('/', 1)
+        if len(parts) < 2:
+            namespace = 'library'
+            repository = parts[0]
+        else:
+            (namespace, repository) = parts
+        repository = urllib.quote_plus(repository)
+        return f(namespace, repository, *args, **kwargs)
     return wrapper

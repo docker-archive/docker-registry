@@ -3,16 +3,16 @@ import logging
 from flask import request
 
 import storage
-from toolkit import response, api_error, requires_auth, encode_repository_name
+from toolkit import response, api_error, requires_auth, parse_repository_name
 from .app import app
 
 store = storage.load()
 logger = logging.getLogger(__name__)
 
 
-@app.route('/v1/repositories/<namespace>/<path:repository>/tags',
+@app.route('/v1/repositories/<path:repository>/tags',
            methods=['GET'])
-@encode_repository_name
+@parse_repository_name
 @requires_auth
 def get_tags(namespace, repository):
     logger.debug("[get_tags] namespace={0}; repository={1}".format(namespace,
@@ -30,9 +30,9 @@ def get_tags(namespace, repository):
     return response(data)
 
 
-@app.route('/v1/repositories/<namespace>/<path:repository>/tags/<tag>',
+@app.route('/v1/repositories/<path:repository>/tags/<tag>',
            methods=['GET'])
-@encode_repository_name
+@parse_repository_name
 @requires_auth
 def get_tag(namespace, repository, tag):
     logger.debug("[get_tag] namespace={0}; repository={1}; tag={2}".format(
@@ -45,9 +45,9 @@ def get_tag(namespace, repository, tag):
     return response(data)
 
 
-@app.route('/v1/repositories/<namespace>/<path:repository>/tags/<tag>',
+@app.route('/v1/repositories/<path:repository>/tags/<tag>',
            methods=['PUT'])
-@encode_repository_name
+@parse_repository_name
 @requires_auth
 def put_tag(namespace, repository, tag):
     logger.debug("[put_tag] namespace={0}; repository={1}; tag={2}".format(
@@ -65,9 +65,9 @@ def put_tag(namespace, repository, tag):
     return response()
 
 
-@app.route('/v1/repositories/<namespace>/<path:repository>/tags/<tag>',
+@app.route('/v1/repositories/<path:repository>/tags/<tag>',
            methods=['DELETE'])
-@encode_repository_name
+@parse_repository_name
 @requires_auth
 def delete_tag(namespace, repository, tag):
     logger.debug("[delete_tag] namespace={0}; repository={1}; tag={2}".format(
@@ -79,9 +79,9 @@ def delete_tag(namespace, repository, tag):
     return response()
 
 
-@app.route('/v1/repositories/<namespace>/<path:repository>/tags',
+@app.route('/v1/repositories/<path:repository>/tags',
            methods=['DELETE'])
-@encode_repository_name
+@parse_repository_name
 @requires_auth
 def delete_repository(namespace, repository):
     logger.debug("[delete_repository] namespace={0}; repository={1}".format(

@@ -1,13 +1,11 @@
 
-import functools
-
 import simplejson as json
 from flask import request
 
 import config
 import storage
 from toolkit import response, api_error, requires_auth, gen_random_string, \
-    encode_repository_name
+    parse_repository_name
 from .app import app
 
 
@@ -33,19 +31,6 @@ def generate_headers(namespace, repository, access):
     return {'X-Docker-Endpoints': registry_endpoints,
             'WWW-Authenticate': token,
             'X-Docker-Token': token}
-
-
-def parse_repository_name(f):
-    @functools.wraps(f)
-    def wrapper(repository, *args, **kwargs):
-        parts = repository.rstrip('/').split('/', 1)
-        if len(parts) < 2:
-            namespace = 'library'
-            repository = parts[0]
-        else:
-            (namespace, repository) = parts
-        return f(namespace, repository, *args, **kwargs)
-    return wrapper
 
 
 @app.route('/v1/users', methods=['GET', 'POST'])
@@ -83,9 +68,8 @@ def update_index_images(namespace, repository, data):
 
 @app.route('/v1/repositories/<path:repository>', methods=['PUT'])
 @app.route('/v1/repositories/<path:repository>/images', methods=['PUT'])
-@encode_repository_name
-@requires_auth
 @parse_repository_name
+@requires_auth
 def put_repository(namespace, repository):
     data = None
     try:
@@ -100,9 +84,8 @@ def put_repository(namespace, repository):
 
 
 @app.route('/v1/repositories/<path:repository>/images', methods=['GET'])
-@encode_repository_name
-@requires_auth
 @parse_repository_name
+@requires_auth
 def get_repository_images(namespace, repository):
     data = None
     try:
@@ -115,9 +98,8 @@ def get_repository_images(namespace, repository):
 
 
 @app.route('/v1/repositories/<path:repository>/images', methods=['DELETE'])
-@encode_repository_name
-@requires_auth
 @parse_repository_name
+@requires_auth
 def delete_repository_images(namespace, repository):
     # Does nothing, this file will be removed when DELETE on repos
     headers = generate_headers(namespace, repository, 'delete')
@@ -125,7 +107,6 @@ def delete_repository_images(namespace, repository):
 
 
 @app.route('/v1/repositories/<path:repository>/auth', methods=['PUT'])
-@encode_repository_name
 @parse_repository_name
 def put_repository_auth(namespace, repository):
     return response('OK')
