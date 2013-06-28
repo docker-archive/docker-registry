@@ -27,9 +27,12 @@ class TestIndex(base.TestCase):
         images = [{'id': self.gen_random_string()},
                   {'id': self.gen_random_string()}]
         # PUT
-        resp = self.http_client.put('/v1/repositories/{0}/images'.format(repo),
+        resp = self.http_client.put('/v1/repositories/{0}/'.format(repo),
                                     data=json.dumps(images))
         self.assertEqual(resp.status_code, 200, resp.data)
+        resp = self.http_client.put('/v1/repositories/{0}/images'.format(repo),
+                                    data=json.dumps(images))
+        self.assertEqual(resp.status_code, 204, resp.data)
         # GET
         resp = self.http_client.get('/v1/repositories/{0}/images'.format(repo))
         self.assertEqual(resp.status_code, 200, resp.data)

@@ -67,10 +67,12 @@ def update_index_images(namespace, repository, data):
 
 
 @app.route('/v1/repositories/<path:repository>', methods=['PUT'])
-@app.route('/v1/repositories/<path:repository>/images', methods=['PUT'])
+@app.route('/v1/repositories/<path:repository>/images',
+            defaults={'images': True},
+            methods=['PUT'])
 @parse_repository_name
 @requires_auth
-def put_repository(namespace, repository):
+def put_repository(namespace, repository, images=False):
     data = None
     try:
         data = json.loads(request.data)
@@ -80,7 +82,8 @@ def put_repository(namespace, repository):
         return api_error('Invalid data')
     update_index_images(namespace, repository, request.data)
     headers = generate_headers(namespace, repository, 'write')
-    return response('', 200, headers)
+    code = 204 if images is True else 200
+    return response('', code, headers)
 
 
 @app.route('/v1/repositories/<path:repository>/images', methods=['GET'])
