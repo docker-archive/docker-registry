@@ -7,6 +7,6 @@ from .images import *
 import config
 
 cfg = config.load()
-if cfg.standalone is True:
-    # If standalone mode is enabled, load the fake Index routes
+if cfg.standalone is not False:
+    # If standalone mode is enabled (default), load the fake Index routes
     from .index import *

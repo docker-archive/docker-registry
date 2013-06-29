@@ -97,7 +97,7 @@ _auth_exp = re.compile(r'(\w+)[:=][\s"]?([^",]+)"?')
 
 def check_token(args):
     cfg = config.load()
-    if cfg.disable_token_auth is True or cfg.standalone is True:
+    if cfg.disable_token_auth is True or cfg.standalone is not False:
         return True
     auth = request.headers.get('authorization', '')
     if auth.split(' ')[0].lower() != 'token':

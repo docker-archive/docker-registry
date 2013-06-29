@@ -22,9 +22,7 @@ prod:
 test:
     storage: local
     storage_path: /tmp/test
-    standalone: true
 
 standalone:
     storage: local
     storage_path: /tmp/registry
-    standalone: true
