@@ -1,17 +1,26 @@
-
+# The `common' part is automatically included (and possibly overriden by all
+# other flavors)
 common:
     s3_access_key: REPLACEME
     s3_secret_key: REPLACEME
     s3_bucket: REPLACEME
 
+# This is the default configuration when no flavor is specified
 dev:
     storage: local
     storage_path: /tmp/registry
     loglevel: debug
 
+# To specify another flavor, set the environment variable SETTINGS_FLAVOR
+# $ export SETTINGS_FLAVOR=prod
 prod:
+    # The standalone option allows to dedicate authentication and namespacing
+    # to the main Index (https://index.docker.io). Enabling standalone (default)
+    # also disables authentication
+    standalone: False
     storage: s3
     storage_path: /prod
+    # Enabling this options makes the Registry send an email on each code Exception
     email_exceptions:
         smtp_host: REPLACEME
         smtp_login: REPLACEME
@@ -19,10 +28,7 @@ prod:
         from_addr: docker-registry@localdomain.local
         to_addr: noise+dockerregistry@localdomain.local
 
+# This flavor is automatically used by unit tests
 test:
     storage: local
     storage_path: /tmp/test
-
-standalone:
-    storage: local
-    storage_path: /tmp/registry
