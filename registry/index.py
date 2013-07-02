@@ -68,8 +68,8 @@ def update_index_images(namespace, repository, data):
 
 @app.route('/v1/repositories/<path:repository>', methods=['PUT'])
 @app.route('/v1/repositories/<path:repository>/images',
-            defaults={'images': True},
-            methods=['PUT'])
+           defaults={'images': True},
+           methods=['PUT'])
 @parse_repository_name
 @requires_auth
 def put_repository(namespace, repository, images=False):
