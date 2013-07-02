@@ -6,6 +6,7 @@ import config
 from toolkit import response, gen_random_string
 
 
+VERSION = '0.5.1'
 app = Flask('docker-registry')
 cfg = config.load()
 loglevel = getattr(logging, cfg.get('loglevel', 'INFO').upper())
@@ -21,6 +22,13 @@ def ping():
 @app.route('/')
 def root():
     return response('docker-registry server ({0})'.format(cfg.flavor))
+
+
+@app.after_request
+def after_request(response):
+    response.headers['X-Docker-Registry-Version'] = VERSION
+    response.headers['X-Docker-Registry-Config'] = cfg.flavor
+    return response
 
 
 def init():
