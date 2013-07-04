@@ -15,6 +15,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
 
 
 @app.route('/_ping')
+@app.route('/v1/_ping')
 def ping():
     return response()
 
