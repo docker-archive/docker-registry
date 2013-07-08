@@ -117,4 +117,4 @@ def put_repository_auth(namespace, repository):
 
 @app.route('/v1/search', methods=['GET'])
 def get_search():
-    return response('{}')
+    return response({})
