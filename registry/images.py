@@ -42,14 +42,21 @@ def compute_image_checksum(algo, image_id, json_data):
     return algolib.hexdigest()
 
 
+def check_image_checksum(image_id, checksum, json_data):
+    checksum_parts = checksum.split(':')
+    computed_checksum = compute_image_checksum(checksum_parts[0],
+                                               image_id,
+                                               json_data)
+    return computed_checksum == checksum_parts[1].lower()
+
+
 @app.route('/v1/images/<image_id>/layer', methods=['PUT'])
 @requires_auth
 def put_image_layer(image_id):
     try:
         json_data = store.get_content(store.image_json_path(image_id))
-        checksum = store.get_content(store.image_checksum_path(image_id))
     except IOError:
-        return api_error('JSON\'s image not found', 404)
+        return api_error('Image not found', 404)
     layer_path = store.image_layer_path(image_id)
     mark_path = store.image_mark_path(image_id)
     if store.exists(layer_path) and not store.exists(mark_path):
@@ -61,13 +68,39 @@ def put_image_layer(image_id):
         input_stream = request.environ['wsgi.input']
     store.stream_write(layer_path, input_stream)
     # FIXME(sam): Compute the checksum while uploading the image to save time
-    checksum_parts = checksum.split(':')
-    computed_checksum = compute_image_checksum(checksum_parts[0],
-                                               image_id,
-                                               json_data)
-    if computed_checksum != checksum_parts[1].lower():
+    try:
+        checksum = store.get_content(store.image_checksum_path(image_id))
+    except IOError:
+        # We don't have a checksum stored yet, that's fine skipping the check.
+        # Not removing the mark though, image is not downloadable yet.
+        return response()
+    if check_image_checksum(image_id, checksum, json_data) is False:
         logger.debug('put_image_layer: Wrong checksum')
         return api_error('Checksum mismatch, ignoring the layer')
+    # Checksum is ok, we remove the marker
+    store.remove(mark_path)
+    return response()
+
+
+@app.route('/v1/images/<image_id>/checksum', methods=['PUT'])
+@requires_auth
+def put_image_checksum(image_id):
+    checksum = request.headers.get('x-docker-checksum', '')
+    if not checksum:
+        return api_error('Missing Image\'s checksum')
+    try:
+        json_data = store.get_content(store.image_json_path(image_id))
+    except IOError:
+        return api_error('Image not found', 404)
+    mark_path = store.image_mark_path(image_id)
+    if not store.exists(mark_path):
+        return api_error('Cannot set this image checksum', 409)
+    err = store_checksum(image_id, checksum)
+    if err:
+        return api_error(err)
+    if check_image_checksum(image_id, checksum, json_data) is False:
+        logger.debug('put_image_layer: Wrong checksum')
+        return api_error('Checksum mismatch')
     # Checksum is ok, we remove the marker
     store.remove(mark_path)
     return response()
@@ -129,6 +162,17 @@ def check_images_list(image_id):
     return (image_id in images_list)
 
 
+def store_checksum(image_id, checksum):
+    checksum_parts = checksum.split(':')
+    if len(checksum_parts) != 2:
+        return 'Invalid checksum format'
+    if checksum_parts[0] not in hashlib.algorithms:
+        return 'Checksum algorithm not supported'
+    # We store the checksum
+    checksum_path = store.image_checksum_path(image_id)
+    store.put_content(checksum_path, checksum)
+
+
 @app.route('/v1/images/<image_id>/json', methods=['PUT'])
 @requires_auth
 def put_image_json(image_id):
@@ -143,16 +187,11 @@ def put_image_json(image_id):
             return api_error('Missing key `{0}\' in JSON'.format(key))
     # Read the checksum
     checksum = request.headers.get('x-docker-checksum', '')
-    if not checksum:
-        return api_error('Missing Image\'s checksum')
-    checksum_parts = checksum.split(':')
-    if len(checksum_parts) != 2:
-        return api_error('Invalid checksum format')
-    if checksum_parts[0] not in hashlib.algorithms:
-        return api_error('Checksum algorithm not supported')
-    # We store the checksum
-    checksum_path = store.image_checksum_path(image_id)
-    store.put_content(checksum_path, checksum)
+    if checksum:
+        # Storing the checksum is optional at this stage
+        err = store_checksum(image_id, checksum)
+        if err:
+            return api_error(err)
     if image_id != data['id']:
         return api_error('JSON data contains invalid id')
     if check_images_list(image_id) is False:

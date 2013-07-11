@@ -28,7 +28,8 @@ class TestCase(unittest.TestCase):
         return ''.join([random.choice(string.ascii_uppercase + string.digits)
                         for x in range(length)]).lower()
 
-    def upload_image(self, image_id, parent_id, layer):
+    def upload_image(self, image_id, parent_id, layer,
+                     set_checksum_callback=None):
         json_obj = {
             'id': image_id
         }
@@ -38,10 +39,11 @@ class TestCase(unittest.TestCase):
         h = hashlib.sha256(json_data + '\n')
         h.update(layer)
         layer_checksum = 'sha256:{0}'.format(h.hexdigest())
+        headers = {'X-Docker-Checksum': layer_checksum}
+        if set_checksum_callback:
+            headers = {}
         resp = self.http_client.put('/v1/images/{0}/json'.format(image_id),
-                                    headers={
-                                        'X-Docker-Checksum': layer_checksum
-                                    },
+                                    headers=headers,
                                     data=json_data)
         self.assertEqual(resp.status_code, 200, resp.data)
         # Make sure I cannot download the image before push is complete
@@ -52,6 +54,9 @@ class TestCase(unittest.TestCase):
                                     input_stream=layer_file)
         layer_file.close()
         self.assertEqual(resp.status_code, 200, resp.data)
+        if set_checksum_callback:
+            set_checksum_callback(image_id, layer_checksum)
+        # Push done, test reading the image
         resp = self.http_client.get('/v1/images/{0}/json'.format(image_id))
         self.assertEqual(resp.headers.get('x-docker-size'), str(len(layer)))
         self.assertEqual(resp.status_code, 200, resp.data)
