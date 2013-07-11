@@ -54,14 +54,14 @@ def update_index_images(namespace, repository, data):
     path = store.index_images_path(namespace, repository)
     try:
         images = {}
-        data = json.loads(data) + store.get_content(data)
+        data = json.loads(data) + json.loads(store.get_content(path))
         for i in data:
             iid = i['id']
             if iid in images and 'checksum' in images[iid]:
                 continue
             images[iid] = i
         data = images.values()
-        store.put_content(path, json.dumps(data.values()))
+        store.put_content(path, json.dumps(data))
     except IOError:
         store.put_content(path, data)
 
