@@ -6,6 +6,7 @@ import simplejson as json
 from flask import request, Response, session
 
 import storage
+import checksums
 from toolkit import response, api_error, requires_auth
 from .app import app
 
@@ -35,21 +36,6 @@ def get_image_layer(image_id):
         return api_error('Image not found', 404)
 
 
-def compute_image_checksum(algo, image_id, json_data):
-    algolib = getattr(hashlib, algo.lower())(json_data + '\n')
-    for data in store.stream_read(store.image_layer_path(image_id)):
-        algolib.update(data)
-    return algolib.hexdigest()
-
-
-def check_image_checksum(image_id, checksum, json_data):
-    checksum_parts = checksum.split(':')
-    computed_checksum = compute_image_checksum(checksum_parts[0],
-                                               image_id,
-                                               json_data)
-    return computed_checksum == checksum_parts[1].lower()
-
-
 @app.route('/v1/images/<image_id>/layer', methods=['PUT'])
 @requires_auth
 def put_image_layer(image_id):
@@ -66,15 +52,26 @@ def put_image_layer(image_id):
         # Careful, might work only with WSGI servers supporting chunked
         # encoding (Gunicorn)
         input_stream = request.environ['wsgi.input']
-    store.stream_write(layer_path, input_stream)
-    # FIXME(sam): Compute the checksum while uploading the image to save time
+    # compute checksums
+    csums = []
+    with storage.store_stream(input_stream) as f:
+        try:
+            csums.append(checksums.compute_simple(f, json_data))
+            f.seek(0)
+            csums.append(checksums.compute_tarsum(f, json_data))
+        except (IOError, checksums.TarError) as e:
+            logger.debug('put_image_layer: Error when computing checksum '
+                         '{0}'.format(e))
+        store.stream_write(layer_path, f)
     try:
         checksum = store.get_content(store.image_checksum_path(image_id))
     except IOError:
         # We don't have a checksum stored yet, that's fine skipping the check.
         # Not removing the mark though, image is not downloadable yet.
+        session['checksum'] = csums
         return response()
-    if check_image_checksum(image_id, checksum, json_data) is False:
+    # We check if the checksums provided matches one the one we computed
+    if checksum not in csums:
         logger.debug('put_image_layer: Wrong checksum')
         return api_error('Checksum mismatch, ignoring the layer')
     # Checksum is ok, we remove the marker
@@ -88,9 +85,9 @@ def put_image_checksum(image_id):
     checksum = request.headers.get('x-docker-checksum', '')
     if not checksum:
         return api_error('Missing Image\'s checksum')
-    try:
-        json_data = store.get_content(store.image_json_path(image_id))
-    except IOError:
+    if not session.get('checksum'):
+        return api_error('Checksum not found in Cookie')
+    if not store.exists(store.image_json_path(image_id)):
         return api_error('Image not found', 404)
     mark_path = store.image_mark_path(image_id)
     if not store.exists(mark_path):
@@ -98,7 +95,7 @@ def put_image_checksum(image_id):
     err = store_checksum(image_id, checksum)
     if err:
         return api_error(err)
-    if check_image_checksum(image_id, checksum, json_data) is False:
+    if checksum not in session.get('checksum', []):
         logger.debug('put_image_layer: Wrong checksum')
         return api_error('Checksum mismatch')
     # Checksum is ok, we remove the marker

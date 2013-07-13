@@ -1,6 +1,8 @@
 
 import os
 import shutil
+import tempfile
+import contextlib
 from cStringIO import StringIO
 
 import boto.s3.connection
@@ -277,6 +279,20 @@ class S3Storage(Storage):
         if not key:
             raise OSError('No such key: \'{0}\''.format(path))
         return key.size
+
+
+@contextlib.contextmanager
+def store_stream(stream):
+    """ Stores the entire stream to a temporary file """
+    tmpf = tempfile.TemporaryFile()
+    while True:
+        buf = stream.read(4096)
+        if not buf:
+            break
+        tmpf.write(buf)
+    tmpf.seek(0)
+    yield tmpf
+    tmpf.close()
 
 
 _storage = {}
