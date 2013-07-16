@@ -16,6 +16,10 @@ def sha256_file(fp, data=None):
     return h.hexdigest()
 
 
+def sha256_string(s):
+    return hashlib.sha256(s).hexdigest()
+
+
 def compute_tarsum(fp, json_data):
     header_fields = ('name', 'mode', 'uid', 'gid', 'size', 'mtime',
                      'typeflag', 'linkname', 'uname', 'gname', 'devmajor',
@@ -33,12 +37,20 @@ def compute_tarsum(fp, json_data):
         for field in header_fields:
             value = getattr(member, aliases.get(field, field))
             header += '{0}{1}'.format(field, value)
-        hashes.append(sha256_file(f, header))
+        h = None
+        try:
+            f = tar.extractfile(member)
+            if f:
+                h = sha256_file(f, header)
+            else:
+                h = sha256_string(header)
+        except KeyError:
+            h = sha256_string(header)
+        hashes.append(h)
     tar.close()
     hashes.sort()
     data = json_data + ''.join(hashes)
-    tarsum = hashlib.sha256(data).hexdigest()
-    return 'tarsum+sha256:{0}'.format(tarsum)
+    return 'tarsum+sha256:{0}'.format(sha256_string(data))
 
 
 def compute_simple(fp, json_data):
