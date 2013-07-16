@@ -30,9 +30,6 @@ def compute_tarsum(fp, json_data):
     tar = tarfile.open(mode='r:*', fileobj=fp)
     hashes = []
     for member in tar:
-        f = tar.extractfile(member)
-        if not f:
-            continue
         header = ''
         for field in header_fields:
             value = getattr(member, aliases.get(field, field))
