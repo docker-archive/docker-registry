@@ -1,6 +1,5 @@
 
 import logging
-import hashlib
 import functools
 import simplejson as json
 from flask import request, Response, session
@@ -163,8 +162,6 @@ def store_checksum(image_id, checksum):
     checksum_parts = checksum.split(':')
     if len(checksum_parts) != 2:
         return 'Invalid checksum format'
-    if checksum_parts[0] not in hashlib.algorithms:
-        return 'Checksum algorithm not supported'
     # We store the checksum
     checksum_path = store.image_checksum_path(image_id)
     store.put_content(checksum_path, checksum)
