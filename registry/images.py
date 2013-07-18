@@ -61,6 +61,7 @@ def put_image_layer(image_id):
         except (IOError, checksums.TarError) as e:
             logger.debug('put_image_layer: Error when computing checksum '
                          '{0}'.format(e))
+        f.seek(0)
         store.stream_write(layer_path, f)
     try:
         checksum = store.get_content(store.image_checksum_path(image_id))
@@ -180,12 +181,15 @@ def put_image_json(image_id):
         if key not in data:
             return api_error('Missing key `{0}\' in JSON'.format(key))
     # Read the checksum
-    checksum = request.headers.get('x-docker-checksum', '')
+    checksum = request.headers.get('x-docker-checksum')
     if checksum:
         # Storing the checksum is optional at this stage
         err = store_checksum(image_id, checksum)
         if err:
             return api_error(err)
+    else:
+        # We cleanup any old checksum in case it's a retry after a fail
+        store.remove(store.image_checksum_path(image_id))
     if image_id != data['id']:
         return api_error('JSON data contains invalid id')
     if check_images_list(image_id) is False:

@@ -153,7 +153,10 @@ class LocalStorage(Storage):
         if os.path.isdir(path):
             shutil.rmtree(path)
             return
-        os.remove(path)
+        try:
+            os.remove(path)
+        except OSError:
+            pass
 
     def get_size(self, path):
         path = self._init_path(path)
