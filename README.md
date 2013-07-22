@@ -5,7 +5,7 @@ Create the configuration
 ------------------------
 
 ```
-$ cp config_sample.yml config.yml
+cp config_sample.yml config.yml
 ```
 
 Edit the configuration with your information.
@@ -16,9 +16,21 @@ variable "SETTINGS_FLAVOR". If there is no variable set, the default one is "dev
 Run the Registry
 ----------------
 
+Install the system requirements for building a Python library:
+
 ```
-$ pip install -r requirements.txt
-$ gunicorn --access-logfile - --log-level debug --debug -b 0.0.0.0:5000 -w 1 wsgi:application
+sudo apt-get install build-essential libpython-dev libevent-dev
+```
+
+Then install the Registry app:
+
+```
+pip install -r requirements.txt
+```
+
+And run it (for a dev environment):
+```
+gunicorn --access-logfile - --log-level debug --debug -k gevent -b 0.0.0.0:5000 -w 1 wsgi:application
 ```
 
 The recommended setting to run the Registry in a prod environment is gunicorn behind a nginx server which supports
