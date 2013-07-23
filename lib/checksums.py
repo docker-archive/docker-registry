@@ -68,3 +68,14 @@ def compute_tarsum(fp, json_data):
 def compute_simple(fp, json_data):
     data = json_data + '\n'
     return 'sha256:{0}'.format(sha256_file(fp, data))
+
+
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv) < 3:
+        print 'Usage: {0} json_file layer_file'.format(sys.argv[0])
+        sys.exit(1)
+    json_data = file(sys.argv[1]).read()
+    fp = open(sys.argv[2])
+    print compute_simple(fp, json_data)
+    print compute_tarsum(fp, json_data)
