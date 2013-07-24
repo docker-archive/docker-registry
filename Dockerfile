@@ -2,10 +2,10 @@ FROM ubuntu
 
 RUN sed 's/main$/main universe/' -i /etc/apt/sources.list && apt-get update
 RUN apt-get install -y git-core python-pip build-essential python-dev libevent1-dev -y
-RUN git clone https://github.com/dotcloud/docker-registry.git /docker-registry
+ADD . /docker-registry
 
 RUN cd /docker-registry && pip install -r requirements.txt
-RUN cp /docker-registry/config_sample.yml /docker-registry/config.yml
+RUN cp --no-clobber /docker-registry/config_sample.yml /docker-registry/config.yml
 
 EXPOSE 5000
 
