@@ -66,7 +66,7 @@ The file workflow.py is bit special since it's a functional test (not a
 unit test). It requires a server to be running in order to succeed.
 
 ```
-$ DOCKER_CREDS="user:password" python -m unittest test_workflow
+$ DOCKER_CREDS="user:password" python -m unittest workflow
 ```
 
 DOCKER_CREDS contains user credentials information to connect to the staging
