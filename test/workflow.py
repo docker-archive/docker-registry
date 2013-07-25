@@ -7,6 +7,7 @@ import requests
 import base
 import config
 import storage
+from checksums import compute_simple
 
 cfg = config.load()
 
@@ -100,16 +101,20 @@ class TestWorkflow(base.TestCase):
         return (namespace, repos)
 
     def fetch_image(self, image_id):
+        '''Return image json metadata, checksum and its blob'''
         resp = requests.get('{0}/v1/images/{1}/json'.format(
             self.registry_endpoint, image_id),
             cookies=self.cookies)
         self.assertEqual(resp.status_code, 200, resp.text)
         self.cookies = resp.cookies
+        json_data = resp.text
+        checksum = resp.headers['x-docker-checksum']
         resp = requests.get('{0}/v1/images/{1}/layer'.format(
             self.registry_endpoint, image_id),
             cookies=self.cookies)
         self.assertEqual(resp.status_code, 200, resp.text)
         self.cookies = resp.cookies
+        return (json_data, checksum, resp.text)
 
     def docker_pull(self, namespace, repos):
         # Test pull
@@ -137,8 +142,15 @@ class TestWorkflow(base.TestCase):
         ancestry = json.loads(resp.text)
         # We got the ancestry, let's fetch all the images there
         for image_id in ancestry:
-            self.fetch_image(image_id)
-        # FIXME: fetch and check the checksums
+            json_data, checksum, blob = self.fetch_image(image_id)
+            # check queried checksum and local computed checksum from the image
+            # are the same
+            tmpfile = StringIO()
+            tmpfile.write(blob)
+            tmpfile.seek(0)
+            computed_checksum = compute_simple(tmpfile,json_data)
+            tmpfile.close()
+            self.assertEqual(checksum, computed_checksum)
         # Remove image tags
         resp = requests.delete('{0}/v1/repositories/{1}/{2}/tags'.format(
             self.registry_endpoint, namespace, repos), cookies=self.cookies)
