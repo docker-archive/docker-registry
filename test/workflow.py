@@ -6,6 +6,7 @@ import hashlib
 import requests
 import base
 import config
+import storage
 
 cfg = config.load()
 
@@ -68,8 +69,10 @@ class TestWorkflow(base.TestCase):
 
     def docker_push(self):
         # Test Push
-        image_id = self.gen_random_string()
-        parent_id = self.gen_random_string()
+        self.image_id  = self.gen_random_string()
+        self.parent_id = self.gen_random_string()
+        image_id = self.image_id
+        parent_id = self.parent_id
         namespace = self.user_credentials[0]
         repos = self.gen_random_string()
         # Docker -> Index
@@ -136,6 +139,15 @@ class TestWorkflow(base.TestCase):
         for image_id in ancestry:
             self.fetch_image(image_id)
         # FIXME: fetch and check the checksums
+        # Remove image tags
+        resp = requests.delete('{0}/v1/repositories/{1}/{2}/tags'.format(
+            self.registry_endpoint, namespace, repos), cookies=self.cookies)
+        self.assertEqual(resp.status_code, 200, resp.text)
+        self.cookies = resp.cookies
+        # Remove image_id, then parent_id
+        store = storage.load()
+        store.remove(os.path.join(store.images, self.image_id))
+        store.remove(os.path.join(store.images, self.parent_id))
 
     def test_workflow(self):
         (namespace, repos) = self.docker_push()
