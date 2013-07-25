@@ -30,7 +30,7 @@ pip install -r requirements.txt
 
 And run it (for a dev environment):
 ```
-gunicorn --access-logfile - --log-level debug --debug -k gevent -b 0.0.0.0:5000 -w 1 wsgi:application
+gunicorn --access-logfile - --debug -k gevent -b 0.0.0.0:5000 -w 1 wsgi:application
 ```
 
 The recommended setting to run the Registry in a prod environment is gunicorn behind a nginx server which supports
