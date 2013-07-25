@@ -39,7 +39,7 @@ chunked transfer-encoding (nginx >= 1.3.9).
 You could use for instance supervisord to spawn the Registry using this command:
 
 ```
-gunicorn -k gevent --max-requests 100 --graceful-timeout 120 -t 120 -b localhost:5000 -w 8 wsgi:application
+gunicorn -k gevent --max-requests 100 --graceful-timeout 3600 -t 3600 -b localhost:5000 -w 8 wsgi:application
 ```
 
 The nginx configuration will look like:
