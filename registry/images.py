@@ -82,7 +82,7 @@ def put_image_layer(image_id):
 @app.route('/v1/images/<image_id>/checksum', methods=['PUT'])
 @requires_auth
 def put_image_checksum(image_id):
-    checksum = request.headers.get('x-docker-checksum', '')
+    checksum = request.headers.get('X-Docker-Checksum')
     if not checksum:
         return api_error('Missing Image\'s checksum')
     if not session.get('checksum'):
@@ -181,7 +181,7 @@ def put_image_json(image_id):
         if key not in data:
             return api_error('Missing key `{0}\' in JSON'.format(key))
     # Read the checksum
-    checksum = request.headers.get('x-docker-checksum')
+    checksum = request.headers.get('X-Docker-Checksum')
     if checksum:
         # Storing the checksum is optional at this stage
         err = store_checksum(image_id, checksum)
