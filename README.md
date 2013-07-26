@@ -19,7 +19,7 @@ Run the Registry
 Install the system requirements for building a Python library:
 
 ```
-sudo apt-get install build-essential libpython-dev libevent-dev
+sudo apt-get install build-essential python-dev libevent-dev
 ```
 
 Then install the Registry app:
