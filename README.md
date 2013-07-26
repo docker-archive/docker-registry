@@ -25,7 +25,7 @@ sudo apt-get install build-essential python-dev libevent-dev
 Then install the Registry app:
 
 ```
-pip install -r requirements.txt
+sudo pip install -r requirements.txt
 ```
 
 And run it (for a dev environment):
