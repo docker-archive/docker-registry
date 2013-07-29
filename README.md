@@ -19,7 +19,7 @@ Run the Registry
 Install the system requirements for building a Python library:
 
 ```
-sudo apt-get install build-essential python-dev libevent-dev
+sudo apt-get install build-essential python-dev libevent-dev python-pip
 ```
 
 Then install the Registry app:
@@ -29,6 +29,7 @@ sudo pip install -r requirements.txt
 ```
 
 And run it (for a dev environment):
+
 ```
 gunicorn --access-logfile - --debug -k gevent -b 0.0.0.0:5000 -w 1 wsgi:application
 ```
