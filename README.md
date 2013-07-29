@@ -18,17 +18,39 @@ Run the Registry
 
 Install the system requirements for building a Python library:
 
+On Ubuntu install:
+
 ```
-sudo apt-get install build-essential python-dev libevent-dev
+sudo apt-get install build-essential python-dev libevent-dev python-pip
 ```
 
+On Red Hat-based systems:
+
+```
+sudo yum install python-devel libevent-devel python-pip
+```
+
+NOTE: On RHEL and CentOS you will need the
+[EPEL](http://fedoraproject.org/wiki/EPEL) repostitories enabled. Fedora
+should not require the additional repositories.
+
 Then install the Registry app:
+
+On Ubuntu:
 
 ```
 sudo pip install -r requirements.txt
 ```
 
-And run it (for a dev environment):
+On Red Hat-based systems you will need to use the `python-pip`
+command:
+
+```
+sudo python-pip install -r requirements.txt
+```
+
+And then to run it (for a dev environment):
+
 ```
 gunicorn --access-logfile - --debug -k gevent -b 0.0.0.0:5000 -w 1 wsgi:application
 ```
