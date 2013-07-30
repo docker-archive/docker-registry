@@ -8,6 +8,7 @@
 .coverage
 htmlcov
 config.yml
+newrelic.ini
 
 # Packages
 *.egg
