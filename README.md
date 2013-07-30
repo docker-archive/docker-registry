@@ -18,17 +18,39 @@ Run the Registry
 
 Install the system requirements for building a Python library:
 
+On Ubuntu install:
+
 ```
-sudo apt-get install build-essential libpython-dev libevent-dev
+sudo apt-get install build-essential python-dev libevent-dev python-pip
 ```
+
+On Red Hat-based systems:
+
+```
+sudo yum install python-devel libevent-devel python-pip
+```
+
+NOTE: On RHEL and CentOS you will need the
+[EPEL](http://fedoraproject.org/wiki/EPEL) repostitories enabled. Fedora
+should not require the additional repositories.
 
 Then install the Registry app:
 
+On Ubuntu:
+
 ```
-pip install -r requirements.txt
+sudo pip install -r requirements.txt
 ```
 
-And run it (for a dev environment):
+On Red Hat-based systems you will need to use the `python-pip`
+command:
+
+```
+sudo python-pip install -r requirements.txt
+```
+
+And then to run it (for a dev environment):
+
 ```
 gunicorn --access-logfile - --debug -k gevent -b 0.0.0.0:5000 -w 1 wsgi:application
 ```
@@ -66,7 +88,7 @@ The file workflow.py is bit special since it's a functional test (not a
 unit test). It requires a server to be running in order to succeed.
 
 ```
-$ DOCKER_CREDS="user:password" python -m unittest test_workflow
+$ DOCKER_CREDS="user:password" python -m unittest workflow
 ```
 
 DOCKER_CREDS contains user credentials information to connect to the staging
