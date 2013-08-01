@@ -86,7 +86,7 @@ location / {
 And you might want to add [Basic auth on Nginx](http://wiki.nginx.org/HttpAuthBasicModule) to protect it
 (if you're not using it on your local network):
 
-NOTE: The current registry runs on the dotCloud platform:
+NOTE: The central Registry runs on the dotCloud platform:
 
 ```
 cd dotcloud-registry/
