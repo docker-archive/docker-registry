@@ -16,15 +16,32 @@ variable "SETTINGS_FLAVOR". If there is no variable set, the default one is "dev
 Run the Registry
 ----------------
 
-Install the system requirements for building a Python library:
+### The fast way:
 
-On Ubuntu install:
+```
+docker run samalba/registry
+```
+
+NOTE: The container will try to allocate the port 5000 by default, if the port
+is already taken, find out which one has been taken by running "docker ps"
+
+### The old way:
+
+#### On Ubuntu
+
+Install the system requirements for building a Python library:
 
 ```
 sudo apt-get install build-essential python-dev libevent-dev python-pip
 ```
 
-On Red Hat-based systems:
+Then install the Registry app:
+
+```
+sudo pip install -r requirements.txt
+```
+
+#### On Red Hat-based systems:
 
 ```
 sudo yum install python-devel libevent-devel python-pip
@@ -36,24 +53,17 @@ should not require the additional repositories.
 
 Then install the Registry app:
 
-On Ubuntu:
-
-```
-sudo pip install -r requirements.txt
-```
-
-On Red Hat-based systems you will need to use the `python-pip`
-command:
-
 ```
 sudo python-pip install -r requirements.txt
 ```
 
-And then to run it (for a dev environment):
+#### Run it
 
 ```
 gunicorn --access-logfile - --debug -k gevent -b 0.0.0.0:5000 -w 1 wsgi:application
 ```
+
+### What about a Production environment?
 
 The recommended setting to run the Registry in a prod environment is gunicorn behind a nginx server which supports
 chunked transfer-encoding (nginx >= 1.3.9).
@@ -75,6 +85,14 @@ location / {
 
 And you might want to add [Basic auth on Nginx](http://wiki.nginx.org/HttpAuthBasicModule) to protect it
 (if you're not using it on your local network):
+
+NOTE: The current registry runs on the dotCloud platform:
+
+```
+cd dotcloud-registry/
+dotcloud create myregistry
+dotcloud push
+```
 
 Run tests
 ---------
