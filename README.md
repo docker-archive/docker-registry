@@ -22,7 +22,7 @@ environment variable.
 $ export SETTINGS_FLAVOR=prod
 ```
 
-The `common` flavor overrides and is inherited by all over flavors. If
+The `common` flavor overrides and is inherited by all other flavors. If
 you don't specify a flavor when running the Docker Registry the `dev`
 flavor will be used.
 
