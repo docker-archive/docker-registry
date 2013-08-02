@@ -32,7 +32,7 @@ Run the Registry
 ### The fast way:
 
 ```
-docker run samalba/registry
+docker run samalba/docker-registry
 ```
 
 NOTE: The container will try to allocate the port 5000 by default, if the port
