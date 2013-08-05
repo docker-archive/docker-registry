@@ -4,14 +4,27 @@ Docker-Registry
 Create the configuration
 ------------------------
 
+The Docker Registry comes with a sample configuration file,
+`config_sample.yml`. Copy this to `config.yml` to provide a basic
+configuration:
+ 
 ```
 cp config_sample.yml config.yml
 ```
 
-Edit the configuration with your information.
+Inside the `config.yml` file we can see a selection of configuration
+headings called `flavors`: `common`, `dev`, `prod`, etc.
 
-Each key in the configuration (except "common") is flavor. You can specify the flavor by setting the environment
-variable "SETTINGS_FLAVOR". If there is no variable set, the default one is "dev".
+You can specify what flavor to run with the `SETTINGS_FLAVOR`
+environment variable.
+
+```
+$ export SETTINGS_FLAVOR=prod
+```
+
+The `common` flavor overrides and is inherited by all other flavors. If
+you don't specify a flavor when running the Docker Registry the `dev`
+flavor will be used.
 
 Run the Registry
 ----------------
@@ -19,7 +32,7 @@ Run the Registry
 ### The fast way:
 
 ```
-docker run samalba/registry
+docker run samalba/docker-registry
 ```
 
 NOTE: The container will try to allocate the port 5000 by default, if the port
@@ -86,7 +99,7 @@ location / {
 And you might want to add [Basic auth on Nginx](http://wiki.nginx.org/HttpAuthBasicModule) to protect it
 (if you're not using it on your local network):
 
-NOTE: The current registry runs on the dotCloud platform:
+NOTE: The central Registry runs on the dotCloud platform:
 
 ```
 cd dotcloud-registry/
