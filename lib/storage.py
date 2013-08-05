@@ -289,10 +289,13 @@ def store_stream(stream):
     """ Stores the entire stream to a temporary file """
     tmpf = tempfile.TemporaryFile()
     while True:
-        buf = stream.read(4096)
-        if not buf:
+        try:
+            buf = stream.read(4096)
+            if not buf:
+                break
+            tmpf.write(buf)
+        except IOError:
             break
-        tmpf.write(buf)
     tmpf.seek(0)
     yield tmpf
     tmpf.close()
