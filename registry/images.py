@@ -1,4 +1,6 @@
 
+import time
+import datetime
 import logging
 import functools
 import simplejson as json
@@ -17,20 +19,41 @@ logger = logging.getLogger(__name__)
 def require_completion(f):
     """ This make sure that the image push correctly finished """
     @functools.wraps(f)
-    def wrapper(image_id):
-        if store.exists(store.image_mark_path(image_id)):
+    def wrapper(*args, **kwargs):
+        if store.exists(store.image_mark_path(kwargs['image_id'])):
             return api_error('Image is being uploaded, retry later')
-        return f(image_id)
+        return f(*args, **kwargs)
+    return wrapper
+
+
+def set_cache_headers(f):
+    """ Returns HTTP headers suitable for caching """
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        # Set TTL to 1 year by default
+        ttl = 31536000
+        expires = datetime.datetime.fromtimestamp(int(time.time()) + ttl)
+        expires = expires.strftime('%a, %d %b %Y %H:%M:%S GMT')
+        headers = {
+            'Cache-Control': 'public, max-age={0}'.format(ttl),
+            'Expires': expires,
+            'Last-Modified': 'Thu, 01 Jan 1970 00:00:00 GMT',
+        }
+        if 'If-Modified-Since' in request.headers:
+            return Response(status=304, headers=headers)
+        kwargs['headers'] = headers
+        return f(*args, **kwargs)
     return wrapper
 
 
 @app.route('/v1/images/<image_id>/layer', methods=['GET'])
 @requires_auth
 @require_completion
-def get_image_layer(image_id):
+@set_cache_headers
+def get_image_layer(image_id, headers):
     try:
         return Response(store.stream_read(store.image_layer_path(
-            image_id)))
+            image_id)), headers=headers)
     except IOError:
         return api_error('Image not found', 404)
 
@@ -106,8 +129,8 @@ def put_image_checksum(image_id):
 @app.route('/v1/images/<image_id>/json', methods=['GET'])
 @requires_auth
 @require_completion
-def get_image_json(image_id):
-    headers = {}
+@set_cache_headers
+def get_image_json(image_id, headers):
     try:
         data = store.get_content(store.image_json_path(image_id))
     except IOError:
@@ -126,12 +149,13 @@ def get_image_json(image_id):
 @app.route('/v1/images/<image_id>/ancestry', methods=['GET'])
 @requires_auth
 @require_completion
-def get_image_ancestry(image_id):
+@set_cache_headers
+def get_image_ancestry(image_id, headers):
     try:
         data = store.get_content(store.image_ancestry_path(image_id))
     except IOError:
         return api_error('Image not found', 404)
-    return response(json.loads(data))
+    return response(json.loads(data), headers=headers)
 
 
 def generate_ancestry(image_id, parent_id=None):
