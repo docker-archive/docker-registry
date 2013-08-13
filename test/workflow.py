@@ -32,6 +32,11 @@ class TestWorkflow(base.TestCase):
             yield buf
         io.close()
 
+    def update_cookies(self, response):
+        cookies = response.cookies
+        if cookies:
+            self.cookies = cookies
+
     def upload_image(self, image_id, parent_id, token):
         layer = self.gen_random_string(7 * 1024 * 1024)
         json_obj = {
@@ -50,14 +55,14 @@ class TestWorkflow(base.TestCase):
                      'X-Docker-Checksum': layer_checksum},
             cookies=self.cookies)
         self.assertEqual(resp.status_code, 200, resp.text)
-        self.cookies = resp.cookies
+        self.update_cookies(resp)
         resp = requests.put('{0}/v1/images/{1}/layer'.format(
             self.registry_endpoint, image_id),
             data=self.generate_chunk(layer),
             headers={'Authorization': 'Token ' + token},
             cookies=self.cookies)
         self.assertEqual(resp.status_code, 200, resp.text)
-        self.cookies = resp.cookies
+        self.update_cookies(resp)
         return {'id': image_id, 'checksum': layer_checksum}
 
     def update_tag(self, namespace, repos, image_id, tag_name):
@@ -66,7 +71,7 @@ class TestWorkflow(base.TestCase):
             data=json.dumps(image_id),
             cookies=self.cookies)
         self.assertEqual(resp.status_code, 200, resp.text)
-        self.cookies = resp.cookies
+        self.update_cookies(resp)
 
     def docker_push(self):
         # Test Push
@@ -106,14 +111,14 @@ class TestWorkflow(base.TestCase):
             self.registry_endpoint, image_id),
             cookies=self.cookies)
         self.assertEqual(resp.status_code, 200, resp.text)
-        self.cookies = resp.cookies
+        self.update_cookies(resp)
         json_data = resp.text
         checksum = resp.headers['x-docker-checksum']
         resp = requests.get('{0}/v1/images/{1}/layer'.format(
             self.registry_endpoint, image_id),
             cookies=self.cookies)
         self.assertEqual(resp.status_code, 200, resp.text)
-        self.cookies = resp.cookies
+        self.update_cookies(resp)
         return (json_data, checksum, resp.text)
 
     def docker_pull(self, namespace, repos):
@@ -137,7 +142,7 @@ class TestWorkflow(base.TestCase):
         resp = requests.get('{0}/v1/images/{1}/ancestry'.format(
             self.registry_endpoint, image_id),
             cookies=self.cookies)
-        self.cookies = resp.cookies
+        self.update_cookies(resp)
         self.assertEqual(resp.status_code, 200, resp.text)
         ancestry = json.loads(resp.text)
         # We got the ancestry, let's fetch all the images there
@@ -155,7 +160,7 @@ class TestWorkflow(base.TestCase):
         resp = requests.delete('{0}/v1/repositories/{1}/{2}/tags'.format(
             self.registry_endpoint, namespace, repos), cookies=self.cookies)
         self.assertEqual(resp.status_code, 200, resp.text)
-        self.cookies = resp.cookies
+        self.update_cookies(resp)
         # Remove image_id, then parent_id
         store = storage.load()
         store.remove(os.path.join(store.images, self.image_id))

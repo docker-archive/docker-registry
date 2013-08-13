@@ -45,7 +45,7 @@ def check_session():
         session.clear()
         return False
     # Session is valid
-    return session['auth'] is True
+    return session.get('auth') is True
 
 
 def validate_token(auth):
