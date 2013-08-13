@@ -87,8 +87,10 @@ def validate_token(auth):
 
 
 def get_remote_ip():
-    if 'x-real-ip' in request.headers:
-        return request.headers['x-real-ip']
+    if 'X-Forwarded-For' in request.headers:
+        return request.headers.getlist('X-Forwarded-For')[0]
+    if 'X-Real-Ip' in request.headers:
+        return request.headers.getlist('X-Real-Ip')[0]
     return request.remote_addr
 
 
