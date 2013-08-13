@@ -38,6 +38,8 @@ def response(data=None, code=200, headers=None, raw=False):
 
 
 def check_session():
+    #FIXME(sam): use config.permanent_session_lifetime and session.permanent
+    # instead. session.clear() instead of invalidate_session()
     def invalidate_session():
         session['timestamp'] = 0
         return False

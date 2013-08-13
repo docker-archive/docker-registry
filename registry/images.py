@@ -42,6 +42,8 @@ def set_cache_headers(f):
         if 'If-Modified-Since' in request.headers:
             return Response(status=304, headers=headers)
         kwargs['headers'] = headers
+        # Prevent the Cookie to be sent when the object is cacheable
+        session.modified = False
         return f(*args, **kwargs)
     return wrapper
 
