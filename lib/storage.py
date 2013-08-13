@@ -23,7 +23,8 @@ class Storage(object):
     # the code which uses Storage
     repositories = 'repositories'
     images = 'images'
-    buffer_size = 8192
+    # Set the IO buffer to 64kB
+    buffer_size = 64 * 1024
 
     def images_list_path(self, namespace, repository):
         return '{0}/{1}/{2}/_images_list'.format(self.repositories,
