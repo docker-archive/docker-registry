@@ -75,7 +75,7 @@ class TestWorkflow(base.TestCase):
 
     def docker_push(self):
         # Test Push
-        self.image_id  = self.gen_random_string()
+        self.image_id = self.gen_random_string()
         self.parent_id = self.gen_random_string()
         image_id = self.image_id
         parent_id = self.parent_id
@@ -153,7 +153,7 @@ class TestWorkflow(base.TestCase):
             tmpfile = StringIO()
             tmpfile.write(blob)
             tmpfile.seek(0)
-            computed_checksum = compute_simple(tmpfile,json_data)
+            computed_checksum = compute_simple(tmpfile, json_data)
             tmpfile.close()
             self.assertEqual(checksum, computed_checksum)
         # Remove image tags
