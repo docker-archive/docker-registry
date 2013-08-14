@@ -81,11 +81,15 @@ gunicorn --access-logfile - --debug -k gevent -b 0.0.0.0:5000 -w 1 wsgi:applicat
 The recommended setting to run the Registry in a prod environment is gunicorn behind a nginx server which supports
 chunked transfer-encoding (nginx >= 1.3.9).
 
-You could use for instance supervisord to spawn the Registry using this command:
+You could use for instance supervisord to spawn the registry with 8 workers using this command:
 
 ```
 gunicorn -k gevent --max-requests 100 --graceful-timeout 3600 -t 3600 -b localhost:5000 -w 8 wsgi:application
 ```
+
+Note that when using multiple workers, the secret_key for the Flask session must be set explicitly
+in config.yml. Otherwise each worker will use its own random secret key, leading to unpredictable
+behavior.
 
 The nginx configuration will look like:
 
