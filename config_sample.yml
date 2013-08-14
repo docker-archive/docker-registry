@@ -18,6 +18,8 @@ prod:
     # to the main Index (https://index.docker.io). Enabling standalone (default)
     # also disables authentication
     standalone: False
+    # The secret key must be set explicitly when using multiple workers.
+    secret_key: REPLACEME
     storage: s3
     storage_path: /prod
     # Enabling this options makes the Registry send an email on each code Exception
