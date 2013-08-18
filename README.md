@@ -76,6 +76,11 @@ sudo python-pip install -r requirements.txt
 gunicorn --access-logfile - --debug -k gevent -b 0.0.0.0:5000 -w 1 wsgi:application
 ```
 
+### How do I setup user accounts?
+
+The first time someone tries to push to your registry, it will prompt
+them for a username, password, and email.
+
 ### What about a Production environment?
 
 The recommended setting to run the Registry in a prod environment is gunicorn behind a nginx server which supports
