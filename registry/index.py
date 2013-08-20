@@ -1,4 +1,3 @@
-
 import simplejson as json
 from flask import request
 
@@ -78,7 +77,7 @@ def put_repository(namespace, repository, images=False):
         data = json.loads(request.data)
     except json.JSONDecodeError:
         return api_error('Error Decoding JSON', 400)
-    if not data or not isinstance(data, list):
+    if not isinstance(data, list):
         return api_error('Invalid data')
     update_index_images(namespace, repository, request.data)
     headers = generate_headers(namespace, repository, 'write')
