@@ -86,7 +86,7 @@ class GlanceStorageLayers(Storage):
         filters = {
             'properties': {'id': image_id}
         }
-        images = [i for i in glance.images.list(filters)]
+        images = [i for i in glance.images.list(filters=filters)]
         if images:
             return images[0]
 
