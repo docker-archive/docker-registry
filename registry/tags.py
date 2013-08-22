@@ -1,6 +1,6 @@
 import simplejson as json
 import logging
-from flask import request
+from flask import request, current_app
 
 import storage
 from toolkit import response, api_error, requires_auth, parse_repository_name
@@ -63,8 +63,9 @@ def put_tag(namespace, repository, tag):
     if not store.exists(store.image_json_path(data)):
         return api_error('Image not found', 404)
     store.put_content(store.tag_path(namespace, repository, tag), data)
-    tag_created.send(self, namespace=namespace, repository=repository, tag=tag,
-                     value=data)
+    sender = current_app._get_current_object()
+    tag_created.send(sender, namespace=namespace, repository=repository,
+                     tag=tag, value=data)
     return response()
 
 
@@ -77,7 +78,8 @@ def delete_tag(namespace, repository, tag):
                  namespace, repository, tag))
     try:
         store.remove(store.tag_path(namespace, repository, tag))
-        tag_deleted.send(self, namespace=namespace, repository=repository,
+        sender = current_app._get_current_object()
+        tag_deleted.send(sender, namespace=namespace, repository=repository,
                          tag=tag)
     except OSError:
         return api_error('Tag not found', 404)

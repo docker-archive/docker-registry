@@ -9,14 +9,15 @@ from .s3 import S3Storage
 from .local import LocalStorage
 
 
+TAGS = 0
+LAYERS = 1
+
+
 class GlanceStorage(Storage):
 
     """ This module stores the image layers into OpenStack Glance.
         However tags are still stored on other filesystem-like stores.
     """
-
-    TAGS = 0
-    LAYERS = 1
 
     def __init__(self, config):
         self._config = config
@@ -62,6 +63,7 @@ class GlanceStorageLayers(Storage):
 
     def _create_glance_client(self):
         #FIXME(sam) the token is taken from the environ for testing only!
+        endpoint = self._config.glance_endpoint
         return glanceclient.Client('1', endpoint=endpoint,
                                    token=os.environ['OS_AUTH_TOKEN'])
 
@@ -104,7 +106,8 @@ class GlanceStorageLayers(Storage):
         glance = self._create_glance_client()
         image = self._find_image_by_id(glance, value)
         if not image:
-            return # No corresponding image, ignoring
+            # No corresponding image, ignoring
+            return
         image_name = '{0}:{1}'.format(repository, tag)
         if namespace != 'library':
             image_name = '{0}/{1}'.format(namespace, image_name)
@@ -117,6 +120,7 @@ class GlanceStorageLayers(Storage):
         image_name = '{0}:{1}'.format(repository, tag)
         if namespace != 'library':
             image_name = '{0}/{1}'.format(namespace, image_name)
+        glance = self._create_glance_client()
         self._clear_images_name(glance, image_name)
 
     def get_content(self, path):
