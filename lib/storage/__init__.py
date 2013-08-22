@@ -23,6 +23,7 @@ class Storage(object):
     # Set the IO buffer to 64kB
     buffer_size = 64 * 1024
 
+    #FIXME(samalba): Move all path resolver in each module (out of the base)
     def images_list_path(self, namespace, repository):
         return '{0}/{1}/{2}/_images_list'.format(self.repositories,
                                                  namespace,
@@ -102,6 +103,7 @@ def store_stream(stream):
 
 from s3 import S3Storage
 from local import LocalStorage
+from glance import GlanceStorage
 
 
 _storage = {}
@@ -119,6 +121,8 @@ def load(kind=None):
         store = S3Storage(cfg)
     elif kind == 'local':
         store = LocalStorage(cfg)
+    elif kind == 'glance':
+        store = GlanceStorage(cfg)
     else:
         raise ValueError('Not supported storage \'{0}\''.format(kind))
     _storage[kind] = store

@@ -4,6 +4,7 @@ common:
     s3_access_key: REPLACEME
     s3_secret_key: REPLACEME
     s3_bucket: REPLACEME
+    glance_auth_url: 'http://dev:5000/v2.0/'
 
 # This is the default configuration when no flavor is specified
 dev:
@@ -30,3 +31,9 @@ prod:
 test:
     storage: local
     storage_path: /tmp/test
+
+
+glance:
+    storage: glance
+    storage_alternate: local
+    glance_endpoint: 'http://localhost:9292/'
