@@ -3,6 +3,7 @@ import os
 
 import glanceclient
 
+from signals import tag_created, tag_deleted
 from . import Storage
 from .s3 import S3Storage
 from .local import LocalStorage
@@ -58,7 +59,11 @@ class GlanceStorageLayers(Storage):
 
     def __init__(self, config):
         self._config = config
+
+    def _create_glance_client(self):
         #FIXME(sam) the token is taken from the environ for testing only!
+        return glanceclient.Client('1', endpoint=endpoint,
+                                   token=os.environ['OS_AUTH_TOKEN'])
 
     def _init_path(self, path, create=True):
         """ This resolve a standard Docker Registry path
@@ -68,11 +73,10 @@ class GlanceStorageLayers(Storage):
         parts = path.split('/')
         if len(parts) != 3 or parts[0] != self.images:
             raise ValueError('Invalid path: {0}'.format(path))
-        glance = glanceclient.Client('1', endpoint=endpoint,
-                                     token=os.environ['OS_AUTH_TOKEN'])
         image_id = parts[1]
         filename = parts[2]
-        image = self._find_image_by_id(image_id)
+        glance = self._create_glance_client()
+        image = self._find_image_by_id(glance, image_id)
         if not image and create is True:
             #FIXME(sam): set diskformat and container format
             image = glance.images.create()
@@ -82,13 +86,38 @@ class GlanceStorageLayers(Storage):
         return image, propname
 
     def _find_image_by_id(self, glance, image_id):
-        # TODO(samalba): add a filter for docker image format
+        #FIXME(samalba): add a filter for docker image format
         filters = {
             'properties': {'id': image_id}
         }
         images = [i for i in glance.images.list(filters=filters)]
         if images:
             return images[0]
+
+    def _clear_images_name(self, glance, image_name):
+        images = glance.images.list(filters={'name': image_name})
+        for image in images:
+            image.update(name=None)
+
+    @tag_created.connect
+    def _handler_tag_created(self, sender, namespace, repository, tag, value):
+        glance = self._create_glance_client()
+        image = self._find_image_by_id(glance, value)
+        if not image:
+            return # No corresponding image, ignoring
+        image_name = '{0}:{1}'.format(repository, tag)
+        if namespace != 'library':
+            image_name = '{0}/{1}'.format(namespace, image_name)
+        # Clear any previous image tagged with this name
+        self._clear_images_name(glance, image_name)
+        image.update(name=image_name)
+
+    @tag_deleted.connect
+    def _handler_tag_deleted(self, sender, namespace, repository, tag):
+        image_name = '{0}:{1}'.format(repository, tag)
+        if namespace != 'library':
+            image_name = '{0}/{1}'.format(namespace, image_name)
+        self._clear_images_name(glance, image_name)
 
     def get_content(self, path):
         (image, propname) = self._init_path(path, False)
