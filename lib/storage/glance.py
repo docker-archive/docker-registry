@@ -15,8 +15,9 @@ LAYERS = 1
 
 class GlanceStorage(Storage):
 
-    """ This module stores the image layers into OpenStack Glance.
-        However tags are still stored on other filesystem-like stores.
+    """ This class is a dispatcher, it forwards methods accessing repositories
+        to the alternate storage defined in the config and it forwards methods
+        accessing images to the GlanceStorageLayers class below.
     """
 
     def __init__(self, config):
@@ -30,7 +31,7 @@ class GlanceStorage(Storage):
         else:
             raise ValueError('Not supported storage \'{0}\''.format(kind))
 
-    def _find_path_type(self, *args, **kwargs):
+    def _resolve_class_path(self, method_name, *args, **kwargs):
         if 'path' in kwargs:
             path = kwargs['path']
         elif len(args > 0) and isinstance(args[0], basestring):
@@ -38,25 +39,34 @@ class GlanceStorage(Storage):
         else:
             return
         if path.startswith(self.images):
-            return LAYERS
-        if path.startswith(self.repositories):
-            return TAGS
+            obj = self._storage_layers
+        elif path.startswith(self.repositories):
+            obj = self._storage_tags
+        else:
+            return
+        if not hasattr(obj, method_name):
+            return
+        return getattr(obj, method_name)
 
     def __getattr__(self, name):
         def dispatcher(*args, **kwargs):
-            kind = self._find_path_type(*args, **kwargs)
-            if kind == TAGS:
-                return self._storage_tags(*args, **kwargs)
-            if kind == LAYERS:
-                return self._storage_layers(*args, **kwargs)
-            raise ValueError('Cannot dispath method '
-                             '"{0}" args: {1} {2}'.format(name,
-                                                          *args,
-                                                          **kwargs))
+            attr = self._resolve_class_path(name, *args, **kwargs)
+            if not attr:
+                raise ValueError('Cannot dispath method '
+                                 '"{0}" args: {1} {2}'.format(name,
+                                                              *args,
+                                                              **kwargs))
+            if callable(attr):
+                return attr(*args, **kwargs)
+            return attr
         return dispatcher
 
 
 class GlanceStorageLayers(Storage):
+
+    """ This class stores the image layers into OpenStack Glance.
+        However tags are still stored on other filesystem-like stores.
+    """
 
     def __init__(self, config):
         self._config = config
