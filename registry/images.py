@@ -203,9 +203,8 @@ def put_image_json(image_id):
         pass
     if not data or not isinstance(data, dict):
         return api_error('Invalid JSON')
-    for key in ['id']:
-        if key not in data:
-            return api_error('Missing key `{0}\' in JSON'.format(key))
+    if 'id' not in data:
+        return api_error('Missing key `id\' in JSON')
     # Read the checksum
     checksum = request.headers.get('X-Docker-Checksum')
     if checksum:

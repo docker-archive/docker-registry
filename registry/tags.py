@@ -1,9 +1,10 @@
 import simplejson as json
 import logging
-from flask import request
+from flask import request, current_app
 
 import storage
 from toolkit import response, api_error, requires_auth, parse_repository_name
+from signals import tag_created, tag_deleted
 from .app import app
 
 store = storage.load()
@@ -62,6 +63,9 @@ def put_tag(namespace, repository, tag):
     if not store.exists(store.image_json_path(data)):
         return api_error('Image not found', 404)
     store.put_content(store.tag_path(namespace, repository, tag), data)
+    sender = current_app._get_current_object()
+    tag_created.send(sender, namespace=namespace, repository=repository,
+                     tag=tag, value=data)
     return response()
 
 
@@ -74,6 +78,9 @@ def delete_tag(namespace, repository, tag):
                  namespace, repository, tag))
     try:
         store.remove(store.tag_path(namespace, repository, tag))
+        sender = current_app._get_current_object()
+        tag_deleted.send(sender, namespace=namespace, repository=repository,
+                         tag=tag)
     except OSError:
         return api_error('Tag not found', 404)
     return response()
@@ -88,6 +95,7 @@ def delete_repository(namespace, repository):
                  namespace, repository))
     try:
         store.remove(store.tag_path(namespace, repository))
+        #TODO(samalba): Trigger tags_deleted signals
     except OSError:
         return api_error('Repository not found', 404)
     return response()

@@ -30,3 +30,12 @@ prod:
 test:
     storage: local
     storage_path: /tmp/test
+
+# This flavor stores the images in Glance (to integrate with openstack)
+# See also: https://github.com/dotcloud/openstack-docker
+openstack:
+    storage: glance
+    storage_alternate: local
+    storage_path: /tmp/registry
+    glance_endpoint: 'http://localhost:9292/'
+    loglevel: debug
