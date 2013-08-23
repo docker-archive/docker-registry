@@ -13,7 +13,7 @@ TAGS = 0
 LAYERS = 1
 
 
-class GlanceStorage(Storage):
+class GlanceStorage(object):
 
     """ This class is a dispatcher, it forwards methods accessing repositories
         to the alternate storage defined in the config and it forwards methods
@@ -24,6 +24,7 @@ class GlanceStorage(Storage):
         self._config = config
         self._storage_layers = GlanceStorageLayers(config)
         kind = config.get('storage_alternate', 'local')
+        self._storage_base = Storage()
         if kind == 's3':
             self._storage_tags = S3Storage(config)
         elif kind == 'local':
@@ -32,18 +33,17 @@ class GlanceStorage(Storage):
             raise ValueError('Not supported storage \'{0}\''.format(kind))
 
     def _resolve_class_path(self, method_name, *args, **kwargs):
+        path = ''
         if 'path' in kwargs:
             path = kwargs['path']
-        elif len(args > 0) and isinstance(args[0], basestring):
+        elif len(args) > 0 and isinstance(args[0], basestring):
             path = args[0]
-        else:
-            return
-        if path.startswith(self.images):
+        if path.startswith(Storage.images):
             obj = self._storage_layers
-        elif path.startswith(self.repositories):
+        elif path.startswith(Storage.repositories):
             obj = self._storage_tags
         else:
-            return
+            obj = self._storage_base
         if not hasattr(obj, method_name):
             return
         return getattr(obj, method_name)
@@ -53,9 +53,9 @@ class GlanceStorage(Storage):
             attr = self._resolve_class_path(name, *args, **kwargs)
             if not attr:
                 raise ValueError('Cannot dispath method '
-                                 '"{0}" args: {1} {2}'.format(name,
-                                                              *args,
-                                                              **kwargs))
+                                 '"{0}" args: {1}, {2}'.format(name,
+                                                               args,
+                                                               kwargs))
             if callable(attr):
                 return attr(*args, **kwargs)
             return attr
@@ -68,8 +68,15 @@ class GlanceStorageLayers(Storage):
         However tags are still stored on other filesystem-like stores.
     """
 
+    #FIXME(sam): set correct diskformat and container format
+    disk_format = 'raw'
+    container_format = 'bare'
+
     def __init__(self, config):
         self._config = config
+        # Hooks the tag changes
+        tag_created.connect(self._handler_tag_created)
+        tag_deleted.connect(self._handler_tag_deleted)
 
     def _create_glance_client(self):
         #FIXME(sam) the token is taken from the environ for testing only!
@@ -90,16 +97,19 @@ class GlanceStorageLayers(Storage):
         glance = self._create_glance_client()
         image = self._find_image_by_id(glance, image_id)
         if not image and create is True:
-            #FIXME(sam): set diskformat and container format
-            image = glance.images.create()
-        propname = 'meta-{0}'.format(filename)
+            image = glance.images.create(
+                disk_format=self.disk_format,
+                container_format=self.container_format,
+                properties={'id': image_id})
+        propname = 'meta_{0}'.format(filename)
         if filename == 'layer':
             propname = None
         return image, propname
 
     def _find_image_by_id(self, glance, image_id):
-        #FIXME(samalba): add a filter for docker image format
         filters = {
+            'disk_format': self.disk_format,
+            'container_format': self.container_format,
             'properties': {'id': image_id}
         }
         images = [i for i in glance.images.list(filters=filters)]
@@ -109,9 +119,8 @@ class GlanceStorageLayers(Storage):
     def _clear_images_name(self, glance, image_name):
         images = glance.images.list(filters={'name': image_name})
         for image in images:
-            image.update(name=None)
+            image.update(name=None, purge_props=False)
 
-    @tag_created.connect
     def _handler_tag_created(self, sender, namespace, repository, tag, value):
         glance = self._create_glance_client()
         image = self._find_image_by_id(glance, value)
@@ -123,9 +132,8 @@ class GlanceStorageLayers(Storage):
             image_name = '{0}/{1}'.format(namespace, image_name)
         # Clear any previous image tagged with this name
         self._clear_images_name(glance, image_name)
-        image.update(name=image_name)
+        image.update(name=image_name, purge_props=False)
 
-    @tag_deleted.connect
     def _handler_tag_deleted(self, sender, namespace, repository, tag):
         image_name = '{0}:{1}'.format(repository, tag)
         if namespace != 'library':
@@ -145,9 +153,8 @@ class GlanceStorageLayers(Storage):
         (image, propname) = self._init_path(path)
         if not propname:
             raise ValueError('Wrong call (should be stream_write)')
-        props = image.properties
-        props[propname] = content
-        image.update(properties=props)
+        props = {propname: content}
+        image.update(properties=props, purge_props=False)
 
     def stream_read(self, path):
         (image, propname) = self._init_path(path, False)
@@ -155,13 +162,13 @@ class GlanceStorageLayers(Storage):
             raise ValueError('Wrong call (should be get_content)')
         if not image:
             raise IOError('No such image {0}'.format(path))
-        return image.data
+        return image.data(do_checksum=False)
 
     def stream_write(self, path, fp):
         (image, propname) = self._init_path(path)
         if propname:
             raise ValueError('Wrong call (should be put_content)')
-        image.update(data=fp)
+        image.update(data=fp, purge_props=False)
 
     def exists(self, path):
         (image, propname) = self._init_path(path, False)
