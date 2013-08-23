@@ -82,8 +82,8 @@ class GlanceStorageLayers(Storage):
 
     def _init_path(self, path, create=True):
         """ This resolve a standard Docker Registry path
-            and returns: glance_image_id, property_name
-            If property name is None, we're want to reach the image_data
+            and returns: glance_image obj, property_name
+            If property name is None, we want to reach the image_data
         """
         parts = path.split('/')
         if len(parts) != 3 or parts[0] != self.images:
