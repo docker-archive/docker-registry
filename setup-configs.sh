@@ -13,8 +13,3 @@ if [ "$SETTINGS_FLAVOR" = "prod" ]
 		config=${config//secret_key: REPLACEME/secret_key: $WORKER_SECRET_KEY}; 
 		printf '%s\n' "$config" >config.yml
 fi
-
-gunicorn --access-logfile - --debug --max-requests 100 --graceful-timeout 3600 -t 3600 -k gevent -b 0.0.0.0:5000 -w $GUNICORN_WORKERS wsgi:application
-
-
-
