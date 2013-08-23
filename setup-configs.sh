@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ -z "$GUNICORN_WORKERS" ]] ; then
-    GUNICORN_WORKERS=2
+    GUNICORN_WORKERS=4
 fi
 
 if [ "$SETTINGS_FLAVOR" = "prod" ] ; then
