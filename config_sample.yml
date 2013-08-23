@@ -4,7 +4,8 @@ common:
     s3_access_key: REPLACEME
     s3_secret_key: REPLACEME
     s3_bucket: REPLACEME
-    glance_auth_url: 'http://dev:5000/v2.0/'
+    # Set a random string here
+    secret_key: REPLACEME
 
 # This is the default configuration when no flavor is specified
 dev:
@@ -15,8 +16,6 @@ dev:
 # To specify another flavor, set the environment variable SETTINGS_FLAVOR
 # $ export SETTINGS_FLAVOR=prod
 prod:
-    # The secret key must be set explicitly when using multiple workers.
-    secret_key: REPLACEME
     storage: s3
     storage_path: /prod
     # Enabling this options makes the Registry send an email on each code Exception
