@@ -50,11 +50,11 @@ def compute_tarsum(fp, json_data):
         except KeyError:
             h = sha256_string(header)
         hashes.append(h)
-        log = '\n+ filename: {0}\n'.format(member.name)
-        log += '+ header: {0}\n'.format(header)
-        log += '+ hash: {0}\n'.format(h)
-        log += '*' * 16
-        logger.debug('checksums.compute_tarsum: \n{0}'.format(log))
+        #log = '\n+ filename: {0}\n'.format(member.name)
+        #log += '+ header: {0}\n'.format(header)
+        #log += '+ hash: {0}\n'.format(h)
+        #log += '*' * 16
+        #logger.debug('checksums.compute_tarsum: \n{0}'.format(log))
     tar.close()
     hashes.sort()
     data = json_data + ''.join(hashes)
