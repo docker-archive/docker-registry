@@ -1,6 +1,9 @@
 
+import os
+
 from flask import request
 import glanceclient
+from keystoneclient.v2_0 import client as keystoneclient
 
 from signals import tag_created, tag_deleted
 from . import Storage
@@ -72,9 +75,28 @@ class GlanceStorageLayers(Storage):
         tag_created.connect(self._handler_tag_created)
         tag_deleted.connect(self._handler_tag_deleted)
 
+    def _get_auth_token(self):
+        args = {}
+        for arg in ['username', 'password', 'tenant_name', 'auth_url']:
+            env_name = 'OS_{0}'.format(arg.upper())
+            if env_name not in os.environ:
+                raise ValueError('Cannot find env var "{0}"'.format(env_name))
+            args[arg] = os.environ[env_name]
+        keystone = keystoneclient.Client(**args)
+        return keystone.auth_token
+
+    def _get_endpoint(self):
+        if 'OS_GLANCE_URL' not in os.environ:
+            raise ValueError('Cannot find env var "OS_GLANCE_URL"')
+        return os.environ['OS_GLANCE_URL']
+
     def _create_glance_client(self):
         token = request.headers.get('X-Meta-Auth-Token')
         endpoint = request.headers.get('X-Meta-Glance-Endpoint')
+        if not token:
+            token = self._get_auth_token()
+        if not endpoint:
+            endpoint = self._get_endpoint()
         return glanceclient.Client('1', endpoint=endpoint, token=token)
 
     def _init_path(self, path, create=True):
