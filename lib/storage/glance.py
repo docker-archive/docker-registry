@@ -1,6 +1,5 @@
 
-import os
-
+from flask import request
 import glanceclient
 
 from signals import tag_created, tag_deleted
@@ -64,9 +63,8 @@ class GlanceStorageLayers(Storage):
         However tags are still stored on other filesystem-like stores.
     """
 
-    #FIXME(sam): set correct diskformat and container format
     disk_format = 'raw'
-    container_format = 'bare'
+    container_format = 'docker'
 
     def __init__(self, config):
         self._config = config
@@ -75,10 +73,9 @@ class GlanceStorageLayers(Storage):
         tag_deleted.connect(self._handler_tag_deleted)
 
     def _create_glance_client(self):
-        #FIXME(sam) the token is taken from the environ for testing only!
-        endpoint = self._config.glance_endpoint
-        return glanceclient.Client('1', endpoint=endpoint,
-                                   token=os.environ['OS_AUTH_TOKEN'])
+        token = request.headers.get('X-Meta-Auth-Token')
+        endpoint = request.headers.get('X-Meta-Glance-Endpoint')
+        return glanceclient.Client('1', endpoint=endpoint, token=token)
 
     def _init_path(self, path, create=True):
         """ This resolve a standard Docker Registry path
