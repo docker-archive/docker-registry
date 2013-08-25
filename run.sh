@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 if [[ -z "$GUNICORN_WORKERS" ]] ; then
     GUNICORN_WORKERS=4
 fi
