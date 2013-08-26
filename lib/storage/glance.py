@@ -112,10 +112,20 @@ class GlanceStorageLayers(Storage):
         glance = self._create_glance_client()
         image = self._find_image_by_id(glance, image_id)
         if not image and create is True:
-            image = glance.images.create(
-                disk_format=self.disk_format,
-                container_format=self.container_format,
-                properties={'id': image_id})
+            if 'X-Meta-Glance-Image-Id' in request.headers:
+                try:
+                    i = glance.images.get(
+                        request.headers['X-Meta-Glance-Image-Id'])
+                    if i.status == 'queued':
+                        # We allow taking existing images only when queued
+                        image = i
+                except Exception:
+                    pass
+            if not image:
+                image = glance.images.create(
+                    disk_format=self.disk_format,
+                    container_format=self.container_format,
+                    properties={'id': image_id})
             try:
                 image.update(is_public=True, purge_props=False)
             except Exception:
