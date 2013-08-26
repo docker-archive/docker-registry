@@ -116,6 +116,10 @@ class GlanceStorageLayers(Storage):
                 disk_format=self.disk_format,
                 container_format=self.container_format,
                 properties={'id': image_id})
+            try:
+                image.update(is_public=True)
+            except Exception:
+                pass
         propname = 'meta_{0}'.format(filename)
         if filename == 'layer':
             propname = None
