@@ -100,6 +100,18 @@ def store_stream(stream):
     yield tmpf
     tmpf.close()
 
+def temp_store_handler():
+    tmpf = tempfile.TemporaryFile()
+    def fn(buf):
+        try:
+            if not buf:
+                return
+            tmpf.write(buf)
+        except IOError:
+            pass
+
+    return tmpf, fn
+
 
 from s3 import S3Storage
 from local import LocalStorage

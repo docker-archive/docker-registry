@@ -28,7 +28,7 @@ def compute_tarsum(fp, json_data):
     header_fields = ('name', 'mode', 'uid', 'gid', 'size', 'mtime',
                      'type', 'linkname', 'uname', 'gname', 'devmajor',
                      'devminor')
-    tar = tarfile.open(mode='r:*', fileobj=fp)
+    tar = tarfile.open(mode='r|*', fileobj=fp)
     hashes = []
     for member in tar:
         header = ''
@@ -64,6 +64,12 @@ def compute_tarsum(fp, json_data):
     logger.debug('checksums.compute_tarsum: return {0}'.format(tarsum))
     return tarsum
 
+
+def simple_checksum_handler(json_data):
+    h = hashlib.sha256(json_data + '\n')
+    def fn(buf):
+        h.update(buf)
+    return h, fn
 
 def compute_simple(fp, json_data):
     data = json_data + '\n'

@@ -16,6 +16,19 @@ import storage
 
 logger = logging.getLogger(__name__)
 
+class SocketReader(object):
+    def __init__(self, fp):
+        self._fp = fp
+        self.handlers = []
+
+    def add_handler(self, handler):
+        self.handlers.append(handler)
+
+    def read(self, n=-1):
+        buf = self._fp.read(n)
+        for handler in self.handlers:
+            handler(buf)
+        return buf
 
 def response(data=None, code=200, headers=None, raw=False):
     if data is None:

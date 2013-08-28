@@ -8,7 +8,7 @@ from flask import request, Response, session
 
 import storage
 import checksums
-from toolkit import response, api_error, requires_auth
+from toolkit import response, api_error, requires_auth, SocketReader
 from .app import app
 
 
@@ -78,16 +78,20 @@ def put_image_layer(image_id):
         input_stream = request.environ['wsgi.input']
     # compute checksums
     csums = []
-    with storage.store_stream(input_stream) as f:
-        try:
-            csums.append(checksums.compute_simple(f, json_data))
-            f.seek(0)
-            csums.append(checksums.compute_tarsum(f, json_data))
-        except (IOError, checksums.TarError) as e:
-            logger.debug('put_image_layer: Error when computing checksum '
-                         '{0}'.format(e))
-        f.seek(0)
-        store.stream_write(layer_path, f)
+    sr = SocketReader(input_stream)
+    tmp, store_hndlr = storage.temp_store_handler()
+    sr.add_handler(store_hndlr)
+    h, sum_hndlr = checksums.simple_checksum_handler(json_data)
+    sr.add_handler(sum_hndlr)
+    store.stream_write(layer_path, sr)
+    csums.append(h.hexdigest())
+    try:
+        tmp.seek(0)
+        csums.append(checksums.compute_tarsum(tmp, json_data))
+        tmp.close()
+    except (IOError, checksums.TarError) as e:
+        logger.debug('put_image_layer: Error when computing tarsum '
+                     '{0}'.format(e))
     try:
         checksum = store.get_content(store.image_checksum_path(image_id))
     except IOError:
