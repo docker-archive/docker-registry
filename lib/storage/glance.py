@@ -119,6 +119,8 @@ class GlanceStorageLayers(Storage):
                     if i.status == 'queued':
                         # We allow taking existing images only when queued
                         image = i
+                        image.update(properties={'id': image_id},
+                                     purge_props=False)
                 except Exception:
                     pass
             if not image:
