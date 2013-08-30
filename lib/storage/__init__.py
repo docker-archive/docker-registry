@@ -100,8 +100,10 @@ def store_stream(stream):
     yield tmpf
     tmpf.close()
 
+
 def temp_store_handler():
     tmpf = tempfile.TemporaryFile()
+
     def fn(buf):
         try:
             if not buf:

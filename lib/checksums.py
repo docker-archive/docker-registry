@@ -67,9 +67,11 @@ def compute_tarsum(fp, json_data):
 
 def simple_checksum_handler(json_data):
     h = hashlib.sha256(json_data + '\n')
+
     def fn(buf):
         h.update(buf)
     return h, fn
+
 
 def compute_simple(fp, json_data):
     data = json_data + '\n'
