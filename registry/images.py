@@ -84,7 +84,7 @@ def put_image_layer(image_id):
     h, sum_hndlr = checksums.simple_checksum_handler(json_data)
     sr.add_handler(sum_hndlr)
     store.stream_write(layer_path, sr)
-    csums.append(h.hexdigest())
+    csums.append('sha256:{0}'.format(h.hexdigest()))
     try:
         tmp.seek(0)
         csums.append(checksums.compute_tarsum(tmp, json_data))
