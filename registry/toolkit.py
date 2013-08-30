@@ -27,6 +27,8 @@ class SocketReader(object):
 
     def read(self, n=-1):
         buf = self._fp.read(n)
+        if not buf:
+            return ''
         for handler in self.handlers:
             handler(buf)
         return buf

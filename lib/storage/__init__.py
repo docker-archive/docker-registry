@@ -106,8 +106,6 @@ def temp_store_handler():
 
     def fn(buf):
         try:
-            if not buf:
-                return
             tmpf.write(buf)
         except IOError:
             pass
