@@ -139,12 +139,11 @@ index server.
 How to contribute
 -----------------
 
-If you want to submit a pull request, an important point is to clear up all flake8 warning you could introduce
-(ignore the one about registry/__init__.py).
+If you want to submit a pull request, please run the unit tests using tox before submitting anything to the repos:
 
 ```
-$ pip install flake8
-$ find . -name '*.py' -exec flake8 {} \;
+$ pip install tox
+$ tox
 ```
 
 <!---
