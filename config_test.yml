@@ -1,0 +1,5 @@
+test:
+    loglevel: info
+    storage: local
+    storage_path: /tmp/test
+    secret_key: foobar42

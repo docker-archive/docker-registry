@@ -52,9 +52,3 @@ class TestLocalStorage(base.TestCase):
         iterator = self._storage.list_directory(notexist)
         self.assertRaises(OSError, next, iterator)
         self.assertRaises(OSError, self._storage.get_size, notexist)
-
-
-class TestS3Storage(TestLocalStorage):
-
-    def setUp(self):
-        self._storage = storage.load('s3')

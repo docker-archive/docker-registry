@@ -4,8 +4,9 @@
 *.sw[p-z]
 *.db
 .DS_Store
-.dotcloud/*
+.dotcloud
 .coverage
+.tox
 htmlcov
 config.yml
 newrelic.ini

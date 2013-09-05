@@ -12,8 +12,6 @@ root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(root_path)
 sys.path.append(os.path.join(root_path, 'lib'))
 
-os.environ['SETTINGS_FLAVOR'] = 'test'
-
 import registry
 
 

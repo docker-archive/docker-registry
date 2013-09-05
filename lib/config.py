@@ -27,7 +27,8 @@ def load():
     if _config is not None:
         return _config
     data = None
-    config_path = os.path.join(os.path.dirname(__file__), '..', 'config.yml')
+    config_file = os.environ.get('DOCKER_REGISTRY_CONFIG', 'config.yml')
+    config_path = os.path.join(os.path.dirname(__file__), '..', config_file)
     with open(config_path) as f:
         data = yaml.load(f)
     config = data.get('common', {})
