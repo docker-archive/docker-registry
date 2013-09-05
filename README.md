@@ -1,6 +1,8 @@
 Docker-Registry
 ===============
 
+[![Build Status](https://travis-ci.org/dotcloud/docker-registry.png)](https://travis-ci.org/dotcloud/docker-registry)
+
 Create the configuration
 ------------------------
 
