@@ -1,21 +1,22 @@
 
 import os
 
-from flask import request
+import flask
 import glanceclient
 from keystoneclient.v2_0 import client as keystoneclient
 
-from signals import tag_created, tag_deleted
+import signals
+
 from . import Storage
-from .s3 import S3Storage
 from .local import LocalStorage
+from .s3 import S3Storage
 
 
 class GlanceStorage(object):
 
-    """ This class is a dispatcher, it forwards methods accessing repositories
-        to the alternate storage defined in the config and it forwards methods
-        accessing images to the GlanceStorageLayers class below.
+    """This class is a dispatcher, it forwards methods accessing repositories
+       to the alternate storage defined in the config and it forwards methods
+       accessing images to the GlanceStorageLayers class below.
     """
 
     def __init__(self, config):
@@ -62,8 +63,8 @@ class GlanceStorage(object):
 
 class GlanceStorageLayers(Storage):
 
-    """ This class stores the image layers into OpenStack Glance.
-        However tags are still stored on other filesystem-like stores.
+    """This class stores the image layers into OpenStack Glance.
+       However tags are still stored on other filesystem-like stores.
     """
 
     disk_format = 'raw'
@@ -72,8 +73,8 @@ class GlanceStorageLayers(Storage):
     def __init__(self, config):
         self._config = config
         # Hooks the tag changes
-        tag_created.connect(self._handler_tag_created)
-        tag_deleted.connect(self._handler_tag_deleted)
+        signals.tag_created.connect(self._handler_tag_created)
+        signals.tag_deleted.connect(self._handler_tag_deleted)
 
     def _get_auth_token(self):
         args = {}
@@ -91,8 +92,8 @@ class GlanceStorageLayers(Storage):
         return os.environ['OS_GLANCE_URL']
 
     def _create_glance_client(self):
-        token = request.headers.get('X-Meta-Auth-Token')
-        endpoint = request.headers.get('X-Meta-Glance-Endpoint')
+        token = flask.request.headers.get('X-Meta-Auth-Token')
+        endpoint = flask.request.headers.get('X-Meta-Glance-Endpoint')
         if not token:
             token = self._get_auth_token()
         if not endpoint:
@@ -100,9 +101,9 @@ class GlanceStorageLayers(Storage):
         return glanceclient.Client('1', endpoint=endpoint, token=token)
 
     def _init_path(self, path, create=True):
-        """ This resolve a standard Docker Registry path
-            and returns: glance_image obj, property_name
-            If property name is None, we want to reach the image_data
+        """This resolve a standard Docker Registry path
+           and returns: glance_image obj, property_name
+           If property name is None, we want to reach the image_data
         """
         parts = path.split('/')
         if len(parts) != 3 or parts[0] != self.images:
@@ -112,10 +113,10 @@ class GlanceStorageLayers(Storage):
         glance = self._create_glance_client()
         image = self._find_image_by_id(glance, image_id)
         if not image and create is True:
-            if 'X-Meta-Glance-Image-Id' in request.headers:
+            if 'X-Meta-Glance-Image-Id' in flask.request.headers:
                 try:
                     i = glance.images.get(
-                        request.headers['X-Meta-Glance-Image-Id'])
+                        flask.request.headers['X-Meta-Glance-Image-Id'])
                     if i.status == 'queued':
                         # We allow taking existing images only when queued
                         image = i

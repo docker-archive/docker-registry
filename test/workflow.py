@@ -1,13 +1,16 @@
 
-import os
-from cStringIO import StringIO
-import json
+import cStringIO as StringIO
 import hashlib
+import json
+import os
 import requests
-import base
+
+import checksums
 import config
 import storage
-from checksums import compute_simple
+
+import base
+
 
 cfg = config.load()
 
@@ -106,7 +109,7 @@ class TestWorkflow(base.TestCase):
         return (namespace, repos)
 
     def fetch_image(self, image_id):
-        '''Return image json metadata, checksum and its blob'''
+        """Return image json metadata, checksum and its blob."""
         resp = requests.get('{0}/v1/images/{1}/json'.format(
             self.registry_endpoint, image_id),
             cookies=self.cookies)
@@ -153,7 +156,7 @@ class TestWorkflow(base.TestCase):
             tmpfile = StringIO()
             tmpfile.write(blob)
             tmpfile.seek(0)
-            computed_checksum = compute_simple(tmpfile, json_data)
+            computed_checksum = checksums.compute_simple(tmpfile, json_data)
             tmpfile.close()
             self.assertEqual(checksum, computed_checksum)
         # Remove image tags

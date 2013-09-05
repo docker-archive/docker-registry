@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import logging
 import os
 import sys
-import logging
 
 root_path = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(os.path.join(root_path, 'lib'))

@@ -1,12 +1,12 @@
 
-import os
-import sys
-import json
-import string
-import random
+import cStringIO as StringIO
 import hashlib
+import json
+import os
+import random
+import string
+import sys
 import unittest
-from cStringIO import StringIO
 
 root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(root_path)
@@ -47,7 +47,7 @@ class TestCase(unittest.TestCase):
         # Make sure I cannot download the image before push is complete
         resp = self.http_client.get('/v1/images/{0}/json'.format(image_id))
         self.assertEqual(resp.status_code, 400, resp.data)
-        layer_file = StringIO(layer)
+        layer_file = StringIO.StringIO(layer)
         resp = self.http_client.put('/v1/images/{0}/layer'.format(image_id),
                                     input_stream=layer_file)
         layer_file.close()

@@ -1,14 +1,14 @@
 
 import functools
 import logging
-import string
 import random
-import urllib
 import re
+import string
+import urllib
 
-from flask import current_app, request, session
-import simplejson as json
+import flask
 import requests
+import simplejson as json
 
 import config
 import storage
@@ -50,10 +50,11 @@ def response(data=None, code=200, headers=None, raw=False):
             data = json.dumps(data, indent=4, sort_keys=True, skipkeys=True)
     except TypeError:
         data = str(data)
-    return current_app.make_response((data, code, h))
+    return flask.current_app.make_response((data, code, h))
 
 
 def check_session():
+    session = flask.session
     if not session:
         logger.debug('check_session: Session is empty')
         return False
@@ -78,7 +79,7 @@ def validate_token(auth):
     url = '{0}/v1/repositories/{1}/{2}/images'.format(index_endpoint,
                                                       full_repos_name[0],
                                                       full_repos_name[1])
-    headers = {'Authorization': request.headers.get('authorization')}
+    headers = {'Authorization': flask.request.headers.get('authorization')}
     resp = requests.get(url, verify=True, headers=headers)
     logger.debug('validate_token: Index returned {0}'.format(resp.status_code))
     if resp.status_code != 200:
@@ -95,17 +96,17 @@ def validate_token(auth):
 
 
 def get_remote_ip():
-    if 'X-Forwarded-For' in request.headers:
-        return request.headers.getlist('X-Forwarded-For')[0]
-    if 'X-Real-Ip' in request.headers:
-        return request.headers.getlist('X-Real-Ip')[0]
-    return request.remote_addr
+    if 'X-Forwarded-For' in flask.request.headers:
+        return flask.request.headers.getlist('X-Forwarded-For')[0]
+    if 'X-Real-Ip' in flask.request.headers:
+        return flask.request.headers.getlist('X-Real-Ip')[0]
+    return flask.request.remote_addr
 
 
 def is_ssl():
     for header in ('X-Forwarded-Proto', 'X-Forwarded-Protocol'):
-        if header in request.headers and \
-                request.headers[header].lower() in ('https', 'ssl'):
+        if header in flask.request.headers and \
+                flask.request.headers[header].lower() in ('https', 'ssl'):
                     return True
     return False
 
@@ -117,7 +118,7 @@ def check_token(args):
     cfg = config.load()
     if cfg.disable_token_auth is True or cfg.standalone is not False:
         return True
-    auth = request.headers.get('authorization', '')
+    auth = flask.request.headers.get('authorization', '')
     if auth.split(' ')[0].lower() != 'token':
         logger.debug('check_token: Invalid token format')
         return False
@@ -139,18 +140,19 @@ def check_token(args):
             return False
     # Check that the token `access' variable is aligned with the HTTP method
     access = auth.get('access')
-    if access == 'write' and request.method not in ['POST', 'PUT']:
+    if access == 'write' and flask.request.method not in ['POST', 'PUT']:
         logger.debug('check_token: Wrong access value in the token')
         return False
-    if access == 'read' and request.method != 'GET':
+    if access == 'read' and flask.request.method != 'GET':
         logger.debug('check_token: Wrong access value in the token')
         return False
-    if access == 'delete' and request.method != 'DELETE':
+    if access == 'delete' and flask.request.method != 'DELETE':
         logger.debug('check_token: Wrong access value in the token')
         return False
     if validate_token(auth) is False:
         return False
     # Token is valid, we create a session
+    session = flask.session
     session['repository'] = auth.get('repository')
     session['auth'] = True
     session.permanent = True

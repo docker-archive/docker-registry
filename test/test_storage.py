@@ -1,8 +1,9 @@
 
-from cStringIO import StringIO
+import cStringIO as StringIO
+
+import storage
 
 import base
-import storage
 
 
 class TestLocalStorage(base.TestCase):
@@ -32,7 +33,7 @@ class TestLocalStorage(base.TestCase):
         # test 7MB
         content = self.gen_random_string(7 * 1024 * 1024)
         # test exists
-        io = StringIO(content)
+        io = StringIO.StringIO(content)
         self.assertFalse(self._storage.exists(filename))
         self._storage.stream_write(filename, io)
         io.close()

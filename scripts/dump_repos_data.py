@@ -68,7 +68,7 @@ if __name__ == '__main__':
     all_checksums = {}
     for (namespace, repos, image_id) in walk_all_tags():
         key = (namespace, repos)
-        if not key in all_repos:
+        if key not in all_repos:
             all_repos[key] = []
         for i in walk_ancestry(image_id):
             all_repos[key].append(i)

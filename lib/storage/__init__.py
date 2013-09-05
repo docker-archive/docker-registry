@@ -1,6 +1,6 @@
 
-import tempfile
 import contextlib
+import tempfile
 
 import config
 
@@ -10,7 +10,7 @@ __all__ = ['load']
 
 class Storage(object):
 
-    """ Storage is organized as follow:
+    """Storage is organized as follow:
     $ROOT/images/<image_id>/json
     $ROOT/images/<image_id>/layer
     $ROOT/repositories/<namespace>/<repository_name>/<tag_name>
@@ -86,7 +86,7 @@ class Storage(object):
 
 @contextlib.contextmanager
 def store_stream(stream):
-    """ Stores the entire stream to a temporary file """
+    """Stores the entire stream to a temporary file."""
     tmpf = tempfile.TemporaryFile()
     while True:
         try:
@@ -113,16 +113,16 @@ def temp_store_handler():
     return tmpf, fn
 
 
-from s3 import S3Storage
-from local import LocalStorage
 from glance import GlanceStorage
+from local import LocalStorage
+from s3 import S3Storage
 
 
 _storage = {}
 
 
 def load(kind=None):
-    """ Returns the right storage class according to the configuration """
+    """Returns the right storage class according to the configuration."""
     global _storage
     cfg = config.load()
     if not kind:
