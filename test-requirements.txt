@@ -1,2 +1,2 @@
-flake8==2.0
-hacking==0.7.0
+flake8
+hacking
