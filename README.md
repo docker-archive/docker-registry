@@ -113,52 +113,19 @@ And you might want to add [Basic auth on Nginx](http://wiki.nginx.org/HttpAuthBa
 NOTE: The central Registry runs on the dotCloud platform:
 
 ```
-cd dotcloud-registry/
+cd docker-registry/
 dotcloud create myregistry
 dotcloud push
 ```
 
+
 Run tests
 ---------
-
-```
-$ cd test
-$ python -m unittest discover
-```
-
-The file workflow.py is bit special since it's a functional test (not a
-unit test). It requires a server to be running in order to succeed.
-
-```
-$ DOCKER_CREDS="user:password" python -m unittest workflow
-```
-
-DOCKER_CREDS contains user credentials information to connect to the staging
-index server.
-
-How to contribute
------------------
 
 If you want to submit a pull request, please run the unit tests using tox before submitting anything to the repos:
 
 ```
-$ pip install tox
-$ tox
+pip install tox
+cd docker-registry/
+tox
 ```
-
-<!---
-
-Code coverage
--------------
-
-Using nosetests with coverage.py:
-
-```
-$ nosetests --with-coverage
-$ coverage html --include="${PWD}/*"
-$ cd htmlcov ; python -m SimpleHTTPServer
-
-# open browser http://localhost:8000
-```
-
--->
