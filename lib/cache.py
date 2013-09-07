@@ -20,10 +20,12 @@ cache_prefix = None
 def init():
     global redis_conn, cache_prefix
     cfg = config.load()
-    if not cfg.cache:
+    cache = cfg.cache
+    if not cache:
         return
     logging.info('Enabling storage cache on Redis')
-    cache = cfg.get('cache', {})
+    if not isinstance(cache, dict):
+        cache = {}
     for k, v in cache.iteritems():
         redis_opts[k] = v
     logging.info('Redis config: {0}'.format(redis_opts))
