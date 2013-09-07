@@ -39,10 +39,12 @@ def cache_key(key):
 
 def put(f):
     @functools.wraps(f)
-    def wrapper(key, content):
+    def wrapper(*args):
+        content = args[-1]
+        key = args[-2]
         key = cache_key(key)
         redis_conn.set(key, content)
-        return f(key, content)
+        return f(*args)
     if redis_conn is None:
         return f
     return wrapper
@@ -50,13 +52,14 @@ def put(f):
 
 def get(f):
     @functools.wraps(f)
-    def wrapper(key):
+    def wrapper(*args):
+        key = args[-1]
         key = cache_key(key)
         content = redis_conn.get(key)
         if content is not None:
             return content
         # Refresh cache
-        content = f(key)
+        content = f(*args)
         redis_conn.set(key, content)
         return content
     if redis_conn is None:
@@ -66,10 +69,11 @@ def get(f):
 
 def remove(f):
     @functools.wraps(f)
-    def wrapper(key):
+    def wrapper(*args):
+        key = args[-1]
         key = cache_key(key)
         redis_conn.delete(key)
-        return f(key)
+        return f(*args)
     if redis_conn is None:
         return f
     return wrapper

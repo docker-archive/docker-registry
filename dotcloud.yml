@@ -9,3 +9,6 @@ api:
     buildscript: ./build.sh
     ports:
         www: http
+
+cache:
+    type: redis
