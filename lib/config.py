@@ -19,6 +19,27 @@ class Config(object):
         return self._config.get(*args, **kwargs)
 
 
+def _walk_object(obj, callback):
+    if not hasattr(obj, '__iter__'):
+        return callback(obj)
+    if isinstance(obj, dict):
+        for i, value in obj.iteritems():
+            obj[i] = _walk_object(value, callback)
+        return obj
+    for i, value in enumerate(obj):
+        obj[i] = _walk_object(value, callback)
+    return obj
+
+
+def convert_env_vars(config):
+    def _replace_env(s):
+        if isinstance(s, basestring) and s.startswith('_env:'):
+            return os.environ.get(s[5:], '!ENV_NOT_FOUND')
+        return s
+
+    return _walk_object(config, _replace_env)
+
+
 _config = None
 
 
@@ -35,5 +56,6 @@ def load():
     flavor = os.environ.get('SETTINGS_FLAVOR', 'dev')
     config.update(data.get(flavor, {}))
     config['flavor'] = flavor
+    config = convert_env_vars(config)
     _config = Config(config)
     return _config
