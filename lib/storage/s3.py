@@ -5,6 +5,8 @@ import os
 import boto.s3.connection
 import boto.s3.key
 
+import cache
+
 from . import Storage
 
 
@@ -37,6 +39,7 @@ class S3Storage(Storage):
             return path[1:]
         return path
 
+    @cache.get
     def get_content(self, path):
         path = self._init_path(path)
         key = boto.s3.key.Key(self._s3_bucket, path)
@@ -44,6 +47,7 @@ class S3Storage(Storage):
             raise IOError('No such key: \'{0}\''.format(path))
         return key.get_contents_as_string()
 
+    @cache.put
     def put_content(self, path, content):
         path = self._init_path(path)
         key = boto.s3.key.Key(self._s3_bucket, path)
@@ -107,6 +111,7 @@ class S3Storage(Storage):
         key = boto.s3.key.Key(self._s3_bucket, path)
         return key.exists()
 
+    @cache.remove
     def remove(self, path):
         path = self._init_path(path)
         key = boto.s3.key.Key(self._s3_bucket, path)

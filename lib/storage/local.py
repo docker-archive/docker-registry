@@ -2,6 +2,8 @@
 import os
 import shutil
 
+import cache
+
 from . import Storage
 
 
@@ -19,11 +21,13 @@ class LocalStorage(Storage):
                 os.makedirs(dirname)
         return path
 
+    @cache.get
     def get_content(self, path):
         path = self._init_path(path)
         with open(path, mode='r') as f:
             return f.read()
 
+    @cache.put
     def put_content(self, path, content):
         path = self._init_path(path, create=True)
         with open(path, mode='w') as f:
@@ -68,6 +72,7 @@ class LocalStorage(Storage):
         path = self._init_path(path)
         return os.path.exists(path)
 
+    @cache.remove
     def remove(self, path):
         path = self._init_path(path)
         if os.path.isdir(path):
