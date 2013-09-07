@@ -1,9 +1,8 @@
 
 import cStringIO as StringIO
 
-import storage
-
 import base
+import storage
 
 
 class TestLocalStorage(base.TestCase):

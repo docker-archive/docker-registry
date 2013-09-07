@@ -5,11 +5,10 @@ import json
 import os
 import requests
 
+import base
 import checksums
 import config
 import storage
-
-import base
 
 
 cfg = config.load()
