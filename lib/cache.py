@@ -11,7 +11,8 @@ import config
 redis_opts = {
     'host': 'localhost',
     'port': 6379,
-    'db': 0
+    'db': 0,
+    'password': None
 }
 redis_conn = None
 cache_prefix = None
@@ -31,7 +32,8 @@ def init():
     logging.info('Redis config: {0}'.format(redis_opts))
     redis_conn = redis.StrictRedis(host=redis_opts['host'],
                                    port=int(redis_opts['port']),
-                                   db=int(redis_opts['db']))
+                                   db=int(redis_opts['db']),
+                                   password=redis_opts['password'])
     cache_prefix = 'cache_path:{0}'.format(cfg.get('storage_path', '/'))
 
 
