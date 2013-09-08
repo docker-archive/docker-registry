@@ -29,7 +29,9 @@ def init():
     for k, v in cache.iteritems():
         redis_opts[k] = v
     logging.info('Redis config: {0}'.format(redis_opts))
-    redis_conn = redis.StrictRedis(**redis_opts)
+    redis_conn = redis.StrictRedis(host=redis_opts['host'],
+                                   port=int(redis_opts['port']),
+                                   db=int(redis_opts['db']))
     cache_prefix = 'cache_path:{0}'.format(cfg.get('storage_path', '/'))
 
 
