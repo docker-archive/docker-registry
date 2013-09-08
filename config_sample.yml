@@ -6,10 +6,6 @@ common:
     s3_bucket: REPLACEME
     # Set a random string here
     secret_key: REPLACEME
-    cache:
-        host: localhost
-        port: 6379
-        db: 0
 
 # This is the default configuration when no flavor is specified
 dev:
