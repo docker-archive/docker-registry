@@ -1,5 +1,4 @@
 
-import base
 import storage
 
 from .test_storage import TestLocalStorage
