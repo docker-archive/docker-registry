@@ -1,10 +1,10 @@
 
+import test_storage
+
 import storage
 
-from .test_storage import TestLocalStorage
 
-
-class TestS3Storage(TestLocalStorage):
+class TestS3Storage(test_storage.TestLocalStorage):
 
     def setUp(self):
         self._storage = storage.load('s3')
