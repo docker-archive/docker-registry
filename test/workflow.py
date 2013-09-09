@@ -26,7 +26,7 @@ class TestWorkflow(base.TestCase):
 
     def generate_chunk(self, data):
         bufsize = 1024
-        io = StringIO(data)
+        io = StringIO.StringIO(data)
         while True:
             buf = io.read(bufsize)
             if not buf:
@@ -152,7 +152,7 @@ class TestWorkflow(base.TestCase):
             json_data, checksum, blob = self.fetch_image(image_id)
             # check queried checksum and local computed checksum from the image
             # are the same
-            tmpfile = StringIO()
+            tmpfile = StringIO.StringIO()
             tmpfile.write(blob)
             tmpfile.seek(0)
             computed_checksum = checksums.compute_simple(tmpfile, json_data)
