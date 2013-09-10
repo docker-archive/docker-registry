@@ -9,8 +9,14 @@
 # Short-Description: Start Docker-Registry
 ### END INIT INFO
 
+# Author: Anastas Semenov <anapsix@random.io>
+# Updated by:
+
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
 . /lib/lsb/init-functions
+
+# check is we are running as root
+[ $(id -u) -ne 0 ] && echo "must run as root, exiting" && exit 1
 
 # a way to figure out a service home directory, no matter where it's called from
 self_path="$(readlink -e $0)"
@@ -84,7 +90,7 @@ status_server() {
 
 case $1 in
   start)
-    if $0 status > /dev/null 2>&1; then
+    if status_server; then
       /bin/echo -e "${NAME} is ${GREEN}already running${NC}" >&2
       exit 0
     else
@@ -102,13 +108,16 @@ case $1 in
       log_end_msg $?
     else
       log_daemon_msg "${NAME}" "is not running"
-      log_end_msg $?
+      log_end_msg 0
     fi
   ;;
   restart)
     log_daemon_msg "Restarting ${NAME}" # "on port ${LISTEN_IP}:${LISTEN_PORT}"
-    status_server && stop_server && sleep 2 || log_end_msg $?
-    start_server; log_end_msg $?
+    if status_server; then
+			stop_server && sleep 1 || log_end_msg $?
+		fi
+    start_server
+		log_end_msg $?
   ;;
   reload)
     if status_server; then
@@ -131,7 +140,7 @@ case $1 in
    fi
   ;;
   *)
-    echo "Usage: $0 {start|stop|restart|status}" >&2
+    echo "Usage: $0 {start|stop|restart|reload|status}" >&2
     exit 2
   ;;
 esac
