@@ -11,7 +11,7 @@ import checksums
 import storage
 import toolkit
 
-from .app import app
+from .app import app, cfg
 
 
 store = storage.load()
@@ -56,8 +56,17 @@ def set_cache_headers(f):
 @set_cache_headers
 def get_image_layer(image_id, headers):
     try:
-        return flask.Response(store.stream_read(store.image_layer_path(
-            image_id)), headers=headers)
+        path = store.image_layer_path(image_id)
+
+        info = cfg.nginx_x_accel_redirect
+        if info:
+            uri = '/'.join([info, path])
+            headers['X-Accel-Redirect'] = uri
+
+            logger.debug('sending accelerated {} ({})'.format(uri, headers))
+
+            return flask.Response('', headers=headers)
+        return flask.Response(store.stream_read(path), headers=headers)
     except IOError:
         return toolkit.api_error('Image not found', 404)
 
