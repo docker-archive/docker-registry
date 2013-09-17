@@ -11,7 +11,8 @@ import checksums
 import storage
 import toolkit
 
-from .app import app, cfg
+from .app import app
+from .app import cfg
 from storage.local import LocalStorage
 
 
@@ -65,11 +66,12 @@ def get_image_layer(image_id, headers):
                 uri = '/'.join([info, path])
                 headers['X-Accel-Redirect'] = uri
 
-                logger.debug('sending accelerated {} ({})'.format(uri, headers))
+                logger.debug('send accelerated {} ({})'.format(uri, headers))
 
                 return flask.Response('', headers=headers)
             else:
-                logger.warn('nginx_x_accel_redirect config set, but not local storage')
+                logger.warn('nginx_x_accel_redirect config set,'
+                            ' but storage is not LocalStorage')
         return flask.Response(store.stream_read(path), headers=headers)
     except IOError:
         return toolkit.api_error('Image not found', 404)
