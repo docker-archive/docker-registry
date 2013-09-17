@@ -58,15 +58,16 @@ def set_cache_headers(f):
 @set_cache_headers
 def get_image_layer(image_id, headers):
     try:
-        info = cfg.nginx_x_accel_redirect
+        accel_uri_prefix = cfg.nginx_x_accel_redirect
         path = store.image_layer_path(image_id)
 
-        if info:
+        if accel_uri_prefix:
             if isinstance(store, LocalStorage):
-                uri = '/'.join([info, path])
-                headers['X-Accel-Redirect'] = uri
+                accel_uri = '/'.join([accel_uri_prefix, path])
+                headers['X-Accel-Redirect'] = accel_uri
 
-                logger.debug('send accelerated {} ({})'.format(uri, headers))
+                logger.debug('send accelerated {} ({})'.format(
+                    accel_uri, headers))
 
                 return flask.Response('', headers=headers)
             else:
