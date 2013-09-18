@@ -12,6 +12,8 @@ import storage
 import toolkit
 
 from .app import app
+from .app import cfg
+from storage.local import LocalStorage
 
 
 store = storage.load()
@@ -56,8 +58,22 @@ def set_cache_headers(f):
 @set_cache_headers
 def get_image_layer(image_id, headers):
     try:
-        return flask.Response(store.stream_read(store.image_layer_path(
-            image_id)), headers=headers)
+        accel_uri_prefix = cfg.nginx_x_accel_redirect
+        path = store.image_layer_path(image_id)
+
+        if accel_uri_prefix:
+            if isinstance(store, LocalStorage):
+                accel_uri = '/'.join([accel_uri_prefix, path])
+                headers['X-Accel-Redirect'] = accel_uri
+
+                logger.debug('send accelerated {} ({})'.format(
+                    accel_uri, headers))
+
+                return flask.Response('', headers=headers)
+            else:
+                logger.warn('nginx_x_accel_redirect config set,'
+                            ' but storage is not LocalStorage')
+        return flask.Response(store.stream_read(path), headers=headers)
     except IOError:
         return toolkit.api_error('Image not found', 404)
 
