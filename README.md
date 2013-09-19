@@ -14,19 +14,83 @@ configuration:
 cp config_sample.yml config.yml
 ```
 
-Inside the `config.yml` file we can see a selection of configuration
-headings called `flavors`: `common`, `dev`, `prod`, etc.
+Configuration flavors
+=====================
 
-You can specify what flavor to run with the `SETTINGS_FLAVOR`
-environment variable.
+Docker Registry can run in several flavors. This enables you to run it
+in development mode, production mode or your own predefined mode.
 
-```
-$ export SETTINGS_FLAVOR=prod
-```
+In the config yaml file, you'll see a few sample flavors:
 
-The `common` flavor overrides and is inherited by all other flavors. If
-you don't specify a flavor when running the Docker Registry the `dev`
-flavor will be used.
+1. `common`: used by all other flavors as base settings
+1. `dev`: used for development
+1. `prod`: used for production
+1. `test`: used by unit tests
+1. `openstack`: to integrate with openstack
+
+You can define your own flavors by adding a new top-level yaml key.
+
+You can specify which flavor to run by setting `SETTINGS_FLAVOR` in your
+environment: `export SETTINGS_FLAVOR=dev`
+
+The default environment is `dev`.
+
+
+Location of the config file
+===========================
+
+### DOCKER_REGISTRY_CONFIG
+
+Specify the config file to be used by setting `DOCKER_REGISTRY_CONFIG` in your 
+environment: `export DOCKER_REGISTRY_CONFIG=config.yml`
+
+The location of the yaml file should be relative to the source directory. Absolute 
+paths are not yet supported.
+
+The default location of the config file is `config.yml`, located in the source 
+directory.
+
+
+Available configuration options
+===============================
+
+### General options
+
+1. `standalone`: boolean, should we run the server as a standalone server?
+1. `loglevel`: level of debugging. Any of python's [logging](http://docs.python.org/2/library/logging.html) module levels: `debug`, `info`, `warn`, `error` or `critical`
+
+### S3 options
+
+These options configure your S3 storage. These are used when `storage` is set to `s3`.
+
+1. `s3_access_key`
+1. `s3_secret_key`
+1. `s3_bucket`
+1. `secret_key`
+
+### Email options
+
+Settings these options makes the Registry send an email on each code Exception:
+
+1. `smtp_host`: hostname to connect to using SMTP
+1. `smtp_login`: username to use when connecting to authenticated SMTP
+1. `smtp_password`: password to use when connecting to authenticated SMTP
+1. `from_addr`: email address to use when sending email
+1. `to_addr`: email address to send exceptions to
+
+### Storage options
+
+`storage`: can be one of:
+
+1. `local`: store images on local storage
+  1. `storage_path` local path to the image store
+1. `s3`: store images on S3
+  1. `storage_path` is a subdir in your S3 bucker
+  1. remember to set all `s3_*` options (see above)
+1. `glance`: store images on Glance (OpenStack)
+  1. `storage_alternate`: storage engine to use when Glance storage fails, e.g. `local`
+  1. If you use `storage_alternate` local, remeber to set `storage_path`
+
 
 Run the Registry
 ----------------
