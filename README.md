@@ -83,7 +83,7 @@ Available configuration options
 ### General options
 
 1. `standalone`: boolean, should we run the server as a standalone server?
-1. `secret_key`: this key should be unique and secret. It is used by Flask to sign secret things.
+1. `secret_key`: this key should be unique and secret. It is used by the Registry to sign secret things. If you leave this blank, the Registry will generate a random string.
 1. `loglevel`: level of debugging. Any of python's [logging](http://docs.python.org/2/library/logging.html) module levels: `debug`, `info`, `warn`, `error` or `critical`
 
 ### S3 options
