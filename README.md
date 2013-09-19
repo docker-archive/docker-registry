@@ -85,6 +85,7 @@ Available configuration options
 1. `standalone`: boolean, should we run the server as a standalone server?
 1. `secret_key`: this key should be unique and secret. It is used by the Registry to sign secret things. If you leave this blank, the Registry will generate a random string.
 1. `loglevel`: level of debugging. Any of python's [logging](http://docs.python.org/2/library/logging.html) module levels: `debug`, `info`, `warn`, `error` or `critical`
+1. `index_endpoint`: configures the hostname of the Index endpoint. This is used to verify passwords of users that log in. It defaults to https://index.docker.io. You should probably leave this to its default.
 
 ### S3 options
 
