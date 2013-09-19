@@ -98,11 +98,20 @@ These options configure your S3 storage. These are used when `storage` is set to
 
 Settings these options makes the Registry send an email on each code Exception:
 
-1. `smtp_host`: hostname to connect to using SMTP
-1. `smtp_login`: username to use when connecting to authenticated SMTP
-1. `smtp_password`: password to use when connecting to authenticated SMTP
-1. `from_addr`: email address to use when sending email
-1. `to_addr`: email address to send exceptions to
+1. `email_exceptions`:
+  1. `smtp_host`: hostname to connect to using SMTP
+  1. `smtp_login`: username to use when connecting to authenticated SMTP
+  1. `smtp_password`: password to use when connecting to authenticated SMTP
+  1. `from_addr`: email address to use when sending email
+  1. `to_addr`: email address to send exceptions to
+
+Example:
+
+```yaml
+test:
+    email_exceptions:
+        smtp_host: localhost
+````
 
 ### Storage options
 
