@@ -82,19 +82,22 @@ Available configuration options
 
 ### General options
 
-1. `standalone`: boolean, should we run the server as a standalone server?
-1. `secret_key`: this key should be unique and secret. It is used by the Registry to sign secret things. If you leave this blank, the Registry will generate a random string.
-1. `loglevel`: level of debugging. Any of python's [logging](http://docs.python.org/2/library/logging.html) module levels: `debug`, `info`, `warn`, `error` or `critical`
-1. `index_endpoint`: configures the hostname of the Index endpoint. This is used to verify passwords of users that log in. It defaults to https://index.docker.io. You should probably leave this to its default.
+1. `secret_key`: 64 character string, this key should be unique and secret. It is used by the Registry to sign secret things. If you leave this blank, the Registry will generate a random string.
+1. `loglevel`: string, level of debugging. Any of python's [logging](http://docs.python.org/2/library/logging.html) module levels: `debug`, `info`, `warn`, `error` or `critical`
+
+### Authentication options
+
+1. `standalone`: boolean, run the server in stand-alone mode. This means that the Index service on index.docker.io will not be used for anything. This implies `disable_token_auth`.
+1. `index_endpoint`: string, configures the hostname of the Index endpoint. This is used to verify passwords of users that log in. It defaults to https://index.docker.io. You should probably leave this to its default.
+1. `disable_token_auth`: boolean, disable checking of tokens with the Docker index. You should provide your own method of authentication (such as Basic auth).
 
 ### S3 options
 
 These options configure your S3 storage. These are used when `storage` is set to `s3`.
 
-1. `s3_access_key`
-1. `s3_secret_key`
-1. `s3_bucket`
-1. `secret_key`
+1. `s3_access_key`: string, S3 access key
+1. `s3_secret_key`: string, S3 secret key
+1. `s3_bucket`: string, S3 bucker name
 
 ### Email options
 
