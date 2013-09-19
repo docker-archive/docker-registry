@@ -188,6 +188,9 @@ Note that when using multiple workers, the secret_key for the Flask session must
 in config.yml. Otherwise each worker will use its own random secret key, leading to unpredictable
 behavior.
 
+
+#### nginx
+
 The nginx configuration will look like:
 
 ```
@@ -200,7 +203,22 @@ location / {
 And you might want to add [Basic auth on Nginx](http://wiki.nginx.org/HttpAuthBasicModule) to protect it
 (if you're not using it on your local network):
 
-NOTE: The central Registry runs on the dotCloud platform:
+
+#### Apache
+
+Enable mod_proxy using `a2enmod proxy_http`, then use this snippet forward requests to the Docker Registry:
+
+```
+  ProxyPreserveHost  On
+  ProxyRequests      Off
+  ProxyPass          /  http://localhost:5000/
+  ProxyPassReverse   /  http://localhost:5000/
+```
+
+
+#### dotCloud
+
+The central Registry runs on the dotCloud platform:
 
 ```
 cd docker-registry/
