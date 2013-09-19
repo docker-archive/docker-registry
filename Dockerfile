@@ -6,7 +6,6 @@ ADD . /docker-registry
 
 RUN cd /docker-registry && pip install -r requirements.txt
 RUN cp --no-clobber /docker-registry/config_sample.yml /docker-registry/config.yml
-RUN sed -i "s/ secret_key: REPLACEME/ secret_key: $(< /dev/urandom tr -dc A-Za-z0-9 | head -c 32)/" /docker-registry/config.yml
 
 EXPOSE 5000
 
