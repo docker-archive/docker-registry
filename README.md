@@ -70,8 +70,8 @@ Location of the config file
 Specify the config file to be used by setting `DOCKER_REGISTRY_CONFIG` in your 
 environment: `export DOCKER_REGISTRY_CONFIG=config.yml`
 
-The location of the yaml file should be relative to the source directory. Absolute 
-paths are not yet supported.
+The location of the yaml file should be relative to the source directory. 
+Absolute paths are not yet supported.
 
 The default location of the config file is `config.yml`, located in the source 
 directory.
@@ -82,18 +82,31 @@ Available configuration options
 
 ### General options
 
-1. `secret_key`: 64 character string, this key should be unique and secret. It is used by the Registry to sign secret things. If you leave this blank, the Registry will generate a random string.
-1. `loglevel`: string, level of debugging. Any of python's [logging](http://docs.python.org/2/library/logging.html) module levels: `debug`, `info`, `warn`, `error` or `critical`
+1. `secret_key`: 64 character string, this key should be unique and secret. It
+    is used by the Registry to sign secret things. If you leave this blank, the
+    Registry will generate a random string.
+1. `loglevel`: string, level of debugging. Any of python's
+    [logging](http://docs.python.org/2/library/logging.html) module levels:
+    `debug`, `info`, `warn`, `error` or `critical`
 
 ### Authentication options
 
-1. `standalone`: boolean, run the server in stand-alone mode. This means that the Index service on index.docker.io will not be used for anything. This implies `disable_token_auth`.
-1. `index_endpoint`: string, configures the hostname of the Index endpoint. This is used to verify passwords of users that log in. It defaults to https://index.docker.io. You should probably leave this to its default.
-1. `disable_token_auth`: boolean, disable checking of tokens with the Docker index. You should provide your own method of authentication (such as Basic auth).
+1. `standalone`: boolean, run the server in stand-alone mode. This means that
+   the Index service on index.docker.io will not be used for anything. This 
+   implies `disable_token_auth`.
+
+1. `index_endpoint`: string, configures the hostname of the Index endpoint.
+   This is used to verify passwords of users that log in. It defaults to
+   https://index.docker.io. You should probably leave this to its default.
+
+1. `disable_token_auth`: boolean, disable checking of tokens with the Docker
+   index. You should provide your own method of authentication (such as Basic
+   auth).
 
 ### S3 options
 
-These options configure your S3 storage. These are used when `storage` is set to `s3`.
+These options configure your S3 storage. These are used when `storage` is set
+to `s3`.
 
 1. `s3_access_key`: string, S3 access key
 1. `s3_secret_key`: string, S3 secret key
@@ -116,7 +129,7 @@ Example:
 test:
     email_exceptions:
         smtp_host: localhost
-````
+```
 
 ### Storage options
 
@@ -128,7 +141,8 @@ test:
   1. `storage_path` is a subdir in your S3 bucker
   1. remember to set all `s3_*` options (see above)
 1. `glance`: store images on Glance (OpenStack)
-  1. `storage_alternate`: storage engine to use when Glance storage fails, e.g. `local`
+  1. `storage_alternate`: storage engine to use when Glance storage fails, 
+      e.g. `local`
   1. If you use `storage_alternate` local, remeber to set `storage_path`
 
 
@@ -189,18 +203,19 @@ them for a username, password, and email.
 
 ### What about a Production environment?
 
-The recommended setting to run the Registry in a prod environment is gunicorn behind a nginx server which supports
-chunked transfer-encoding (nginx >= 1.3.9).
+The recommended setting to run the Registry in a prod environment is gunicorn 
+behind a nginx server which supports chunked transfer-encoding (nginx >= 1.3.9).
 
-You could use for instance supervisord to spawn the registry with 8 workers using this command:
+You could use for instance supervisord to spawn the registry with 8 workers 
+using this command:
 
 ```
 gunicorn -k gevent --max-requests 100 --graceful-timeout 3600 -t 3600 -b localhost:5000 -w 8 wsgi:application
 ```
 
-Note that when using multiple workers, the secret_key for the Flask session must be set explicitly
-in config.yml. Otherwise each worker will use its own random secret key, leading to unpredictable
-behavior.
+Note that when using multiple workers, the secret_key for the Flask session 
+must be set explicitly in config.yml. Otherwise each worker will use its own 
+random secret key, leading to unpredictable behavior.
 
 
 #### nginx
@@ -214,13 +229,15 @@ location / {
 }
 ```
 
-And you might want to add [Basic auth on Nginx](http://wiki.nginx.org/HttpAuthBasicModule) to protect it
+And you might want to add 
+[Basic auth on Nginx](http://wiki.nginx.org/HttpAuthBasicModule) to protect it
 (if you're not using it on your local network):
 
 
 #### Apache
 
-Enable mod_proxy using `a2enmod proxy_http`, then use this snippet forward requests to the Docker Registry:
+Enable mod_proxy using `a2enmod proxy_http`, then use this snippet forward 
+requests to the Docker Registry:
 
 ```
   ProxyPreserveHost  On
@@ -244,7 +261,8 @@ dotcloud push
 Run tests
 ---------
 
-If you want to submit a pull request, please run the unit tests using tox before submitting anything to the repos:
+If you want to submit a pull request, please run the unit tests using tox 
+before submitting anything to the repos:
 
 ```
 pip install tox
