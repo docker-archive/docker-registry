@@ -165,7 +165,7 @@ is already taken, find out which one has been taken by running "docker ps"
 Install the system requirements for building a Python library:
 
 ```
-sudo apt-get install build-essential python-dev libevent-dev python-pip
+sudo apt-get install build-essential python-dev libevent-dev python-pip libssl-dev
 ```
 
 Then install the Registry app:
@@ -177,7 +177,7 @@ sudo pip install -r requirements.txt
 #### On Red Hat-based systems:
 
 ```
-sudo yum install python-devel libevent-devel python-pip
+sudo yum install python-devel libevent-devel python-pip openssl-devel
 ```
 
 NOTE: On RHEL and CentOS you will need the
