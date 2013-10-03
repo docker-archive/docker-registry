@@ -46,7 +46,7 @@ common:
 prod:
     loglevel: warn
     storage: local
-    storage_path: /srv/docker/
+    storage_path: /srv/docker
     smtp_host: localhost
     from_addr: docker@myself.com
     to_addr: my@myself.com
@@ -54,11 +54,11 @@ prod:
 dev:
     loglevel: debug
     storage: local
-    storage_path: /home/myself/docker/
+    storage_path: /home/myself/docker
 
 test:
     storage: local
-    storage_path: /tmp/tmpdockertmp/
+    storage_path: /tmp/tmpdockertmp
 ```    
 
 
