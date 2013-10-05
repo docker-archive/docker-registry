@@ -1,6 +1,12 @@
 
+import gevent.monkey
+gevent.monkey.patch_all()
+
+import copy
 import cStringIO as StringIO
+import math
 import os
+import tempfile
 
 import boto.s3.connection
 import boto.s3.key
@@ -8,6 +14,71 @@ import boto.s3.key
 import cache
 
 from . import Storage
+
+
+class ParallelKey(object):
+
+    """ This class implements parallel transfer on a key to improve speed """
+
+    CONCURRENCY = 20
+
+    def __init__(self, key, buffer_size):
+        self._s3_key = key
+        self._cursor = 0
+        self._max_completed_byte = 0
+        self._max_completed_index = 0
+        self._tmpfile = tempfile.NamedTemporaryFile(mode='rb')
+        self._completed = [0] * self.CONCURRENCY
+        self._spawn_jobs()
+
+    def __del__(self):
+        self._tmpfile.close()
+
+    def _generate_bytes_ranges(self, num_parts):
+        size = self._s3_key.size
+        chunk_size = int(math.ceil(1.0 * size / num_parts))
+        for i in range(num_parts):
+            yield (i, chunk_size * i, min(chunk_size * (i + 1) - 1, size - 1))
+
+    def _fetch_part(self, fname, index, min_cur, max_cur):
+        s3_key = copy.copy(self._s3_key)
+        with open(fname, 'wb') as f:
+            f.seek(min_cur)
+            brange = 'bytes={0}-{1}'.format(min_cur, max_cur)
+            s3_key.get_contents_to_file(f, headers={'Range': brange})
+        self._completed[index] = max_cur
+
+    def _spawn_jobs(self):
+        bytes_ranges = self._generate_bytes_ranges(self.CONCURRENCY)
+        for i, min_cur, max_cur in bytes_ranges:
+            gevent.spawn(self._fetch_part, self._tmpfile.name,
+                         i, min_cur, max_cur)
+
+    def _refresh_max_completed_byte(self):
+        for i, v in enumerate(self._completed[self._max_completed_index:]):
+            if v == 0:
+                return
+            self._max_completed_index = i
+            self._max_completed_byte = v
+
+    def read(self, size):
+        if self._cursor >= (self._s3_key.size - 1):
+            # Read completed
+            return ''
+        sz = size
+        if self._max_completed_index < len(self._completed) - 1:
+            # Not all data arrived yet
+            if self._cursor + size > self._max_completed_byte:
+                self._refresh_max_completed_byte()
+                while self._cursor >= self._max_completed_byte:
+                    # We're waiting for more data to arrive
+                    gevent.sleep(0.2)
+                    self._refresh_max_completed_byte()
+            if self._cursor + sz > self._max_completed_byte:
+                sz = self._max_completed_byte - self._cursor + 1
+        buf = self._tmpfile.read(sz)
+        self._cursor += len(buf)
+        return buf
 
 
 class S3Storage(Storage):
@@ -56,9 +127,12 @@ class S3Storage(Storage):
 
     def stream_read(self, path):
         path = self._init_path(path)
-        key = boto.s3.key.Key(self._s3_bucket, path)
-        if not key.exists():
+        key = self._s3_bucket.lookup(path)
+        if not key:
             raise IOError('No such key: \'{0}\''.format(path))
+        if key.size > 1024 * 1024:
+            # Use the parallel key only if the key size is > 1MB
+            key = ParallelKey(key, self.buffer_size)
         while True:
             buf = key.read(self.buffer_size)
             if not buf:
