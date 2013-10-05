@@ -46,6 +46,7 @@ class ParallelKey(object):
             f.seek(min_cur)
             brange = 'bytes={0}-{1}'.format(min_cur, max_cur)
             s3_key.get_contents_to_file(f, headers={'Range': brange})
+            s3_key.close()
         self._completed[index] = max_cur
 
     def _spawn_jobs(self):
