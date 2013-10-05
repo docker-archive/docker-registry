@@ -18,7 +18,7 @@ from . import Storage
 
 class ParallelKey(object):
 
-    """ This class implements parallel transfer on a key to improve speed """
+    """This class implements parallel transfer on a key to improve speed."""
 
     CONCURRENCY = 20
 
