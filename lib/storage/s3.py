@@ -4,6 +4,7 @@ gevent.monkey.patch_all()
 
 import copy
 import cStringIO as StringIO
+import logging
 import math
 import os
 import tempfile
@@ -20,9 +21,10 @@ class ParallelKey(object):
 
     """This class implements parallel transfer on a key to improve speed."""
 
-    CONCURRENCY = 20
+    CONCURRENCY = 50
 
     def __init__(self, key, buffer_size):
+        logging.info('ParallelKey: {0}; size={1}'.format(key, key.size))
         self._s3_key = key
         self._cursor = 0
         self._max_completed_byte = 0
@@ -47,7 +49,8 @@ class ParallelKey(object):
             brange = 'bytes={0}-{1}'.format(min_cur, max_cur)
             s3_key.get_contents_to_file(f, headers={'Range': brange})
             s3_key.close()
-        self._completed[index] = max_cur
+        self._completed[index] = (index, max_cur)
+        self._refresh_max_completed_byte()
 
     def _spawn_jobs(self):
         bytes_ranges = self._generate_bytes_ranges(self.CONCURRENCY)
@@ -56,11 +59,11 @@ class ParallelKey(object):
                          i, min_cur, max_cur)
 
     def _refresh_max_completed_byte(self):
-        for i, v in enumerate(self._completed[self._max_completed_index:]):
+        for v in self._completed[self._max_completed_index:]:
             if v == 0:
                 return
-            self._max_completed_index = i
-            self._max_completed_byte = v
+            self._max_completed_index = v[0]
+            self._max_completed_byte = v[1]
 
     def read(self, size):
         if self._cursor >= (self._s3_key.size - 1):
@@ -70,11 +73,9 @@ class ParallelKey(object):
         if self._max_completed_index < len(self._completed) - 1:
             # Not all data arrived yet
             if self._cursor + size > self._max_completed_byte:
-                self._refresh_max_completed_byte()
                 while self._cursor >= self._max_completed_byte:
                     # We're waiting for more data to arrive
                     gevent.sleep(0.2)
-                    self._refresh_max_completed_byte()
             if self._cursor + sz > self._max_completed_byte:
                 sz = self._max_completed_byte - self._cursor + 1
         buf = self._tmpfile.read(sz)
