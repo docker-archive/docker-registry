@@ -89,11 +89,11 @@ class ParallelKey(object):
         buf = self._tmpfile.read(sz)
         self._cursor += len(buf)
         if not buf:
-            logger.warning('ParallelKey: {0}; got en empty read on the '
-                           'buffer! cursor={1}, size={2}; Transfer '
-                           'interrupted.'.format(self._s3_key,
-                                                 self._cursor,
-                                                 self._s3_key.size))
+            logger.error('ParallelKey: {0}; got en empty read on the '
+                         'buffer! cursor={1}, size={2}; Transfer '
+                         'interrupted.'.format(self._s3_key,
+                                               self._cursor,
+                                               self._s3_key.size))
         return buf
 
 
