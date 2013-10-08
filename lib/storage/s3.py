@@ -70,8 +70,8 @@ class ParallelKey(object):
             if self._max_completed_index >= len(self._completed) - 1:
                 percent = round((100.0 * self._cursor) / self._s3_key.size, 1)
                 logger.info('ParallelKey: {0}; buffering complete at {1}% of '
-                             'the total transfer; now serving straight from '
-                             'the tempfile'.format(self._s3_key, percent))
+                            'the total transfer; now serving straight from '
+                            'the tempfile'.format(self._s3_key, percent))
 
     def read(self, size):
         if self._cursor >= (self._s3_key.size - 1):
@@ -90,10 +90,10 @@ class ParallelKey(object):
         self._cursor += len(buf)
         if not buf:
             logger.warning('ParallelKey: {0}; got en empty read on the '
-                            'buffer! cursor={1}, size={2}; Transfer '
-                            'interrupted.'.format(self._s3.key,
-                                                  self._cursor,
-                                                  self._s3_key.size))
+                           'buffer! cursor={1}, size={2}; Transfer '
+                           'interrupted.'.format(self._s3.key,
+                                                 self._cursor,
+                                                 self._s3_key.size))
         return buf
 
 
