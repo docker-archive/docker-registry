@@ -91,7 +91,7 @@ class ParallelKey(object):
         if not buf:
             logger.warning('ParallelKey: {0}; got en empty read on the '
                            'buffer! cursor={1}, size={2}; Transfer '
-                           'interrupted.'.format(self._s3.key,
+                           'interrupted.'.format(self._s3_key,
                                                  self._cursor,
                                                  self._s3_key.size))
         return buf
