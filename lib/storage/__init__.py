@@ -20,8 +20,8 @@ class Storage(object):
     # the code which uses Storage
     repositories = 'repositories'
     images = 'images'
-    # Set the IO buffer to 64kB
-    buffer_size = 64 * 1024
+    # Set the IO buffer to 128kB
+    buffer_size = 128 * 1024
 
     #FIXME(samalba): Move all path resolver in each module (out of the base)
     def images_list_path(self, namespace, repository):
