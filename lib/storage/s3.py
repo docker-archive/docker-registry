@@ -17,6 +17,9 @@ import cache
 from . import Storage
 
 
+logger = logging.getLogger(__name__)
+
+
 class ParallelKey(object):
 
     """This class implements parallel transfer on a key to improve speed."""
@@ -24,7 +27,7 @@ class ParallelKey(object):
     CONCURRENCY = 20
 
     def __init__(self, key, buffer_size):
-        logging.info('ParallelKey: {0}; size={1}'.format(key, key.size))
+        logger.info('ParallelKey: {0}; size={1}'.format(key, key.size))
         self._s3_key = key
         self._cursor = 0
         self._max_completed_byte = 0
@@ -64,6 +67,11 @@ class ParallelKey(object):
                 return
             self._max_completed_index = v[0]
             self._max_completed_byte = v[1]
+            if self._max_completed_index >= len(self._completed) - 1:
+                percent = round((100.0 * self._cursor) / self._s3_key.size, 1)
+                logger.info('ParallelKey: {0}; buffering complete at {1}% of '
+                             'the total transfer; now serving straight from '
+                             'the tempfile'.format(self._s3_key, percent))
 
     def read(self, size):
         if self._cursor >= (self._s3_key.size - 1):
@@ -80,6 +88,12 @@ class ParallelKey(object):
                 sz = self._max_completed_byte - self._cursor + 1
         buf = self._tmpfile.read(sz)
         self._cursor += len(buf)
+        if not buf:
+            logger.warning('ParallelKey: {0}; got en empty read on the '
+                            'buffer! cursor={1}, size={2}; Transfer '
+                            'interrupted.'.format(self._s3.key,
+                                                  self._cursor,
+                                                  self._s3_key.size))
         return buf
 
 
