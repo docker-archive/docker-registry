@@ -110,7 +110,10 @@ to `s3`.
 
 1. `s3_access_key`: string, S3 access key
 1. `s3_secret_key`: string, S3 secret key
-1. `s3_bucket`: string, S3 bucker name
+1. `s3_bucket`: string, S3 bucket name
+1. `s3_encrypt`: boolean, if true, the container will be encrypted on the 
+      server-side by S3 and will be stored in an encrypted form while at rest 
+      in S3.
 
 ### Email options
 

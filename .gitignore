@@ -17,3 +17,6 @@ newrelic.ini
 dist
 build
 eggs
+
+Vagrantfile
+.vagrant

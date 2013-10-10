@@ -51,7 +51,8 @@ class S3Storage(Storage):
     def put_content(self, path, content):
         path = self._init_path(path)
         key = boto.s3.key.Key(self._s3_bucket, path)
-        key.set_contents_from_string(content)
+        key.set_contents_from_string(
+            content, encrypt_key=(self._config.s3_encrypt is True))
         return path
 
     def stream_read(self, path):
@@ -71,7 +72,8 @@ class S3Storage(Storage):
         if self.buffer_size > buffer_size:
             buffer_size = self.buffer_size
         path = self._init_path(path)
-        mp = self._s3_bucket.initiate_multipart_upload(path)
+        mp = self._s3_bucket.initiate_multipart_upload(
+            path, encrypt_key=(self._config.s3_encrypt is True))
         num_part = 1
         while True:
             try:
