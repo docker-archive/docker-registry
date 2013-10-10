@@ -6,3 +6,4 @@ test:
     s3_access_key: _env:S3_ACCESS_KEY
     s3_secret_key: _env:S3_SECRET_KEY
     s3_bucket: _env:S3_BUCKET
+    s3_secure: _env:S3_SECURE

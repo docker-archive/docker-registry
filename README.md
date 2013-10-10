@@ -114,6 +114,7 @@ to `s3`.
 1. `s3_encrypt`: boolean, if true, the container will be encrypted on the 
       server-side by S3 and will be stored in an encrypted form while at rest 
       in S3.
+1. `s3_secure`: boolean, true for HTTPS to S3
 
 ### Email options
 

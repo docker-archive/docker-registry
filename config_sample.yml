@@ -5,6 +5,7 @@ common:
     s3_secret_key: REPLACEME
     s3_bucket: REPLACEME
     s3_encrypt: false
+    s3_secure: REPLACEME
     # Set a random string here
     secret_key: REPLACEME
 
