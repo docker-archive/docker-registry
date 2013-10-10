@@ -7,7 +7,7 @@ import config
 import toolkit
 
 
-VERSION = '0.6.1'
+VERSION = '0.6.2'
 app = flask.Flask('docker-registry')
 cfg = config.load()
 loglevel = getattr(logging, cfg.get('loglevel', 'INFO').upper())
@@ -44,7 +44,6 @@ def init():
     # Configure the email exceptions
     info = cfg.email_exceptions
     if info:
-        import logging
         mail_handler = logging.handlers.SMTPHandler(
             mailhost=info['smtp_host'],
             fromaddr=info['from_addr'],
