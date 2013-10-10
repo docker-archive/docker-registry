@@ -110,7 +110,8 @@ to `s3`.
 
 1. `s3_access_key`: string, S3 access key
 1. `s3_secret_key`: string, S3 secret key
-1. `s3_bucket`: string, S3 bucker name
+1. `s3_bucket`: string, S3 bucket name
+1. `s3_secure`: boolean, true for HTTPS to S3
 
 ### Email options
 
