@@ -7,7 +7,8 @@ common:
     # Amazon S3 Storage Configuration
     s3_access_key: REPLACEME
     s3_secret_key: REPLACEME
-    s3_encrypt: false
+    s3_bucket: REPLACEME
+    s3_encrypt: REPLACEME
     s3_secure: REPLACEME
 
     # Google Cloud Storage Configuration
