@@ -35,6 +35,10 @@ environment: `export SETTINGS_FLAVOR=dev`
 
 The default environment is `dev`.
 
+NOTE: it's possible to load environment variables from the config file
+with a simple syntax: _env:VARIABLENAME. Check this syntax in action
+in the example below...
+
 
 #### Example config
 
@@ -45,7 +49,10 @@ common:
 
 prod:
     loglevel: warn
-    storage: local
+    storage: s3
+    s3_access_key: _env:AWS_S3_ACCESS_KEY
+    s3_secret_key: _env:AWS_S3_SECRET_KEY
+    s3_bucket: _env:AWS_S3_BUCKET
     storage_path: /srv/docker
     smtp_host: localhost
     from_addr: docker@myself.com
