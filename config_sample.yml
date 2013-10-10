@@ -4,6 +4,7 @@ common:
     s3_access_key: REPLACEME
     s3_secret_key: REPLACEME
     s3_bucket: REPLACEME
+    s3_encrypt: false
     # Set a random string here
     secret_key: REPLACEME
 
@@ -18,7 +19,7 @@ dev:
 prod:
     storage: s3
     storage_path: /prod
-    # Enabling this options makes the Registry send an email on each code Exception
+    # Enabling these options makes the Registry send an email on each code Exception
     email_exceptions:
         smtp_host: REPLACEME
         smtp_login: REPLACEME
