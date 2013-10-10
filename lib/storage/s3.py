@@ -26,7 +26,7 @@ class ParallelKey(object):
 
     CONCURRENCY = 20
 
-    def __init__(self, key, buffer_size):
+    def __init__(self, key):
         logger.info('ParallelKey: {0}; size={1}'.format(key, key.size))
         self._s3_key = key
         self._cursor = 0
@@ -74,7 +74,7 @@ class ParallelKey(object):
                             'the tempfile'.format(self._s3_key, percent))
 
     def read(self, size):
-        if self._cursor >= (self._s3_key.size - 1):
+        if self._cursor >= self._s3_key.size:
             # Read completed
             return ''
         sz = size
@@ -85,15 +85,15 @@ class ParallelKey(object):
                     # We're waiting for more data to arrive
                     gevent.sleep(0.2)
             if self._cursor + sz > self._max_completed_byte:
-                sz = self._max_completed_byte - self._cursor + 1
+                sz = self._max_completed_byte - self._cursor
         buf = self._tmpfile.read(sz)
         self._cursor += len(buf)
         if not buf:
-            logger.error('ParallelKey: {0}; got en empty read on the '
-                         'buffer! cursor={1}, size={2}; Transfer '
-                         'interrupted.'.format(self._s3_key,
-                                               self._cursor,
-                                               self._s3_key.size))
+            message = ('ParallelKey: {0}; got en empty read on the buffer! '
+                       'cursor={1}, size={2}; Transfer interrupted.'.format(
+                           self._s3_key, self._cursor, self._s3_key.size))
+            logging.error(message)
+            raise RuntimeError(message)
         return buf
 
 
@@ -148,7 +148,7 @@ class S3Storage(Storage):
             raise IOError('No such key: \'{0}\''.format(path))
         if key.size > 1024 * 1024:
             # Use the parallel key only if the key size is > 1MB
-            key = ParallelKey(key, self.buffer_size)
+            key = ParallelKey(key)
         while True:
             buf = key.read(self.buffer_size)
             if not buf:
