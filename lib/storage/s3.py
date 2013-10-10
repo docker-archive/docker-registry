@@ -86,7 +86,9 @@ class ParallelKey(object):
                     gevent.sleep(0.2)
             if self._cursor + sz > self._max_completed_byte:
                 sz = self._max_completed_byte - self._cursor
-        buf = self._tmpfile.read(sz)
+        # Use a low-level read to avoid any buffering (makes sure we don't
+        # read more than `sz' bytes).
+        buf = os.read(self._tmpfile.file.fileno(), sz)
         self._cursor += len(buf)
         if not buf:
             message = ('ParallelKey: {0}; got en empty read on the buffer! '
