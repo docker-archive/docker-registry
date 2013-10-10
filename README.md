@@ -220,14 +220,7 @@ random secret key, leading to unpredictable behavior.
 
 #### nginx
 
-The nginx configuration will look like:
-
-```
-location / {
-  proxy_pass        http://localhost:5000;
-  proxy_set_header  X-Real-IP  $remote_addr;
-}
-```
+[Here is an nginx configuration file example.](https://github.com/dotcloud/docker-registry/blob/master/contrib/nginx.conf)
 
 And you might want to add 
 [Basic auth on Nginx](http://wiki.nginx.org/HttpAuthBasicModule) to protect it
