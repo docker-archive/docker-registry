@@ -101,10 +101,10 @@ class S3Storage(Storage):
 
     def __init__(self, config):
         self._config = config
-        self._s3_conn = \
-            boto.s3.connection.S3Connection(self._config.s3_access_key,
-                                            self._config.s3_secret_key,
-                                            is_secure=self._config.s3_secure)
+        self._s3_conn = boto.s3.connection.S3Connection(
+            self._config.s3_access_key,
+            self._config.s3_secret_key,
+            is_secure=(self._config.s3_secure is True))
         self._s3_bucket = self._s3_conn.get_bucket(self._config.s3_bucket)
         self._root_path = self._config.storage_path
 
