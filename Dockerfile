@@ -1,7 +1,7 @@
 FROM ubuntu
 
 RUN sed -i 's/main$/main universe/' /etc/apt/sources.list && apt-get update
-RUN apt-get install -y git-core python-pip build-essential python-dev libevent1-dev -y
+RUN apt-get install -y git-core python-pip build-essential python-dev libevent1-dev
 ADD . /docker-registry
 
 RUN cd /docker-registry && pip install -r requirements.txt
