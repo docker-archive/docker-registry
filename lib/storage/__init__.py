@@ -135,6 +135,9 @@ def load(kind=None):
         store = LocalStorage(cfg)
     elif kind == 'glance':
         store = GlanceStorage(cfg)
+    elif kind == 'elliptics':
+        from ell import EllipticsStorage
+        store = EllipticsStorage(cfg)
     else:
         raise ValueError('Not supported storage \'{0}\''.format(kind))
     _storage[kind] = store
