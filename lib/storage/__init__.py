@@ -136,7 +136,7 @@ def load(kind=None):
     elif kind == 'glance':
         store = GlanceStorage(cfg)
     elif kind == 'elliptics':
-        from ell import EllipticsStorage
+        from ellipticsbackend import EllipticsStorage
         store = EllipticsStorage(cfg)
     else:
         raise ValueError('Not supported storage \'{0}\''.format(kind))

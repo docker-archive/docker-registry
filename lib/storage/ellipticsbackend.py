@@ -1,5 +1,9 @@
-import os
-import shutil
+"""
+Elliptics is a fault tolerant distributed key/value storage.
+See: http://reverbrain.com/elliptics and
+https://github.com/reverbrain/elliptics
+"""
+
 import itertools
 
 import cache
@@ -37,7 +41,6 @@ class EllipticsStorage(Storage):
         r.wait()
         result = r.get()
         return [i.indexes[0].data for i in itertools.chain(result)]
-        
 
     def s_remove(self, key):
         self._session.remove(key)
@@ -49,7 +52,7 @@ class EllipticsStorage(Storage):
 
     def s_write(self, key, value, tags):
         self._session.write_data(key, str(value)).wait()
-        r = self._session.set_indexes(key, list(tags), [key]*len(tags))
+        r = self._session.set_indexes(key, list(tags), [key] * len(tags))
         r.wait()
         return r.successful()
 
@@ -72,7 +75,7 @@ class EllipticsStorage(Storage):
             _tag = '/'.join(spl_path[:-1])
             spl_path.pop()
             self.s_write(_path, "DIRECTORY", ('docker', _tag))
-        return path        
+        return path
 
     def stream_write(self, path, fp):
         chunks = []
