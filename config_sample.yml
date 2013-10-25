@@ -1,13 +1,26 @@
 # The `common' part is automatically included (and possibly overriden by all
 # other flavors)
 common:
+    # Bucket for storage
+    boto_bucket: REPLACEME
+
+    # Amazon S3 Storage Configuration
     s3_access_key: REPLACEME
     s3_secret_key: REPLACEME
-    s3_bucket: REPLACEME
     s3_encrypt: false
     s3_secure: REPLACEME
+
+    # Google Cloud Storage Configuration
+    # See:
+    # https://developers.google.com/storage/docs/reference/v1/getting-startedv1#keys
+    # for details on access and secret keys.
+    gs_access_key: REPLACEME
+    gs_secret_key: REPLACEME
+    gs_secure: REPLACEME
+
     # Set a random string here
     secret_key: REPLACEME
+
 
 # This is the default configuration when no flavor is specified
 dev:

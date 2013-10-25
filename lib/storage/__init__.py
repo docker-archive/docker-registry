@@ -113,6 +113,7 @@ def temp_store_handler():
     return tmpf, fn
 
 
+from gcs import GSStorage
 from glance import GlanceStorage
 from local import LocalStorage
 from s3 import S3Storage
@@ -138,6 +139,8 @@ def load(kind=None):
     elif kind == 'elliptics':
         from ellipticsbackend import EllipticsStorage
         store = EllipticsStorage(cfg)
+    elif kind == 'gcs':
+        store = GSStorage(cfg)
     else:
         raise ValueError('Not supported storage \'{0}\''.format(kind))
     _storage[kind] = store
