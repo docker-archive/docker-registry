@@ -113,10 +113,10 @@ def temp_store_handler():
     return tmpf, fn
 
 
+from gcs import GSStorage
 from glance import GlanceStorage
 from local import LocalStorage
 from s3 import S3Storage
-from gcs import GSStorage
 
 _storage = {}
 

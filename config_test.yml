@@ -9,6 +9,6 @@ test:
     s3_secret_key: _env:S3_SECRET_KEY
     s3_secure: _env:S3_SECURE
 
-    gs_access_key: GOOGALFGVHUP27WFESSH
-    gs_secret_key: w2AhJg4oCbLcdYhAyoSSP92Q14hlmxximmhwCZ8d
+    gs_access_key: _env:GS_ACCESS_KEY
+    gs_secret_key: _env:GS_SECRET_KEY 
     gs_secure: false
