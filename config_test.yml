@@ -1,9 +1,14 @@
 test:
+    boto_bucket: _env/S3_BUCKET
+
     loglevel: info
     storage: local
     storage_path: /tmp/test
     secret_key: foobar42
     s3_access_key: _env:S3_ACCESS_KEY
     s3_secret_key: _env:S3_SECRET_KEY
-    s3_bucket: _env:S3_BUCKET
     s3_secure: _env:S3_SECURE
+
+    gs_access_key: GOOGALFGVHUP27WFESSH
+    gs_secret_key: w2AhJg4oCbLcdYhAyoSSP92Q14hlmxximmhwCZ8d
+    gs_secure: false
