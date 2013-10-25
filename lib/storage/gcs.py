@@ -42,6 +42,5 @@ class GSStorage(BotoStorage):
         if self.buffer_size > buffer_size:
             buffer_size = self.buffer_size
         path = self._init_path(path)
-        key = boto.gs.key.Key(self._boto_bucket)
-        key.key = path
+        key = self.makeKey(path)
         key.set_contents_from_string(fp.read())
