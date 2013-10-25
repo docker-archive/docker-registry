@@ -118,6 +118,7 @@ from glance import GlanceStorage
 from local import LocalStorage
 from s3 import S3Storage
 
+
 _storage = {}
 
 
