@@ -2,17 +2,10 @@
 import cStringIO as StringIO
 import hashlib
 import json
-import os
 import random
-import string
-import sys
-import unittest
-
-root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(root_path)
-sys.path.append(os.path.join(root_path, 'lib'))
-
 import registry
+import string
+import unittest
 
 
 class TestCase(unittest.TestCase):
