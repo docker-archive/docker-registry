@@ -23,8 +23,9 @@ class TestImages(base.TestCase):
         import registry.images
 
         # ensure the storage mechanism is LocalStorage or this test is bad
-        from storage.local import LocalStorage
-        self.assertTrue(isinstance(registry.images.store, LocalStorage),
+        import storage.local
+        self.assertTrue(isinstance(registry.images.store,
+                        storage.local.LocalStorage),
                         'Store must be LocalStorage')
 
         # set the nginx accel config
