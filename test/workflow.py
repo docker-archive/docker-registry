@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import requests
+import unittest
 
 import base
 import checksums
@@ -17,9 +18,13 @@ cfg = config.load()
 class TestWorkflow(base.TestCase):
 
     # Dev server needs to run on port 5000 in order to run this test
-    registry_endpoint = 'https://registrystaging-docker.dotcloud.com'
+    registry_endpoint = os.environ.get(
+        'DOCKER_REGISTRY_ENDPOINT',
+        'https://registrystaging-docker.dotcloud.com')
     #registry_endpoint = 'http://localhost:5000'
-    index_endpoint = 'https://indexstaging-docker.dotcloud.com'
+    index_endpoint = os.environ.get(
+        'DOCKER_INDEX_ENDPOINT',
+        'https://indexstaging-docker.dotcloud.com')
     # export DOCKER_CREDS="login:password"
     user_credentials = os.environ['DOCKER_CREDS'].split(':')
     cookies = None
@@ -102,7 +107,7 @@ class TestWorkflow(base.TestCase):
         resp = requests.put('{0}/v1/repositories/{1}/{2}/images'.format(
             self.index_endpoint, namespace, repos),
             auth=tuple(self.user_credentials),
-            headers={'X-Endpoints': 'registrystaging-docker.dotcloud.com'},
+            headers={'X-Endpoints': self.registry_endpoint},
             data=json.dumps(images_json))
         self.assertEqual(resp.status_code, 204)
         return (namespace, repos)
