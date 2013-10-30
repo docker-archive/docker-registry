@@ -1,10 +1,8 @@
-
 import cStringIO as StringIO
 import hashlib
 import json
 import os
 import requests
-import unittest
 
 import base
 import checksums
