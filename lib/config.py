@@ -1,5 +1,6 @@
 
 import os
+import rsa
 import yaml
 
 
@@ -57,5 +58,8 @@ def load():
     config.update(data.get(flavor, {}))
     config['flavor'] = flavor
     config = convert_env_vars(config)
+    if 'privileged_key' in config:
+        with open(config['privileged_key']) as f:
+            config['privileged_key'] = rsa.PublicKey.load_pkcs1(f.read())
     _config = Config(config)
     return _config

@@ -1,4 +1,4 @@
-
+import base64
 import functools
 import logging
 import random
@@ -8,6 +8,7 @@ import urllib
 
 import flask
 import requests
+import rsa
 import simplejson as json
 
 import config
@@ -162,10 +163,43 @@ def check_token(args):
     return True
 
 
+def check_signature():
+    cfg = config.load()
+    if not cfg.get('privileged_key'):
+        return False
+    headers = flask.request.headers
+    signature = headers.get('X-Signature')
+    if not signature:
+        logger.debug('No X-Signature header in request')
+        return False
+    sig = parse_content_signature(signature)
+    logger.debug('Parsed signature: {}'.format(sig))
+    sigdata = base64.b64decode(sig['data'])
+    header_keys = sorted([
+        x for x in headers.iterkeys() if x.startswith('X-Docker')
+    ])
+    message = ','.join([flask.request.method, flask.request.path] +
+                       ['{}:{}'.format(k, headers[k]) for k in header_keys])
+    logger.debug('Signed message: {}'.format(message))
+    try:
+        return rsa.verify(message, sigdata, cfg.get('privileged_key'))
+    except rsa.VerificationError:
+        return False
+
+
+def parse_content_signature(s):
+    lst = [x.strip().split('=', 1) for x in s.split(';')]
+    ret = {}
+    for k, v in lst:
+        ret[k] = v
+    return ret
+
+
 def requires_auth(f):
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
-        if check_session() is True or check_token(kwargs) is True:
+        if check_signature() is True or check_session() is True \
+                or check_token(kwargs) is True:
             return f(*args, **kwargs)
         headers = {'WWW-Authenticate': 'Token'}
         return api_error('Requires authorization', 401, headers)
