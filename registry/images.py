@@ -13,7 +13,7 @@ import toolkit
 
 from .app import app
 from .app import cfg
-from storage.local import LocalStorage
+import storage.local
 
 
 store = storage.load()
@@ -61,7 +61,7 @@ def get_image_layer(image_id, headers):
         accel_uri_prefix = cfg.nginx_x_accel_redirect
         path = store.image_layer_path(image_id)
         if accel_uri_prefix:
-            if isinstance(store, LocalStorage):
+            if isinstance(store, storage.local.LocalStorage):
                 accel_uri = '/'.join([accel_uri_prefix, path])
                 headers['X-Accel-Redirect'] = accel_uri
                 logger.debug('send accelerated {0} ({1})'.format(
