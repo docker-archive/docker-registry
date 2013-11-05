@@ -122,6 +122,8 @@ to `s3`.
       server-side by S3 and will be stored in an encrypted form while at rest 
       in S3.
 1. `s3_secure`: boolean, true for HTTPS to S3
+1. `boto_bucket`: string, the bucket name
+1. `storage_path`: string, the sub "folder" where image data will be stored.
 
 ### Email options
 
