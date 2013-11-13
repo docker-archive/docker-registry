@@ -163,7 +163,7 @@ Run the Registry
 ### The fast way:
 
 ```
-docker run -p 5000 samalba/docker-registry
+docker run -p 5000 stackbrew/registry
 ```
 
 NOTE: The container will try to allocate the port 5000 by default, if the port
