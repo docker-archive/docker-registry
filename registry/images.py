@@ -52,11 +52,7 @@ def set_cache_headers(f):
     return wrapper
 
 
-@app.route('/v1/images/<image_id>/layer', methods=['GET'])
-@toolkit.requires_auth
-@require_completion
-@set_cache_headers
-def get_image_layer(image_id, headers):
+def _get_image_layer(image_id, headers):
     try:
         accel_uri_prefix = cfg.nginx_x_accel_redirect
         path = store.image_layer_path(image_id)
@@ -71,6 +67,43 @@ def get_image_layer(image_id, headers):
                 logger.warn('nginx_x_accel_redirect config set,'
                             ' but storage is not LocalStorage')
         return flask.Response(store.stream_read(path), headers=headers)
+    except IOError:
+        return toolkit.api_error('Image not found', 404)
+
+
+@app.route('/v1/private_images/<image_id>/layer', methods=['GET'])
+@toolkit.requires_auth
+@require_completion
+@set_cache_headers
+def get_private_image_layer(image_id, headers):
+    try:
+        repository = toolkit.get_repository()
+    except KeyError:
+        # No auth token found, either standalone registry or privileged access
+        # In both cases, private images are "disabled"
+        return toolkit.api_error('Image not found', 404)
+    try:
+        if not store.is_private(*repository):
+            return toolkit.api_error('Image not found', 404)
+        return _get_image_layer(image_id, headers)
+    except IOError:
+        return toolkit.api_error('Image not found', 404)
+
+
+@app.route('/v1/images/<image_id>/layer', methods=['GET'])
+@toolkit.requires_auth
+@require_completion
+@set_cache_headers
+def get_image_layer(image_id, headers):
+    try:
+        try:
+            if store.is_private(*toolkit.get_repository()):
+                return toolkit.api_error('Image not found', 404)
+        except KeyError:
+            # No auth token found, either standalone registry or privileged
+            # access. In both cases, access is always "public".
+            pass
+        return _get_image_layer(image_id, headers)
     except IOError:
         return toolkit.api_error('Image not found', 404)
 
@@ -147,11 +180,44 @@ def put_image_checksum(image_id):
     return toolkit.response()
 
 
+@app.route('/v1/private_images/<image_id>/json', methods=['GET'])
+@toolkit.requires_auth
+@require_completion
+@set_cache_headers
+def get_private_image_json(image_id, headers):
+    try:
+        repository = toolkit.get_repository()
+    except KeyError:
+        # No auth token found, either standalone registry or privileged access
+        # In both cases, private images are "disabled"
+        return toolkit.api_error('Image not found', 404)
+    try:
+        if not store.is_private(*repository):
+            return toolkit.api_error('Image not found', 404)
+        return _get_image_json(image_id, headers)
+    except IOError:
+        return toolkit.api_error('Image not found', 404)
+
+
 @app.route('/v1/images/<image_id>/json', methods=['GET'])
 @toolkit.requires_auth
 @require_completion
 @set_cache_headers
 def get_image_json(image_id, headers):
+    try:
+        try:
+            if store.is_private(toolkit.get_repository()):
+                return toolkit.api_error('Image not found', 404)
+        except KeyError:
+            # No auth token found, either standalone registry or privileged
+            # access. In both cases, access is always "public".
+            pass
+        return _get_image_json(image_id, headers)
+    except IOError:
+        return toolkit.api_error('Image not found', 404)
+
+
+def _get_image_json(image_id, headers):
     try:
         data = store.get_content(store.image_json_path(image_id))
     except IOError:

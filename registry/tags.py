@@ -15,6 +15,39 @@ store = storage.load()
 logger = logging.getLogger(__name__)
 
 
+@app.route('/v1/repositories/<path:repository>/access', methods=['PUT'])
+@toolkit.parse_repository_name
+@toolkit.requires_auth
+def set_access(namespace, repo):
+    logger.debug("[set_access] namespace={0}; repository={1}".format(namespace,
+                 repo))
+    data = None
+    try:
+        data = json.loads(flask.request.data)
+    except json.JSONDecodeError:
+        pass
+    if not data or not isinstance(data, dict):
+        return toolkit.api_error('Invalid data')
+    private_flag_path = store.private_flag_path(namespace, repo)
+    if data['access'] == 'private' and not store.is_private(namespace, repo):
+        store.put_content(private_flag_path, '')
+    elif data['access'] == 'public' and store.is_private(namespace, repo):
+        store.remove(private_flag_path)
+    return toolkit.response()
+
+
+@app.route('/v1/repositories/<path:repository>/access', methods=['GET'])
+@toolkit.parse_repository_name
+@toolkit.requires_auth
+def get_access(namespace, repo):
+    logger.debug("[get_access] namespace={0}; repository={1}".format(namespace,
+                 repo))
+    is_private = store.is_private(namespace, repo)
+    return toolkit.response({
+        'access': 'private' if is_private else 'public'
+    })
+
+
 @app.route('/v1/repositories/<path:repository>/tags',
            methods=['GET'])
 @toolkit.parse_repository_name

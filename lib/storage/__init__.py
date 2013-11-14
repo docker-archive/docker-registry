@@ -59,6 +59,14 @@ class Storage(object):
                                                   namespace,
                                                   repository)
 
+    def private_flag_path(self, namespace, repository):
+        return '{0}/{1}/{2}/_private'.format(
+            self.repositories, namespace, repository
+        )
+
+    def is_private(self, namespace, repository):
+        return self.exists(self.private_flag_path(namespace, repository))
+
     def get_content(self, path):
         raise NotImplementedError
 
