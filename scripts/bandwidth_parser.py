@@ -1,6 +1,37 @@
-import bandwidth_cache
 import datetime
+import json
+import os
 import re
+import redis
+import sys
+
+cfg_path = os.path.realpath('')
+sys.path.append(cfg_path)
+
+import gunicorn_config
+
+redis_opts = {}
+redis_conn = None
+cache_prefix = 'bandwidth_log:'
+exp_time = 60 * 60 * 24  # Key expires in 24hs
+try:
+    with open('/home/dotcloud/environment.json') as f:
+        env = json.load(f)
+        # Prod
+        redis_opts = {
+            'host': env['DOTCLOUD_BANDWIDTH_REDIS_HOST'],
+            'port': int(env['DOTCLOUD_BANDWIDTH_REDIS_PORT']),
+            'db': 0,
+            'password': env['DOTCLOUD_BANDWIDTH_REDIS_PASSWORD'],
+        }
+except Exception:
+    # Dev
+    redis_opts = {
+        'host': 'localhost',
+        'port': 6380,
+        'db': 0,
+        'password': None,
+    }
 
 
 def convert_str_to_datetime(date_str):
@@ -8,21 +39,20 @@ def convert_str_to_datetime(date_str):
 
 
 def line_parser(str_line):
-    pattern = "(?P<ip>\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}) - - \[" \
-              "(?P<date>\d{2}/\w+/\d{4}:\d{2}:\d{2}:\d{2})?\] \"" \
-              "(?P<http_request>\w+)? /\w+/\w+/" \
-              "(?P<id>\w+)?/(?P<type>\w+)?"
+    pattern = ("(?P<ip>\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}) - - \["
+               "(?P<date>\d{2}/\w+/\d{4}:\d{2}:\d{2}:\d{2})?\] \""
+               "(?P<http_request>\w+)? /\w+/\w+/"
+               "(?P<id>\w+)?/(?P<type>\w+)?")
     pattern_2 = ".*?(\d+)$"
     results = re.match(pattern, str_line)
-    if results is not None:
-        results = re.match(pattern, str_line).groupdict()
-    else:
+    if results is None:
         return results
+    results = re.match(pattern, str_line).groupdict()
     temp_results = re.match(pattern_2, str_line)
-    if temp_results is not None:
-        results['size'] = re.match(pattern_2, str_line).group(1)
-    else:
+    if temp_results is None:
         results['size'] = None
+        return results
+    results['size'] = re.match(pattern_2, str_line).group(1)
     return results
 
 
@@ -46,18 +76,27 @@ def compute_bandwidth(str_end_time, str_start_time, str_layer_size):
     return bandwidth
 
 
-@bandwidth_cache.put(time=60 * 60 * 24)  # Key expires in 24hs
-def store_data(key, content):
-    return content
+def set_cache(str_start_time, str_end_time, bandwidth):
+    global redis_conn, cache_prefix, exp_period
+    key = cache_prefix + str_start_time + ':' + str_end_time
+    if redis_conn is None:
+        return
+    redis_conn.setex(key, exp_time, bandwidth)  # time in seconds
 
 
 def generate_bandwidth_data():
+    global redis_conn, redis_opts
     parsed_data = []
     end_times = {}
-    for line in reversed(open("/var/log/supervisor/access.log").readlines()):
-        processed_line = line_parser(line.rstrip())
-        if processed_line is not None:
-            parsed_data.append(processed_line)
+    redis_conn = redis.StrictRedis(host=redis_opts['host'],
+                                   port=int(redis_opts['port']),
+                                   db=int(redis_opts['db']),
+                                   password=redis_opts['password'])
+    with open(gunicorn_config.accesslog) as f:
+        for line in reversed(f.readlines()):
+            processed_line = line_parser(line.rstrip())
+            if processed_line is not None:
+                parsed_data.append(processed_line)
     for item in parsed_data:
         if item['http_request'] is not None and item['type'] is not None:
             if 'GET' in item['http_request'] and 'layer' in item['type']:
@@ -74,10 +113,10 @@ def generate_bandwidth_data():
                 if bandwidth:
                     end_time = convert_str_to_datetime(str_end_time)
                     min_time = datetime.datetime.now() - datetime.\
-                        timedelta(days=3)
+                        timedelta(days=1)
                     if end_time > min_time:
-                        store_data(str_start_time + ':' + str_end_time,
-                                   bandwidth)
+                        set_cache(str_start_time, str_end_time, bandwidth)
                 end_times.pop(key, None)
 
-generate_bandwidth_data()
+if __name__ == "__main__":
+    generate_bandwidth_data()
