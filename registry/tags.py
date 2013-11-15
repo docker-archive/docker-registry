@@ -15,10 +15,10 @@ store = storage.load()
 logger = logging.getLogger(__name__)
 
 
-@app.route('/v1/repositories/<path:repository>/access', methods=['PUT'])
+@app.route('/v1/repositories/<path:repository>/properties', methods=['PUT'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
-def set_access(namespace, repo):
+def set_properties(namespace, repo):
     logger.debug("[set_access] namespace={0}; repository={1}".format(namespace,
                  repo))
     data = None
@@ -36,10 +36,10 @@ def set_access(namespace, repo):
     return toolkit.response()
 
 
-@app.route('/v1/repositories/<path:repository>/access', methods=['GET'])
+@app.route('/v1/repositories/<path:repository>/properties', methods=['GET'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
-def get_access(namespace, repo):
+def get_properties(namespace, repo):
     logger.debug("[get_access] namespace={0}; repository={1}".format(namespace,
                  repo))
     is_private = store.is_private(namespace, repo)
