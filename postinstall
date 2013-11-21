@@ -1,0 +1,6 @@
+#!/bin/sh
+
+crontab - <<EOF
+# Run the bandwidth script every 12 hours
+0 */12 * * * bash -lc "~/env/bin/python ~/current/scripts/bandwidth_parser >/var/log/supervisor/cron.lastrun.log 2>&1"
+EOF
