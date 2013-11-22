@@ -47,8 +47,8 @@ class EllipticsStorage(Storage):
         self._session.set_indexes(key, [], [])
 
     def s_read(self, path):
-        res = self._session.read_data(path, 0, 0).get()[0]
-        return res.data
+        res = self._session.read_data(path, offset=0, size=0).get()[0]
+        return str(res.data)
 
     def s_write(self, key, value, tags):
         self._session.write_data(key, str(value)).wait()
