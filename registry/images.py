@@ -76,10 +76,12 @@ def _get_image_layer(image_id, headers):
 @require_completion
 @set_cache_headers
 def get_private_image_layer(image_id, headers):
-    repository = toolkit.get_repository()
-    if not repository:
-        return toolkit.api_error('Image not found', 404)
     try:
+        repository = toolkit.get_repository()
+        if not repository:
+            # No auth token found, either standalone registry or privileged
+            # access. In both cases, private images are "disabled"
+            return toolkit.api_error('Image not found', 404)
         if not store.is_private(*repository):
             return toolkit.api_error('Image not found', 404)
         return _get_image_layer(image_id, headers)
@@ -94,8 +96,10 @@ def get_private_image_layer(image_id, headers):
 def get_image_layer(image_id, headers):
     try:
         repository = toolkit.get_repository()
-        if store.is_private(*repository):
+        if repository and store.is_private(*repository):
             return toolkit.api_error('Image not found', 404)
+        # If no auth token found, either standalone registry or privileged
+        # access. In both cases, access is always "public".
         return _get_image_layer(image_id, headers)
     except IOError:
         return toolkit.api_error('Image not found', 404)
@@ -180,6 +184,8 @@ def put_image_checksum(image_id):
 def get_private_image_json(image_id, headers):
     repository = toolkit.get_repository()
     if not repository:
+        # No auth token found, either standalone registry or privileged access
+        # In both cases, private images are "disabled"
         return toolkit.api_error('Image not found', 404)
     try:
         if not store.is_private(*repository):
@@ -196,8 +202,10 @@ def get_private_image_json(image_id, headers):
 def get_image_json(image_id, headers):
     try:
         repository = toolkit.get_repository()
-        if store.is_private(*repository):
+        if repository and store.is_private(*repository):
             return toolkit.api_error('Image not found', 404)
+        # If no auth token found, either standalone registry or privileged
+        # access. In both cases, access is always "public".
         return _get_image_json(image_id, headers)
     except IOError:
         return toolkit.api_error('Image not found', 404)
