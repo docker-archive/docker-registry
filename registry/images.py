@@ -74,7 +74,6 @@ def _get_image_layer(image_id, headers):
 @app.route('/v1/private_images/<image_id>/layer', methods=['GET'])
 @toolkit.requires_auth
 @require_completion
-@set_cache_headers
 def get_private_image_layer(image_id, headers):
     try:
         repository = toolkit.get_repository()
@@ -180,7 +179,6 @@ def put_image_checksum(image_id):
 @app.route('/v1/private_images/<image_id>/json', methods=['GET'])
 @toolkit.requires_auth
 @require_completion
-@set_cache_headers
 def get_private_image_json(image_id, headers):
     repository = toolkit.get_repository()
     if not repository:
