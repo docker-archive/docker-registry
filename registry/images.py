@@ -53,9 +53,9 @@ def set_cache_headers(f):
 
 
 def _get_image_layer(image_id, headers=None):
+    if headers is None:
+        headers = {}
     try:
-        if headers is None:
-            headers = {}
         accel_uri_prefix = cfg.nginx_x_accel_redirect
         path = store.image_layer_path(image_id)
         if accel_uri_prefix:
@@ -211,7 +211,9 @@ def get_image_json(image_id, headers):
         return toolkit.api_error('Image not found', 404)
 
 
-def _get_image_json(image_id, headers):
+def _get_image_json(image_id, headers=None):
+    if headers is None:
+        headers = {}
     try:
         data = store.get_content(store.image_json_path(image_id))
     except IOError:
