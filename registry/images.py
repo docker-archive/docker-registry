@@ -74,7 +74,7 @@ def _get_image_layer(image_id, headers):
 @app.route('/v1/private_images/<image_id>/layer', methods=['GET'])
 @toolkit.requires_auth
 @require_completion
-def get_private_image_layer(image_id, headers):
+def get_private_image_layer(image_id):
     try:
         repository = toolkit.get_repository()
         if not repository:
@@ -179,7 +179,7 @@ def put_image_checksum(image_id):
 @app.route('/v1/private_images/<image_id>/json', methods=['GET'])
 @toolkit.requires_auth
 @require_completion
-def get_private_image_json(image_id, headers):
+def get_private_image_json(image_id):
     repository = toolkit.get_repository()
     if not repository:
         # No auth token found, either standalone registry or privileged access
