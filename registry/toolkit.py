@@ -233,9 +233,9 @@ def parse_repository_name(f):
 def get_repository():
     auth = flask.request.headers.get('authorization', '')
     if not auth:
-        raise KeyError('No auth token found in headers')
+        return
     auth = dict(_auth_exp.findall(auth))
     parts = auth.get('repository').rstrip('/').split('/', 1)
     if len(parts) < 2:
-        return 'library', parts[0]
-    return parts[0], parts[1]
+        return ('library', parts[0])
+    return (parts[0], parts[1])
