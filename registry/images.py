@@ -52,8 +52,10 @@ def set_cache_headers(f):
     return wrapper
 
 
-def _get_image_layer(image_id, headers):
+def _get_image_layer(image_id, headers=None):
     try:
+        if headers is None:
+            headers = {}
         accel_uri_prefix = cfg.nginx_x_accel_redirect
         path = store.image_layer_path(image_id)
         if accel_uri_prefix:
@@ -83,7 +85,7 @@ def get_private_image_layer(image_id):
             return toolkit.api_error('Image not found', 404)
         if not store.is_private(*repository):
             return toolkit.api_error('Image not found', 404)
-        return _get_image_layer(image_id, headers)
+        return _get_image_layer(image_id)
     except IOError:
         return toolkit.api_error('Image not found', 404)
 
@@ -188,7 +190,7 @@ def get_private_image_json(image_id):
     try:
         if not store.is_private(*repository):
             return toolkit.api_error('Image not found', 404)
-        return _get_image_json(image_id, headers)
+        return _get_image_json(image_id)
     except IOError:
         return toolkit.api_error('Image not found', 404)
 
