@@ -2,6 +2,8 @@
 import datetime
 import functools
 import logging
+import tarfile
+import tempfile
 import time
 
 import flask
@@ -314,3 +316,64 @@ def put_image_json(image_id):
     store.put_content(json_path, flask.request.data)
     generate_ancestry(image_id, parent_id)
     return toolkit.response()
+
+
+def _get_image_files(image_id):
+    image_files_path = store.image_files_path(image_id)
+    if store.exists(image_files_path):
+        return store.get_content(image_files_path)
+    image_path = store.image_layer_path(image_id)
+    files = []
+    with tempfile.TemporaryFile() as tmpf:
+        for buf in store.stream_read(image_path):
+            tmpf.write(buf)
+        tmpf.seek(0)
+        tarf = tarfile.open(mode='r|*', fileobj=tmpf)
+        for member in tarf.getmembers():
+            if not member.isfile():
+                continue
+            path = member.path
+            files.append(path[1:] if path.startswith('.') else path)
+        tarf.close()
+    files_data = json.dumps(files)
+    store.put_content(image_files_path, files_data)
+    return files_data
+
+
+@app.route('/v1/private_images/<image_id>/files', methods=['GET'])
+@toolkit.requires_auth
+@require_completion
+def get_private_image_files(image_id, headers):
+    repository = toolkit.get_repository()
+    if not repository:
+        # No auth token found, either standalone registry or privileged access
+        # In both cases, private images are "disabled"
+        return toolkit.api_error('Image not found', 404)
+    try:
+        if not store.is_private(*repository):
+            return toolkit.api_error('Image not found', 404)
+        data = _get_image_files(image_id)
+        return toolkit.response(data, headers=headers, raw=True)
+    except IOError:
+        return toolkit.api_error('Image not found', 404)
+    except tarfile.TarError:
+        return toolkit.api_error('Layer format not supported', 400)
+
+
+@app.route('/v1/images/<image_id>/files', methods=['GET'])
+@toolkit.requires_auth
+@require_completion
+@set_cache_headers
+def get_image_files(image_id, headers):
+    try:
+        repository = toolkit.get_repository()
+        if repository and store.is_private(*repository):
+            return toolkit.api_error('Image not found', 404)
+        # If no auth token found, either standalone registry or privileged
+        # access. In both cases, access is always "public".
+        data = _get_image_files(image_id)
+        return toolkit.response(data, headers=headers, raw=True)
+    except IOError:
+        return toolkit.api_error('Image not found', 404)
+    except tarfile.TarError:
+        return toolkit.api_error('Layer format not supported', 400)

@@ -44,6 +44,9 @@ class Storage(object):
     def image_ancestry_path(self, image_id):
         return '{0}/{1}/ancestry'.format(self.images, image_id)
 
+    def image_files_path(self, image_id):
+        return '{0}/{1}/_files'.format(self.images, image_id)
+
     def tag_path(self, namespace, repository, tagname=None):
         if not tagname:
             return '{0}/{1}/{2}'.format(self.repositories,
