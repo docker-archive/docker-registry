@@ -28,38 +28,40 @@ def compute_tarsum(fp, json_data):
     header_fields = ('name', 'mode', 'uid', 'gid', 'size', 'mtime',
                      'type', 'linkname', 'uname', 'gname', 'devmajor',
                      'devminor')
-    tar = tarfile.open(mode='r|*', fileobj=fp)
+    tar = None
     hashes = []
-    for member in tar:
-        header = ''
-        for field in header_fields:
-            value = getattr(member, field)
-            if field == 'type':
-                field = 'typeflag'
-            elif field == 'name':
-                if member.isdir() and not value.endswith('/'):
-                    value += '/'
-            header += '{0}{1}'.format(field, value)
-        h = None
-        try:
-            if member.size > 0:
-                f = tar.extractfile(member)
-                h = sha256_file(f, header)
-            else:
+    try:
+        tar = tarfile.open(mode='r|*', fileobj=fp)
+        for member in tar:
+            header = ''
+            for field in header_fields:
+                value = getattr(member, field)
+                if field == 'type':
+                    field = 'typeflag'
+                elif field == 'name':
+                    if member.isdir() and not value.endswith('/'):
+                        value += '/'
+                header += '{0}{1}'.format(field, value)
+            h = None
+            try:
+                if member.size > 0:
+                    f = tar.extractfile(member)
+                    h = sha256_file(f, header)
+                else:
+                    h = sha256_string(header)
+            except KeyError:
                 h = sha256_string(header)
-        except KeyError:
-            h = sha256_string(header)
-        hashes.append(h)
-        #log = '\n+ filename: {0}\n'.format(member.name)
-        #log += '+ header: {0}\n'.format(header)
-        #log += '+ hash: {0}\n'.format(h)
-        #log += '*' * 16
-        #logger.debug('checksums.compute_tarsum: \n{0}'.format(log))
-    tar.close()
-    hashes.sort()
+            hashes.append(h)
+        hashes.sort()
+    except tarfile.ReadError as e:
+        if e.message != 'empty file':
+            # NOTE(samalba): ignore empty tarfiles but still let the tarsum
+            # compute with json data
+            raise
+    finally:
+        if tar:
+            tar.close()
     data = json_data + ''.join(hashes)
-    #logger.debug('checksums.compute_tarsum: '
-    #             'Hashes: \n{0}\n{1}'.format('\n'.join(hashes), '-' * 16))
     tarsum = 'tarsum+sha256:{0}'.format(sha256_string(data))
     logger.debug('checksums.compute_tarsum: return {0}'.format(tarsum))
     return tarsum
