@@ -40,7 +40,7 @@ class EllipticsStorage(Storage):
         r = self._session.find_all_indexes(list(tags))
         r.wait()
         result = r.get()
-        return [i.indexes[0].data for i in itertools.chain(result)]
+        return [str(i.indexes[0].data) for i in itertools.chain(result)]
 
     def s_remove(self, key):
         self._session.remove(key)
