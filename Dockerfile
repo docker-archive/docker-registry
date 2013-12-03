@@ -1,7 +1,7 @@
-FROM ubuntu
+FROM stackbrew/ubuntu:13.04
 
 RUN sed -i 's/main$/main universe/' /etc/apt/sources.list && apt-get update
-RUN apt-get install -y git-core python-pip build-essential python-dev libevent1-dev
+RUN apt-get install -y git-core python-pip build-essential python-dev libevent1-dev python-openssl
 ADD . /docker-registry
 
 RUN cd /docker-registry && pip install -r requirements.txt
