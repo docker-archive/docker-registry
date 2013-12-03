@@ -159,6 +159,13 @@ test:
   1. If you use `storage_alternate` local, remeber to set `storage_path`
 
 
+### Privileged access
+
+Privileged access allows you to make direct requests to the registry by using 
+an RSA key pair. The `privileged_key` config entry, if set, must indicate a 
+path to a file containing the public key.
+If it is not set, privileged access is disabled.
+
 Run the Registry
 ----------------
 
