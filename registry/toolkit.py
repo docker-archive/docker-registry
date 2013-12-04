@@ -156,7 +156,6 @@ def check_token(args):
     session = flask.session
     session['repository'] = auth.get('repository')
     session['auth'] = True
-    session.permanent = True
     if is_ssl() is False:
         # We enforce the IP check only when not using SSL
         session['from'] = get_remote_ip()

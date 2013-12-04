@@ -1,5 +1,4 @@
 
-import datetime
 import flask
 import logging
 
@@ -39,8 +38,6 @@ def init():
         flask.Flask.secret_key = cfg.secret_key
     else:
         flask.Flask.secret_key = toolkit.gen_random_string(64)
-    # Set the session duration time to 1 hour
-    flask.Flask.permanent_session_lifetime = datetime.timedelta(seconds=3600)
     # Configure the email exceptions
     info = cfg.email_exceptions
     if info:
