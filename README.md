@@ -166,6 +166,16 @@ an RSA key pair. The `privileged_key` config entry, if set, must indicate a
 path to a file containing the public key.
 If it is not set, privileged access is disabled.
 
+#### Generating keys with `openssl`
+
+Generate private key:
+
+    openssl genrsa  -out private.pem 2048
+
+Associated public key:
+
+    openssl rsa -in private.pem -out public.pem -outform PEM -pubout
+
 Run the Registry
 ----------------
 
