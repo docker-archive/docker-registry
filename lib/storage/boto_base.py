@@ -19,7 +19,7 @@ class ParallelKey(object):
 
     """This class implements parallel transfer on a key to improve speed."""
 
-    CONCURRENCY = 20
+    CONCURRENCY = 5
 
     def __init__(self, key):
         logger.info('ParallelKey: {0}; size={1}'.format(key, key.size))
