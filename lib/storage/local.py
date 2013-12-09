@@ -57,8 +57,9 @@ class LocalStorage(Storage):
                     break
 
     def list_directory(self, path=None):
+        prefix = path + '/'
         path = self._init_path(path)
-        prefix = path[len(self._root_path) + 1:] + '/'
+
         exists = False
         for d in os.listdir(path):
             exists = True
