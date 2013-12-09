@@ -234,7 +234,10 @@ def get_repository():
     if not auth:
         return
     auth = dict(_auth_exp.findall(auth))
-    parts = auth.get('repository').rstrip('/').split('/', 1)
+    repository = auth.get('repository')
+    if repository is None:
+        return ('', '')
+    parts = repository.rstrip('/').split('/', 1)
     if len(parts) < 2:
         return ('library', parts[0])
     return (parts[0], parts[1])
