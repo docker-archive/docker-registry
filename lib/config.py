@@ -35,7 +35,10 @@ def _walk_object(obj, callback):
 def convert_env_vars(config):
     def _replace_env(s):
         if isinstance(s, basestring) and s.startswith('_env:'):
-            return os.environ.get(s[5:], '!ENV_NOT_FOUND')
+            parts = s.split(':', 2)
+            varname = parts[1]
+            vardefault = '!ENV_NOT_FOUND' if len(parts) < 3 else parts[2]
+            return os.environ.get(varname, vardefault)
         return s
 
     return _walk_object(config, _replace_env)
