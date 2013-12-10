@@ -50,7 +50,8 @@ def load():
         return _config
     data = None
     config_file = os.environ.get('DOCKER_REGISTRY_CONFIG', 'config.yml')
-    config_path = os.path.join(os.path.dirname(__file__), '..', config_file)
+    config_path = os.path.join(os.path.dirname(__file__), '..', 'config',
+                               config_file)
     with open(config_path) as f:
         data = yaml.load(f)
     config = data.get('common', {})
