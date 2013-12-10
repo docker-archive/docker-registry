@@ -36,7 +36,6 @@ def convert_env_vars(config):
     def _replace_env(s):
         if isinstance(s, basestring) and s.startswith('_env:'):
             parts = s.split(':', 2)
-            ln = len(parts)
             varname = parts[1]
             vardefault = '!ENV_NOT_FOUND' if len(parts) < 3 else parts[2]
             return os.environ.get(varname, vardefault)
