@@ -158,6 +158,17 @@ test:
       e.g. `local`
   1. If you use `storage_alternate` local, remeber to set `storage_path`
 
+#### Persist local storage
+
+If you use any type of local store along with a registry running within a docker
+remember to use a data volume for the `storage_path`. Please read the documentation
+for [data volumes](http://docs.docker.io/en/latest/use/working_with_volumes/) for more information. 
+
+Example:
+
+```
+docker run -p 5000 -v /tmp/registry:/tmp/registry stackbrew/registry 
+```
 
 ### Privileged access
 
