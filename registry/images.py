@@ -5,6 +5,9 @@ import logging
 import tarfile
 import tempfile
 import time
+import StringIO
+
+import backports.lzma as lzma
 
 import flask
 import simplejson as json
@@ -21,6 +24,15 @@ import storage.local
 store = storage.load()
 logger = logging.getLogger(__name__)
 
+
+FILE_TYPES = {
+    tarfile.REGTYPE: 'f',
+    tarfile.DIRTYPE: 'd',
+    tarfile.LNKTYPE: 'l',
+    tarfile.SYMTYPE: 's',
+    tarfile.CHRTYPE: 'c',
+    tarfile.BLKTYPE: 'b',
+}
 
 def require_completion(f):
     """This make sure that the image push correctly finished."""
@@ -111,6 +123,7 @@ def get_image_layer(image_id, headers):
 @app.route('/v1/images/<image_id>/layer', methods=['PUT'])
 @toolkit.requires_auth
 def put_image_layer(image_id):
+    import pdb; pdb.set_trace()
     try:
         json_data = store.get_content(store.image_json_path(image_id))
     except IOError:
@@ -132,11 +145,19 @@ def put_image_layer(image_id):
     h, sum_hndlr = checksums.simple_checksum_handler(json_data)
     sr.add_handler(sum_hndlr)
     store.stream_write(layer_path, sr)
+
+    # read layer files and cache them
+    try:
+        files_json = _get_image_files_from_fobj(tmp)
+        _set_image_files_cache(image_id, files_json)
+    except Exception, e:
+        logger.debug('put_image_layer: Error when caching layer file-tree:'
+                     '{0}'.format(e))
+
     csums.append('sha256:{0}'.format(h.hexdigest()))
     try:
         tmp.seek(0)
         csums.append(checksums.compute_tarsum(tmp, json_data))
-        tmp.close()
     except (IOError, checksums.TarError) as e:
         logger.debug('put_image_layer: Error when computing tarsum '
                      '{0}'.format(e))
@@ -151,6 +172,9 @@ def put_image_layer(image_id):
     if checksum not in csums:
         logger.debug('put_image_layer: Wrong checksum')
         return toolkit.api_error('Checksum mismatch, ignoring the layer')
+
+    tmp.close()
+
     # Checksum is ok, we remove the marker
     store.remove(mark_path)
     return toolkit.response()
@@ -318,27 +342,103 @@ def put_image_json(image_id):
     return toolkit.response()
 
 
-def _get_image_files(image_id):
+class layer_archive(object):
+    def __init__(self, fobj):
+        self.orig_fobj = fobj
+        self.lzma_fobj = None
+        self.tar_obj = None
+
+    def __enter__(self):
+        target_fobj = self.orig_fobj
+        try:
+            self.lzma_fobj = lzma.LZMAFile(filename=target_fobj)
+            self.lzma_fobj.read()
+            self.lzma_fobj.seek(0)
+        except lzma._lzma.LZMAError: 
+            pass
+        else:
+            target_fobj = self.lzma_fobj
+        finally:
+            target_fobj.seek(0)
+
+        self.tar_obj = tarfile.open(mode='r|*', fileobj=target_fobj)
+        return self.tar_obj
+
+    def __exit__(self, type, value, traceback):
+        self.tar_obj.close()
+        self.lzma_fobj.close()
+        self.orig_fobj.seek(0)
+
+def _serialize_tar_info(tar_info):
+    is_deleted = False
+    filename = tar_info.name
+    # notice and strip whiteouts
+    if tar_info.name.startswith('.wh.'):
+        filename = filename[4:]
+        is_deleted = True
+
+    # clip the '.' prefixed to every file
+    filename = filename[1:]
+    # the root / is denoted as '.' so it'll be 
+    # an empty string at this point. restore it to '/'
+    if filename == '':
+        filename = '/'
+
+    return (
+        filename,
+        FILE_TYPES[tar_info.type],
+        is_deleted,
+        tar_info.size,
+        tar_info.mtime,
+        tar_info.mode,
+        tar_info.uid,
+        tar_info.gid,
+    )
+
+def _read_tarfile(tar_fobj):
+    return [_serialize_tar_info(m) for m in tar_fobj.getmembers()]
+
+def _get_image_files_cache(image_id):
     image_files_path = store.image_files_path(image_id)
     if store.exists(image_files_path):
         return store.get_content(image_files_path)
-    image_path = store.image_layer_path(image_id)
-    files = []
-    with tempfile.TemporaryFile() as tmpf:
-        for buf in store.stream_read(image_path):
-            tmpf.write(buf)
-        tmpf.seek(0)
-        tarf = tarfile.open(mode='r|*', fileobj=tmpf)
-        for member in tarf.getmembers():
-            if not member.isfile():
-                continue
-            path = member.path
-            files.append(path[1:] if path.startswith('.') else path)
-        tarf.close()
-    files_data = json.dumps(files)
-    store.put_content(image_files_path, files_data)
-    return files_data
 
+def _set_image_files_cache(image_id, files_json):
+    image_files_path = store.image_files_path(image_id)
+    store.put_content(image_files_path, files_json)
+
+def _get_image_files_from_fobj(layer_file):
+    '''
+    Download the specified layer and determine the file contents. Alternatively,
+    process a passed in file-object containing the layer data.
+    '''
+    layer_file.seek(0)
+    with layer_archive(layer_file) as tar_fobj:
+        # read passed in tarfile directly
+        files = _read_tarfile(tar_fobj)
+
+    return json.dumps(files)
+
+def _get_image_files(image_id):
+    '''
+    Download the specified layer and determine the file contents. Alternatively,
+    process a passed in file-object containing the layer data.
+    '''
+    files_json = _get_image_files_cache(image_id)
+    if files_json:
+        return files_json
+
+    # download remote layer
+    image_path = store.image_layer_path(image_id)
+    with tempfile.TemporaryFile() as tmp_fobj:
+        for buf in store.stream_read(image_path):
+            tmp_fobj.write(buf)
+        tmp_fobj.seek(0)
+        # decompress and untar layer
+        files_json = _get_image_files_from_fobj(tmp_fobj)
+
+    _set_image_files_cache(image_id, files_json)
+    return files_json
 
 @app.route('/v1/private_images/<image_id>/files', methods=['GET'])
 @toolkit.requires_auth
@@ -347,7 +447,7 @@ def get_private_image_files(image_id, headers):
     repository = toolkit.get_repository()
     if not repository:
         # No auth token found, either standalone registry or privileged access
-        # In both cases, private images are "disabled"
+        # In both cases, private images are "disablled"
         return toolkit.api_error('Image not found', 404)
     try:
         if not store.is_private(*repository):
