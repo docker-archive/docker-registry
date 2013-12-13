@@ -4,6 +4,7 @@ gevent.monkey.patch_all()
 import cache
 import config
 import gevent
+import socket
 import storage
 import sys
 import toolkit
@@ -46,6 +47,7 @@ def storage_status():
 
 def registry_status():
     retval = {'services': ['redis', 'storage'], 'failures': {}}
+    retval['host'] = socket.gethostname()
     code = 200
     jobs = [gevent.spawn(job) for job in [redis_status, storage_status]]
     gevent.joinall(jobs, timeout=10)
