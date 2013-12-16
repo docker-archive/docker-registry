@@ -1,4 +1,3 @@
-
 import datetime
 import functools
 import logging
@@ -15,6 +14,8 @@ import simplejson as json
 import checksums
 import storage
 import toolkit
+import rqueue
+import cache
 
 from .app import app
 from .app import cfg
@@ -33,6 +34,8 @@ FILE_TYPES = {
     tarfile.CHRTYPE: 'c',
     tarfile.BLKTYPE: 'b',
 }
+
+diff_queue = rqueue.CappedCollection(cache, "diff-worker", 1024)
 
 def require_completion(f):
     """This make sure that the image push correctly finished."""
@@ -123,7 +126,6 @@ def get_image_layer(image_id, headers):
 @app.route('/v1/images/<image_id>/layer', methods=['PUT'])
 @toolkit.requires_auth
 def put_image_layer(image_id):
-    import pdb; pdb.set_trace()
     try:
         json_data = store.get_content(store.image_json_path(image_id))
     except IOError:
@@ -148,7 +150,7 @@ def put_image_layer(image_id):
 
     # read layer files and cache them
     try:
-        files_json = _get_image_files_from_fobj(tmp)
+        files_json = json.dumps(_get_image_files_from_fobj(tmp))
         _set_image_files_cache(image_id, files_json)
     except Exception, e:
         logger.debug('put_image_layer: Error when caching layer file-tree:'
@@ -373,16 +375,19 @@ def _serialize_tar_info(tar_info):
     is_deleted = False
     filename = tar_info.name
     # notice and strip whiteouts
-    if tar_info.name.startswith('.wh.'):
-        filename = filename[4:]
+
+    if filename == ".":
+        filename = '/'
+
+    if filename.startswith("./"):
+        filename = "/" + filename[2:]
+
+    if filename.startswith("/.wh."):
+        filename = "/" + filename[5:]
         is_deleted = True
 
-    # clip the '.' prefixed to every file
-    filename = filename[1:]
-    # the root / is denoted as '.' so it'll be 
-    # an empty string at this point. restore it to '/'
-    if filename == '':
-        filename = '/'
+    if filename.startswith("/.wh."):
+        return None
 
     return (
         filename,
@@ -396,7 +401,7 @@ def _serialize_tar_info(tar_info):
     )
 
 def _read_tarfile(tar_fobj):
-    return [_serialize_tar_info(m) for m in tar_fobj.getmembers()]
+    return [i for i in [_serialize_tar_info(m) for m in tar_fobj.getmembers()] if i is not None]
 
 def _get_image_files_cache(image_id):
     image_files_path = store.image_files_path(image_id)
@@ -417,7 +422,7 @@ def _get_image_files_from_fobj(layer_file):
         # read passed in tarfile directly
         files = _read_tarfile(tar_fobj)
 
-    return json.dumps(files)
+    return files
 
 def _get_image_files(image_id):
     '''
@@ -435,8 +440,7 @@ def _get_image_files(image_id):
             tmp_fobj.write(buf)
         tmp_fobj.seek(0)
         # decompress and untar layer
-        files_json = _get_image_files_from_fobj(tmp_fobj)
-
+        files_json = json.dumps(_get_image_files_from_fobj(tmp_fobj))
     _set_image_files_cache(image_id, files_json)
     return files_json
 
@@ -477,3 +481,77 @@ def get_image_files(image_id, headers):
         return toolkit.api_error('Image not found', 404)
     except tarfile.TarError:
         return toolkit.api_error('Layer format not supported', 400)
+
+
+def _get_file_info_map(file_infos):
+    return dict((file_info[0], file_info[1:]) for file_info in file_infos)
+
+def _get_image_diff_cache(image_id):
+    image_diff_path = store.image_diff_path(image_id)
+    if store.exists(image_diff_path):
+        return store.get_content(image_diff_path)
+
+def _set_image_diff_cache(image_id, diff_json):
+    image_diff_path = store.image_diff_path(image_id)
+    store.put_content(image_diff_path, diff_json)
+
+def _get_image_diff(image_id):
+    diff_json = _get_image_diff_cache(image_id)
+    if diff_json:
+        return diff_json
+
+    ancestry = json.loads(store.get_content(store.image_ancestry_path(image_id)))[1:]
+    files = json.loads(_get_image_files(image_id))
+    info_map = _get_file_info_map(files)
+    deleted = {}
+    changed = {}
+    created = {}
+
+    for id in ancestry:
+        ancestor_files = json.loads(_get_image_files(id))
+        ancestor_map = _get_file_info_map(ancestor_files)
+        for filename, info in info_map.items():
+            ancestor_info = ancestor_map.get(filename)
+            if info[1]:
+                deleted[filename] = info
+                del info_map[filename]
+            elif ancestor_info:
+                if ancestor_info[1]:
+                    created[filename] = info
+                else:
+                    changed[filename] = info
+                del info_map[filename]
+    created.update(info_map)
+
+    diff_json = json.dumps({
+        'deleted': deleted,
+        'changed': changed,
+        'created': created,
+    })
+
+    _set_image_diff_cache(image_id, diff_json)
+
+    return diff_json
+
+@app.route('/v1/images/<image_id>/diff', methods=['GET'])
+@toolkit.requires_auth
+@require_completion
+@set_cache_headers
+def get_image_diff(image_id, headers):
+    try:
+        repository = toolkit.get_repository()
+        if repository and store.is_private(*repository):
+            return toolkit.api_error('Image not found', 404)
+
+        diff_json = _get_image_diff_cache(image_id)
+        if not diff_json:
+            diff_queue.push(image_id)
+            data = "No diff data available."
+
+
+        return toolkit.response(data, headers=headers, raw=True)
+    except IOError:
+        return toolkit.api_error('Image not found', 404)
+    except tarfile.TarError:
+        return toolkit.api_error('Layer format not supported', 400)
+

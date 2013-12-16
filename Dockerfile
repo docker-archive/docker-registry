@@ -1,7 +1,7 @@
 FROM stackbrew/ubuntu:13.04
 
 RUN sed -i 's/main$/main universe/' /etc/apt/sources.list && apt-get update
-RUN apt-get install -y git-core python-pip build-essential python-dev libevent1-dev python-openssl
+RUN apt-get install -y git-core python-pip build-essential python-dev libevent1-dev python-openssl liblzma-dev
 ADD . /docker-registry
 ADD ./config/boto.cfg /etc/boto.cfg
 
