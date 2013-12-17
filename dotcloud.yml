@@ -12,3 +12,6 @@ api:
 
 cache:
     type: redis
+
+redis:
+    type: redis
