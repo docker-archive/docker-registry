@@ -10,8 +10,10 @@ api:
     ports:
         www: http
 
+# Redis configured in LRU, used by lib/cache.py
 cache:
     type: redis
 
+# Normal Redis (for everything else)
 redis:
     type: redis
