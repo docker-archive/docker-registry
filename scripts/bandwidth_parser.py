@@ -19,10 +19,10 @@ try:
         env = json.load(f)
         # Prod
         redis_opts = {
-            'host': env['DOTCLOUD_BANDWIDTH_REDIS_HOST'],
-            'port': int(env['DOTCLOUD_BANDWIDTH_REDIS_PORT']),
+            'host': env['DOTCLOUD_REDIS_REDIS_HOST'],
+            'port': int(env['DOTCLOUD_REDIS_REDIS_PORT']),
             'db': 0,
-            'password': env['DOTCLOUD_BANDWIDTH_REDIS_PASSWORD'],
+            'password': env['DOTCLOUD_REDIS_REDIS_PASSWORD'],
         }
 except Exception:
     # Dev

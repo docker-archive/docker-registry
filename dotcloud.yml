@@ -13,5 +13,5 @@ api:
 cache:
     type: redis
 
-bandwidth:
+redis:
     type: redis
