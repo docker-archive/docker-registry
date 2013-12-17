@@ -144,6 +144,18 @@ test:
         smtp_host: localhost
 ```
 
+### Performance on prod
+
+It's possible to add an LRU cache to access small files. In this case you need
+to spawn a [redis-server](http://redis.io/) configured in
+[LRU mode](http://redis.io/topics/config). The config file "config_sample.yml"
+shows an example to enable the LRU cache using the config directive `cache_lru`.
+
+Once this feature is enabled, all small files (tags, meta-data) will be cached
+in Redis. When using a remote storage backend (like Amazon S3), it will speeds
+things up dramatically since it will reduce roundtrips to S3.
+
+
 ### Storage options
 
 `storage`: can be one of:
