@@ -1,4 +1,5 @@
 
+import os
 import functools
 import logging
 
@@ -8,9 +9,10 @@ import config
 
 
 # Default options
+
 redis_opts = {
-    'host': 'localhost',
-    'port': 6379,
+    'host': os.environ.get('REDIS_PORT_6379_TCP_ADDR', 'localhost'),
+    'port': int(os.environ.get('REDIS_PORT_6379_TCP_PORT', 6379)),
     'db': 0,
     'password': None
 }
