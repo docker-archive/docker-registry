@@ -1,4 +1,4 @@
-# this module is a fork of QR from Ted Nyman
+# this module is a slight modification of Ted Nyman's QR
 # https://raw.github.com/tnm/qr/master/qr.py
 
 import redis
@@ -17,14 +17,6 @@ class NullHandler(logging.Handler):
 # Clients can add handlers if they are interested.
 log = logging.getLogger('qr')
 log.addHandler(NullHandler())
-
-# This is a complete nod to hotqueue -- this is one of the
-# things that they did right. Natively pickling and unpiclking
-# objects is pretty useful.
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
 
 class worker(object):
     def __init__(self, q, *args, **kwargs):
@@ -56,7 +48,7 @@ class worker(object):
 class BaseQueue(object):
     """Base functionality common to queues"""
     def __init__(self, r_conn, key, **kwargs):
-        self.serializer = pickle
+        self.serializer = json
         self.redis = r_conn
         self.key = key
     

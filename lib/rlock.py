@@ -1,3 +1,5 @@
+# https://gist.github.com/adewes/6103220
+
 from redis import WatchError
 import time
  

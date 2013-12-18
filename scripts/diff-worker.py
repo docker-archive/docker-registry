@@ -52,18 +52,40 @@ def get_redis_connection(options):
     )
     return redis_conn
 
-def handle_request(image_id, redis_conn):
-    with rlock.Lock(redis_conn, "diff-worker-lock", image_id, expires=60*10, timeout=60*5):
-        print "Processing diff for %s" % image_id
-        time.sleep(1)
-        diff_data = images._get_image_diff(image_id)
-        print diff_data
+def handle_request(layer_id, redis_conn):
+    '''
+    This handler is called every time the worker is able to pop a message
+    from the job queue filled by the registry. The worker blocks until a
+    message is available. This handler will then attempt to aquire a lock
+    for the provided layer_id and if successful, process a diff for the 
+    layer.
+
+    If the lock for this layer_id has already been aquired for this layer
+    the worker will immediately timeout to block for another request.
+    '''
+    try:
+        # this with-context will attempt to establish a 5 minute lock on the key
+        # for this layer, immediately passing on LockTimeout if one isn't availble
+        with rlock.Lock(redis_conn, "diff-worker-lock", layer_id, expires=60*5, timeout=0):
+            # first check if a cached result is already available. The registry
+            # already does this, but hey.
+            diff_data = images._get_image_diff_cache(layer_id)
+            if not diff_data:
+                print "Processing diff for %s" % layer_id
+                diff_data = images._get_image_diff(layer_id)
+    except rlock.LockTimeout, e:
+        print "Another worker is processing %s. Skipping." % layer_id
 
 if __name__ == '__main__':
     parser = get_parser()
     options = parser.parse_args()
     redis_conn = get_redis_connection(options)
+    # create a bounded queue holding registry requests for diff calculations
     queue = rqueue.CappedCollection(redis_conn, "diff-worker", 1024)
-    worker = rqueue.worker(queue, redis_conn)
+    # initialize worker factory with the queue and redis connection
+    worker_factory = rqueue.worker(queue, redis_conn)
+    # create worker instance with our handler
+    worker = worker_factory(handle_request)
     print "Starting worker..."
-    worker(handle_request)()
+    # run forever
+    worker()
