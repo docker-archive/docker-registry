@@ -141,6 +141,9 @@ def load(kind=None):
     if kind == 's3':
         import s3
         store = s3.S3Storage(cfg)
+    elif kind == 'swift':
+        import swift
+        store = swift.SwiftStorage(cfg)
     elif kind == 'local':
         store = LocalStorage(cfg)
     elif kind == 'glance':
