@@ -1,3 +1,5 @@
+__all__ = ['registry_status']
+
 import gevent.monkey
 gevent.monkey.patch_all()
 
@@ -8,6 +10,8 @@ import socket
 import storage
 import sys
 import toolkit
+
+from .app import app
 
 _config = config.load()
 
@@ -45,6 +49,8 @@ def storage_status():
     return {'storage': message}
 
 
+@app.route('/_status')
+@app.route('/v1/_status')
 def registry_status():
     retval = {'services': ['redis', 'storage'], 'failures': {}}
     retval['host'] = socket.gethostname()

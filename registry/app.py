@@ -3,7 +3,6 @@ import flask
 import logging
 
 import config
-import status
 import toolkit
 
 
@@ -19,12 +18,6 @@ logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
 @app.route('/v1/_ping')
 def ping():
     return toolkit.response()
-
-
-@app.route('/_status')
-@app.route('/v1/_status')
-def _status():
-    return status.registry_status()
 
 
 @app.route('/')
