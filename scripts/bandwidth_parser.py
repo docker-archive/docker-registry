@@ -1,10 +1,10 @@
 import datetime
 import json
+import logging
 import os
 import re
 import redis
 import sys
-import logging
 
 cfg_path = os.path.realpath('config')
 sys.path.append(cfg_path)
@@ -12,7 +12,7 @@ sys.path.append(cfg_path)
 import gunicorn_config
 
 logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
-        level=logging.INFO)
+                    level=logging.INFO)
 logger = logging.getLogger('metrics')
 
 redis_opts = {}
@@ -89,7 +89,8 @@ def set_cache(key, bandwidth):
         logger.info('Failed to find a redis connection.')
         return
     redis_conn.setex(key, exp_time, bandwidth)  # time in seconds
-    logger.info('Saved in Redis: key: {0} bandwidth: {1}'.format(key, bandwidth))
+    logger.info('Saved in Redis: key: {0} bandwidth: {1}'.format(key,
+                                                                 bandwidth))
 
 
 def adjust_current_interval(current_interval, end_time, items):
