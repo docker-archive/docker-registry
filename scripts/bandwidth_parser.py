@@ -4,11 +4,16 @@ import os
 import re
 import redis
 import sys
+import logging
 
 cfg_path = os.path.realpath('config')
 sys.path.append(cfg_path)
 
 import gunicorn_config
+
+logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
+        level=logging.INFO)
+logger = logging.getLogger('metrics')
 
 redis_opts = {}
 redis_conn = None
@@ -40,7 +45,7 @@ def convert_str_to_datetime(date_str):
     return datetime.datetime.strptime(date_str, '%d/%b/%Y:%H:%M:%S')
 
 
-def line_parser(str_line):
+def raw_line_parser(str_line):
     pattern = ("(?P<ip>\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}) - - \["
                "(?P<date>\d{2}/\w+/\d{4}:\d{2}:\d{2}:\d{2})?\] \""
                "(?P<http_request>\w+)? /\w+/\w+/"
@@ -78,28 +83,32 @@ def compute_bandwidth(str_end_time, str_start_time, str_layer_size):
     return bandwidth
 
 
-def set_cache(str_start_time, str_end_time, bandwidth):
+def set_cache(key, bandwidth):
     global redis_conn, cache_prefix, exp_period
-    key = cache_prefix + str_start_time + ':' + str_end_time
     if redis_conn is None:
+        logger.info('Failed to find a redis connection.')
         return
     redis_conn.setex(key, exp_time, bandwidth)  # time in seconds
+    logger.info('Saved in Redis: key: {0} bandwidth: {1}'.format(key, bandwidth))
 
 
 def adjust_current_interval(current_interval, end_time, items):
     global logging_interval, logging_period
     total_items = logging_period / logging_interval
+    logger.info('Skipping interval: {0}'.format(current_interval))
     for i in range(items, total_items):
         items = i + 1
         current_interval -= datetime.timedelta(minutes=logging_interval)
         if current_interval <= end_time:
             break
+        logger.info('Skipping interval: {0}'.format(current_interval))
     return current_interval, items
 
 
 def save_bandwidth(bandwidth, key, items):
     # Save the average bandwidth of the give items
     avg_bandwidth = round(bandwidth[key] / items[key], 2)
+    logger.info('Saving in Redis...')
     set_cache(key, avg_bandwidth)
 
 
@@ -107,10 +116,11 @@ def update_current_interval(items, logging_interval, start_time):
     items += 1
     interval = logging_interval * items
     current_interval = start_time - datetime.timedelta(minutes=interval)
+    logger.info('Updating interval to: {0}'.format(current_interval))
     return current_interval, items
 
 
-def parse_line(item):
+def parse_data(item):
     str_start_time = None
     str_end_time = None
     str_layer_size = None
@@ -126,10 +136,11 @@ def parse_line(item):
 
 
 def read_file():
+    logger.info('Reading file...')
     parsed_data = []
     with open(gunicorn_config.accesslog) as f:
         for line in reversed(f.readlines()):
-            processed_line = line_parser(line.rstrip())
+            processed_line = raw_line_parser(line.rstrip())
             if processed_line is not None:
                 parsed_data.append(processed_line)
     return parsed_data
@@ -144,7 +155,7 @@ def generate_bandwidth_data(start_time, min_time, time_interval):
     items = 1
     parsed_data = read_file()
     for item in parsed_data:
-        str_start_time, str_end_time, str_layer_size, key = parse_line(item)
+        str_start_time, str_end_time, str_layer_size, key = parse_data(item)
         if str_end_time:
             end_times[key] = str_end_time
         else:
@@ -186,9 +197,11 @@ def run():
                                    port=int(redis_opts['port']),
                                    db=int(redis_opts['db']),
                                    password=redis_opts['password'])
+    logger.info('Redis config: {0}'.format(redis_opts))
     start_time = datetime.datetime.utcnow()
     min_time = start_time - datetime.timedelta(minutes=logging_period)
     time_interval = start_time - datetime.timedelta(minutes=logging_interval)
+    logger.info('Starting...')
     generate_bandwidth_data(start_time, min_time, time_interval)
 
 if __name__ == "__main__":
