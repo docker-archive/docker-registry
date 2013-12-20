@@ -53,6 +53,17 @@ test:
     storage: local
     storage_path: /tmp/test
 
+# This flavor is for storing images in Openstack Swift
+swift:
+    storage: swift
+    storage_path: /registry
+    swift_authurl: REPLACEME
+    swift_container: REPLACEME
+    swift_user: REPLACEME
+    swift_password: REPLACEME
+    swift_tenant_name: REPLACEME
+    swift_region_name: REPLACEME
+
 # This flavor stores the images in Glance (to integrate with openstack)
 # See also: https://github.com/dotcloud/openstack-docker
 openstack:
