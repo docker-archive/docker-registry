@@ -1,15 +1,9 @@
 import datetime
 import json
 import logging
-import os
 import re
 import redis
 import sys
-
-cfg_path = os.path.realpath('config')
-sys.path.append(cfg_path)
-
-import gunicorn_config
 
 logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
                     level=logging.INFO)
@@ -18,6 +12,7 @@ logger = logging.getLogger('metrics')
 redis_opts = {}
 redis_conn = None
 cache_prefix = 'bandwidth_log:'
+control_cache_key = 'last_line_parsed'
 logging_period = 60 * 24  # 24hs
 logging_interval = 15  # 15 minutes
 exp_time = 60 * 60 * 24  # Key expires in 24hs
@@ -74,23 +69,28 @@ def compute_bandwidth(str_end_time, str_start_time, str_layer_size):
     start_time = convert_str_to_datetime(str_start_time)
     end_time = convert_str_to_datetime(str_end_time)
     layer_size = long(str_layer_size)
-    layer_size_mb = (layer_size * 8) / (1000 * 1000)  # Megabits
+    layer_size_kb = (layer_size * 8) / 1024  # Kilobits
     delta = end_time - start_time
     num_seconds = delta.total_seconds()
     bandwidth = 0.0
     if num_seconds:
-        bandwidth = layer_size_mb / num_seconds  # Megabits-per-second (Mbps)
+        bandwidth = layer_size_kb / num_seconds  # Kilobits-per-second (KB/s)
     return bandwidth
 
 
-def set_cache(key, bandwidth):
-    global redis_conn, cache_prefix, exp_period
+def cache_key(key):
+    return cache_prefix + key
+
+
+def set_cache(interval, bandwidth):
+    global redis_conn, exp_period
     if redis_conn is None:
-        logger.info('Failed to find a redis connection.')
+        logger.error('Failed to find a redis connection.')
         return
+    key = cache_key('{0}'.format(interval))
     redis_conn.setex(key, exp_time, bandwidth)  # time in seconds
-    logger.info('Saved in Redis: key: {0} bandwidth: {1}'.format(key,
-                                                                 bandwidth))
+    logger.info('Saved in Redis: key: {0} bandwidth: {1}'.format(
+        key, bandwidth))
 
 
 def adjust_current_interval(current_interval, end_time, items):
@@ -113,6 +113,24 @@ def save_bandwidth(bandwidth, key, items):
     set_cache(key, avg_bandwidth)
 
 
+def save_last_line_parsed(time):
+    global redis_conn, cache_prefix
+    if redis_conn is None:
+        logger.error('Failed to find a redis connection.')
+        return
+    key = cache_key(control_cache_key)
+    redis_conn.set(key, time)
+
+
+def get_last_line_parsed():
+    global redis_conn, cache_prefix
+    if redis_conn is None:
+        logger.error('Failed to find a redis connection.')
+        return
+    key = cache_key(control_cache_key)
+    return redis_conn.get(key)
+
+
 def update_current_interval(items, logging_interval, start_time):
     items += 1
     interval = logging_interval * items
@@ -127,23 +145,27 @@ def parse_data(item):
     str_layer_size = None
     key = None
     if item['http_request'] is not None and item['type'] is not None:
-            if 'GET' in item['http_request'] and 'layer' in item['type']:
-                str_end_time = item['date']
-            elif 'GET' in item['http_request'] and 'json' in item['type']:
-                str_start_time = item['date']
-                str_layer_size = item['size']
-            key = item['id']
+        if 'GET' in item['http_request'] and 'layer' in item['type']:
+            str_end_time = item['date']
+        elif 'GET' in item['http_request'] and 'json' in item['type']:
+            str_start_time = item['date']
+            str_layer_size = item['size']
+        key = item['id']
     return str_start_time, str_end_time, str_layer_size, key
 
 
-def read_file():
+def read_file(file_name):
     logger.info('Reading file...')
     parsed_data = []
-    with open(gunicorn_config.accesslog) as f:
-        for line in reversed(f.readlines()):
-            processed_line = raw_line_parser(line.rstrip())
-            if processed_line is not None:
-                parsed_data.append(processed_line)
+    try:
+        with open(file_name) as f:
+            for line in reversed(f.readlines()):
+                processed_line = raw_line_parser(line.rstrip())
+                if processed_line is not None:
+                    parsed_data.append(processed_line)
+    except IOError as e:
+        logger.error('Failed to read the file. {0}'.format(e))
+        exit(1)
     return parsed_data
 
 
@@ -154,7 +176,10 @@ def generate_bandwidth_data(start_time, min_time, time_interval):
     num_items = {}
     total_items = logging_period / logging_interval
     items = 1
-    parsed_data = read_file()
+    parsed_data = read_file(sys.argv[1])
+    last_time_parsed = get_last_line_parsed()
+    if last_time_parsed:
+        last_time_parsed = convert_str_to_datetime(last_time_parsed)
     for item in parsed_data:
         str_start_time, str_end_time, str_layer_size, key = parse_data(item)
         if str_end_time:
@@ -166,6 +191,9 @@ def generate_bandwidth_data(start_time, min_time, time_interval):
                                       str_layer_size)
         if bandwidth:
             end_time = convert_str_to_datetime(str_end_time)
+            if last_time_parsed:
+                if last_time_parsed < end_time:
+                    continue
             if end_time < min_time:
                 break
             if items >= total_items:
@@ -175,6 +203,7 @@ def generate_bandwidth_data(start_time, min_time, time_interval):
                     save_bandwidth(bandwidth_items,
                                    time_interval,
                                    num_items)
+                    save_last_line_parsed(str_end_time)
                     time_interval, items = \
                         update_current_interval(items,
                                                 logging_interval,
@@ -205,5 +234,9 @@ def run():
     logger.info('Starting...')
     generate_bandwidth_data(start_time, min_time, time_interval)
 
+
 if __name__ == "__main__":
+    if len(sys.argv) == 1:
+        logger.error('Please specify the logfile path.')
+        exit(1)
     run()
