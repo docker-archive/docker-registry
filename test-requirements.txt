@@ -1,2 +1,3 @@
 hacking==0.7.0
 mock==1.0.1
+-e git+https://github.com/locationlabs/mockredis.git#egg=mockredis

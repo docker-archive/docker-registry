@@ -1,7 +1,6 @@
-
-import os
 import functools
 import logging
+import os
 
 import redis
 
