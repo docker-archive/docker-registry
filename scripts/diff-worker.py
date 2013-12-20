@@ -92,5 +92,4 @@ if __name__ == '__main__':
     # create worker instance with our handler
     worker = worker_factory(handle_request)
     print "Starting worker..."
-    # run forever
     worker()
