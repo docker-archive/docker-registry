@@ -2,5 +2,5 @@
 
 crontab - <<EOF
 # Run the bandwidth script every 12 hours
-0 */12 * * * bash -lc "~/env/bin/python ~/scripts/bandwidth_parser.py >/var/log/supervisor/cron-bandwidth-lastrun.log 2>&1"
+0 */12 * * * bash -lc "~/env/bin/python ~/scripts/bandwidth_parser.py /var/log/supervisor/access.log>/var/log/supervisor/cron-bandwidth-lastrun.log 2>&1"
 EOF
