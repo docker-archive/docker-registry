@@ -22,28 +22,6 @@ NAMESPACE = "DOCKER"
 class EllipticsStorage(Storage):
 
     def __init__(self, config):
-        """
-            Example:
-
-            storage: elliptics
-            nodes:
-                elliptics-host1: 1025
-                elliptics-host2: 1025
-                ...
-                <hostN>: <port>
-            wait-timeout: 60
-            check_timeout: 60
-            io-thread-num: 2
-            net-thread-num: 2
-            nonblocking_io_thread_num: 2
-            groups: [1, 2, 3]
-            verbosity: 4
-            logfile: "/tmp/logfile.log"
-            loglevel: debug
-
-            More info:
-            http://doc.reverbrain.com/elliptics:api-python
-        """
         cfg = elliptics.Config()
         # The parameter which sets the time to wait for the operation complete
         cfg.config.wait_timeout = config.get("wait-timeout", 60)
