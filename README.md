@@ -77,9 +77,6 @@ Location of the config file
 Specify the config file to be used by setting `DOCKER_REGISTRY_CONFIG` in your 
 environment: `export DOCKER_REGISTRY_CONFIG=config.yml`
 
-The location of the yaml file should be relative to the source directory. 
-Absolute paths are not yet supported.
-
 The default location of the config file is `config.yml`, located in the source 
 directory.
 
