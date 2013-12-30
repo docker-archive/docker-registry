@@ -46,6 +46,7 @@ prod:
         smtp_port: 25
         smtp_login: REPLACEME
         smtp_password: REPLACEME
+        smtp_secure: false
         from_addr: docker-registry@localdomain.local
         to_addr: noise+dockerregistry@localdomain.local
 
