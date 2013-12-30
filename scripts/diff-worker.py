@@ -70,7 +70,10 @@ def handle_request(layer_id, redis_conn):
         # this with-context will attempt to establish a 5 minute lock
         # on the key for this layer, immediately passing on LockTimeout
         # if one isn't availble
-        with rlock.Lock(redis_conn, "diff-worker-lock", layer_id, expires=60 * 5):
+        with rlock.Lock(redis_conn,
+                        "diff-worker-lock",
+                        layer_id,
+                        expires=60 * 5):
             # first check if a cached result is already available. The registry
             # already does this, but hey.
             diff_data = layers.get_image_diff_cache(layer_id)
