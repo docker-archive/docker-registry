@@ -43,6 +43,7 @@ prod:
     # Enabling these options makes the Registry send an email on each code Exception
     email_exceptions:
         smtp_host: REPLACEME
+        smtp_port: 25
         smtp_login: REPLACEME
         smtp_password: REPLACEME
         from_addr: docker-registry@localdomain.local

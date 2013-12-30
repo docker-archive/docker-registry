@@ -41,8 +41,12 @@ def init():
     # Configure the email exceptions
     info = cfg.email_exceptions
     if info:
+        mailhost = info['smtp_host']
+        mailport = info.get('smtp_port')
+        if mailport:
+            mailhost = (mailhost, mailport)
         mail_handler = logging.handlers.SMTPHandler(
-            mailhost=info['smtp_host'],
+            mailhost=mailhost,
             fromaddr=info['from_addr'],
             toaddrs=[info['to_addr']],
             subject='Docker registry exception',
