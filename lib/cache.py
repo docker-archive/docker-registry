@@ -10,8 +10,8 @@ import config
 # Default options
 
 redis_opts = {
-    'host': os.environ.get('REDIS_PORT_6379_TCP_ADDR', 'localhost'),
-    'port': int(os.environ.get('REDIS_PORT_6379_TCP_PORT', 6379)),
+    'host': 'localhost',
+    'port': 6379,
     'db': 0,
     'password': None
 }
