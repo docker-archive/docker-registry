@@ -33,7 +33,7 @@ def generate_ancestry(image_id, parent_id=None):
     store.put_content(store.image_ancestry_path(image_id), json.dumps(data))
 
 
-class layer_archive(object):
+class LayerArchive(object):
     '''Context manager for untaring a possibly xz/lzma compressed archive.'''
     def __init__(self, fobj):
         self.orig_fobj = fobj
@@ -129,7 +129,7 @@ def get_image_files_from_fobj(layer_file):
 
     '''
     layer_file.seek(0)
-    with layer_archive(layer_file) as tar_fobj:
+    with LayerArchive(layer_file) as tar_fobj:
         # read passed in tarfile directly
         files = read_tarfile(tar_fobj)
 
