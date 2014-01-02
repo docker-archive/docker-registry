@@ -21,7 +21,7 @@ cache_prefix = None
 def init():
     global redis_conn, cache_prefix
     cfg = config.load()
-    cache = cfg.cache
+    cache = cfg.cache_lru
     if not cache:
         return
     logging.info('Enabling storage cache on Redis')

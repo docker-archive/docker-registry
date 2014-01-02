@@ -8,7 +8,7 @@ import math
 import os
 import tempfile
 
-import cache
+import cache_lru
 
 from . import Storage
 
@@ -163,7 +163,7 @@ class BotoStorage(Storage):
             raise OSError('No such key: \'{0}\''.format(path))
         return key.size
 
-    @cache.get
+    @cache_lru.get
     def get_content(self, path):
         path = self._init_path(path)
         key = self.makeKey(path)
@@ -176,7 +176,7 @@ class BotoStorage(Storage):
         key = self.makeKey(path)
         return key.exists()
 
-    @cache.remove
+    @cache_lru.remove
     def remove(self, path):
         path = self._init_path(path)
         key = self.makeKey(path)
