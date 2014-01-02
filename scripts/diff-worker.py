@@ -23,6 +23,7 @@ redis_default_port = int(os.environ.get('REDIS_PORT_6379_TCP_PORT', '6379'))
 
 logger = logging.getLogger(__name__)
 
+
 def get_parser():
     parser = argparse.ArgumentParser(
         description="Daemon for computing layer diffs"
