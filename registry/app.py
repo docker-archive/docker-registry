@@ -1,5 +1,3 @@
-import collections
-
 import flask
 import logging
 
@@ -63,7 +61,8 @@ def init():
 def _adapt_smtp_secure(value):
     """Adapt the value to arguments of ``SMTP.starttls()``
 
-    .. seealso:: <http://docs.python.org/2/library/smtplib.html#smtplib.SMTP.starttls>
+    .. seealso:: <http://docs.python.org/2/library/smtplib.html\
+#smtplib.SMTP.starttls>
 
     """
     if isinstance(value, basestring):
