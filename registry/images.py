@@ -370,7 +370,7 @@ def get_image_diff(image_id, headers):
         # it the cache misses, request a diff from a worker
         if not diff_json:
             layers.diff_queue.push(image_id)
-            # empty response - #FIXME use http code 202 or 503
+            # empty response
             diff_json = ""
 
         return toolkit.response(diff_json, headers=headers, raw=True)
