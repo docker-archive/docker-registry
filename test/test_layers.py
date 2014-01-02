@@ -62,7 +62,7 @@ class TestLayers(base.TestCase):
     def test_tar_archive(self):
         tfobj = _get_tarfile(self.filenames)
 
-        with layers.layer_archive(tfobj) as tar:
+        with layers.LayerArchive(tfobj) as tar:
             members = tar.getmembers()
             for tarinfo in members:
                 self.assertIn(tarinfo.name, self.filenames)
@@ -71,14 +71,14 @@ class TestLayers(base.TestCase):
         tfobj = _get_xzfile(self.filenames)
         xzfobj = lzma.open(tfobj)
 
-        with layers.layer_archive(xzfobj) as tar:
+        with layers.LayerArchive(xzfobj) as tar:
             members = tar.getmembers()
             for tarinfo in members:
                 self.assertIn(tarinfo.name, self.filenames)
 
     def test_info_serialization(self):
         tfobj = _get_tarfile(self.filenames)
-        with layers.layer_archive(tfobj) as tar:
+        with layers.LayerArchive(tfobj) as tar:
             members = tar.getmembers()
             for tarinfo in members:
                 sinfo = layers.serialize_tar_info(tarinfo)
@@ -87,7 +87,7 @@ class TestLayers(base.TestCase):
 
     def test_tar_serialization(self):
         tfobj = _get_tarfile(self.filenames)
-        with layers.layer_archive(tfobj) as tar:
+        with layers.LayerArchive(tfobj) as tar:
             infos = layers.read_tarfile(tar)
             for tarinfo in infos:
                 self.assertIn(tarinfo[0], self.filenames)
