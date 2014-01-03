@@ -21,8 +21,8 @@ store = storage.load()
 redis_default_host = os.environ.get('REDIS_PORT_6379_TCP_ADDR', '0.0.0.0')
 redis_default_port = int(os.environ.get('REDIS_PORT_6379_TCP_PORT', '6379'))
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+log = logging.getLogger(__name__)
+log.setLevel(10)
 
 
 def get_parser():
@@ -82,10 +82,10 @@ def handle_request(layer_id, redis_conn):
             # already does this, but hey.
             diff_data = layers.get_image_diff_cache(layer_id)
             if not diff_data:
-                logger.info("Processing diff for %s" % layer_id)
+                log.info("Processing diff for %s" % layer_id)
                 layers.get_image_diff_json(layer_id)
     except rlock.LockTimeout:
-        logger.info("Another worker is processing %s. Skipping." % layer_id)
+        log.info("Another worker is processing %s. Skipping." % layer_id)
 
 if __name__ == '__main__':
     parser = get_parser()
@@ -97,5 +97,5 @@ if __name__ == '__main__':
     worker_factory = rqueue.worker(queue, redis_conn)
     # create worker instance with our handler
     worker = worker_factory(handle_request)
-    logging.info("Starting worker...")
+    log.info("Starting worker...")
     worker()
