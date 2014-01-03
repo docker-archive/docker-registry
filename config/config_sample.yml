@@ -36,10 +36,14 @@ prod:
     storage_path: "_env:STORAGE_PATH:/prod"
     # Enabling LRU cache for small files. This speeds up read/write on small files
     # when using a remote storage backend (like S3).
-    cache_lru:
+    cache:
         host: _env:CACHE_REDIS_HOST
         port: _env:CACHE_REDIS_PORT
         password: _env:CACHE_REDIS_PASSWORD
+    cache_lru:
+        host: _env:CACHE_LRU_REDIS_HOST
+        port: _env:CACHE_LRU_REDIS_PORT
+        password: _env:CACHE_LRU_REDIS_PASSWORD
     # Enabling these options makes the Registry send an email on each code Exception
     email_exceptions:
         smtp_host: REPLACEME

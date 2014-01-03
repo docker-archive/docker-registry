@@ -8,7 +8,7 @@ import logging
 import boto.s3.connection
 import boto.s3.key
 
-import cache
+import cache_lru
 
 from boto_base import BotoStorage
 
@@ -30,7 +30,7 @@ class S3Storage(BotoStorage):
     def makeKey(self, path):
         return boto.s3.key.Key(self._boto_bucket, path)
 
-    @cache.put
+    @cache_lru.put
     def put_content(self, path, content):
         path = self._init_path(path)
         key = self.makeKey(path)

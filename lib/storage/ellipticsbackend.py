@@ -6,7 +6,7 @@ https://github.com/reverbrain/elliptics
 
 import itertools
 
-import cache
+import cache_lru
 
 from . import Storage
 
@@ -56,14 +56,14 @@ class EllipticsStorage(Storage):
         r.wait()
         return r.successful()
 
-    @cache.get
+    @cache_lru.get
     def get_content(self, path):
         try:
             return self.s_read(path)
         except Exception as err:
             raise IOError(err)
 
-    @cache.put
+    @cache_lru.put
     def put_content(self, path, content):
         tag, _, _ = path.rpartition('/')
         if len(content) == 0:
@@ -108,7 +108,7 @@ class EllipticsStorage(Storage):
         res = self.s_find(('docker', tag))
         return path in res
 
-    @cache.remove
+    @cache_lru.remove
     def remove(self, path):
         self.s_remove(path)
 

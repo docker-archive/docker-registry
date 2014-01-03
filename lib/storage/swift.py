@@ -1,5 +1,5 @@
 
-import cache
+import cache_lru
 import swiftclient
 
 from . import Storage
@@ -30,7 +30,7 @@ class SwiftStorage(Storage):
             path = path[1:]
         return path
 
-    @cache.get
+    @cache_lru.get
     def get_content(self, path, chunk_size=None):
         path = self._init_path(path)
         try:
@@ -42,7 +42,7 @@ class SwiftStorage(Storage):
         except Exception:
             raise IOError("Could not get content: {}".format(path))
 
-    @cache.put
+    @cache_lru.put
     def put_content(self, path, content, chunk=None):
         path = self._init_path(path)
         try:
@@ -90,7 +90,7 @@ class SwiftStorage(Storage):
         except Exception:
             return False
 
-    @cache.remove
+    @cache_lru.remove
     def remove(self, path):
         path = self._init_path(path)
         try:

@@ -1,9 +1,7 @@
-
 import datetime
 import functools
 import logging
 import tarfile
-import tempfile
 import time
 
 import flask
@@ -15,9 +13,9 @@ import toolkit
 
 from .app import app
 from .app import cfg
+import layers
+
 import storage.local
-
-
 store = storage.load()
 logger = logging.getLogger(__name__)
 
@@ -73,6 +71,24 @@ def _get_image_layer(image_id, headers=None):
         return flask.Response(store.stream_read(path), headers=headers)
     except IOError:
         return toolkit.api_error('Image not found', 404)
+
+
+def _get_image_json(image_id, headers=None):
+    if headers is None:
+        headers = {}
+    try:
+        data = store.get_content(store.image_json_path(image_id))
+    except IOError:
+        return toolkit.api_error('Image not found', 404)
+    try:
+        size = store.get_size(store.image_layer_path(image_id))
+        headers['X-Docker-Size'] = str(size)
+    except OSError:
+        pass
+    checksum_path = store.image_checksum_path(image_id)
+    if store.exists(checksum_path):
+        headers['X-Docker-Checksum'] = store.get_content(checksum_path)
+    return toolkit.response(data, headers=headers, raw=True)
 
 
 @app.route('/v1/private_images/<image_id>/layer', methods=['GET'])
@@ -132,11 +148,19 @@ def put_image_layer(image_id):
     h, sum_hndlr = checksums.simple_checksum_handler(json_data)
     sr.add_handler(sum_hndlr)
     store.stream_write(layer_path, sr)
+
+    # read layer files and cache them
+    try:
+        files_json = json.dumps(layers.get_image_files_from_fobj(tmp))
+        layers.set_image_files_cache(image_id, files_json)
+    except Exception as e:
+        logger.debug('put_image_layer: Error when caching layer file-tree:'
+                     '{0}'.format(e))
+
     csums.append('sha256:{0}'.format(h.hexdigest()))
     try:
         tmp.seek(0)
         csums.append(checksums.compute_tarsum(tmp, json_data))
-        tmp.close()
     except (IOError, checksums.TarError) as e:
         logger.debug('put_image_layer: Error when computing tarsum '
                      '{0}'.format(e))
@@ -151,6 +175,9 @@ def put_image_layer(image_id):
     if checksum not in csums:
         logger.debug('put_image_layer: Wrong checksum')
         return toolkit.api_error('Checksum mismatch, ignoring the layer')
+
+    tmp.close()
+
     # Checksum is ok, we remove the marker
     store.remove(mark_path)
     return toolkit.response()
@@ -213,24 +240,6 @@ def get_image_json(image_id, headers):
         return toolkit.api_error('Image not found', 404)
 
 
-def _get_image_json(image_id, headers=None):
-    if headers is None:
-        headers = {}
-    try:
-        data = store.get_content(store.image_json_path(image_id))
-    except IOError:
-        return toolkit.api_error('Image not found', 404)
-    try:
-        size = store.get_size(store.image_layer_path(image_id))
-        headers['X-Docker-Size'] = str(size)
-    except OSError:
-        pass
-    checksum_path = store.image_checksum_path(image_id)
-    if store.exists(checksum_path):
-        headers['X-Docker-Checksum'] = store.get_content(checksum_path)
-    return toolkit.response(data, headers=headers, raw=True)
-
-
 @app.route('/v1/images/<image_id>/ancestry', methods=['GET'])
 @toolkit.requires_auth
 @require_completion
@@ -241,17 +250,6 @@ def get_image_ancestry(image_id, headers):
     except IOError:
         return toolkit.api_error('Image not found', 404)
     return toolkit.response(json.loads(data), headers=headers)
-
-
-def generate_ancestry(image_id, parent_id=None):
-    if not parent_id:
-        store.put_content(store.image_ancestry_path(image_id),
-                          json.dumps([image_id]))
-        return
-    data = store.get_content(store.image_ancestry_path(parent_id))
-    data = json.loads(data)
-    data.insert(0, image_id)
-    store.put_content(store.image_ancestry_path(image_id), json.dumps(data))
 
 
 def check_images_list(image_id):
@@ -314,30 +312,8 @@ def put_image_json(image_id):
     # on a failed push
     store.put_content(mark_path, 'true')
     store.put_content(json_path, flask.request.data)
-    generate_ancestry(image_id, parent_id)
+    layers.generate_ancestry(image_id, parent_id)
     return toolkit.response()
-
-
-def _get_image_files(image_id):
-    image_files_path = store.image_files_path(image_id)
-    if store.exists(image_files_path):
-        return store.get_content(image_files_path)
-    image_path = store.image_layer_path(image_id)
-    files = []
-    with tempfile.TemporaryFile() as tmpf:
-        for buf in store.stream_read(image_path):
-            tmpf.write(buf)
-        tmpf.seek(0)
-        tarf = tarfile.open(mode='r|*', fileobj=tmpf)
-        for member in tarf.getmembers():
-            if not member.isfile():
-                continue
-            path = member.path
-            files.append(path[1:] if path.startswith('.') else path)
-        tarf.close()
-    files_data = json.dumps(files)
-    store.put_content(image_files_path, files_data)
-    return files_data
 
 
 @app.route('/v1/private_images/<image_id>/files', methods=['GET'])
@@ -352,7 +328,7 @@ def get_private_image_files(image_id, headers):
     try:
         if not store.is_private(*repository):
             return toolkit.api_error('Image not found', 404)
-        data = _get_image_files(image_id)
+        data = layers.get_image_files_json(image_id)
         return toolkit.response(data, headers=headers, raw=True)
     except IOError:
         return toolkit.api_error('Image not found', 404)
@@ -371,8 +347,33 @@ def get_image_files(image_id, headers):
             return toolkit.api_error('Image not found', 404)
         # If no auth token found, either standalone registry or privileged
         # access. In both cases, access is always "public".
-        data = _get_image_files(image_id)
+        data = layers.get_image_files_json(image_id)
         return toolkit.response(data, headers=headers, raw=True)
+    except IOError:
+        return toolkit.api_error('Image not found', 404)
+    except tarfile.TarError:
+        return toolkit.api_error('Layer format not supported', 400)
+
+
+@app.route('/v1/images/<image_id>/diff', methods=['GET'])
+@toolkit.requires_auth
+@require_completion
+@set_cache_headers
+def get_image_diff(image_id, headers):
+    try:
+        repository = toolkit.get_repository()
+        if repository and store.is_private(*repository):
+            return toolkit.api_error('Image not found', 404)
+
+        # first try the cache
+        diff_json = layers.get_image_diff_cache(image_id)
+        # it the cache misses, request a diff from a worker
+        if not diff_json:
+            layers.diff_queue.push(image_id)
+            # empty response
+            diff_json = ""
+
+        return toolkit.response(diff_json, headers=headers, raw=True)
     except IOError:
         return toolkit.api_error('Image not found', 404)
     except tarfile.TarError:
