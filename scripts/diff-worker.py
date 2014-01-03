@@ -22,7 +22,7 @@ redis_default_host = os.environ.get('REDIS_PORT_6379_TCP_ADDR', '0.0.0.0')
 redis_default_port = int(os.environ.get('REDIS_PORT_6379_TCP_PORT', '6379'))
 
 log = logging.getLogger(__name__)
-log.setLevel(10)
+log.setLevel(logging.DEBUG)
 
 
 def get_parser():
