@@ -4,6 +4,7 @@
 *.sw[p-z]
 *.db
 .DS_Store
+.idea
 .dotcloud
 .coverage
 .tox
