@@ -75,7 +75,7 @@ def compute_bandwidth(str_end_time, str_start_time, str_layer_size):
     delta = end_time - start_time
     num_seconds = delta.total_seconds()
     bandwidth = 0.0
-    if num_seconds:
+    if num_seconds and layer_size_kb > 100:
         bandwidth = layer_size_kb / num_seconds  # Kilobits-per-second (KB/s)
     return bandwidth
 
