@@ -70,13 +70,11 @@ def _adapt_smtp_secure(value):
     if isinstance(value, basestring):
         # a string - wrap it in the tuple
         return (value,)
-    elif isinstance(value, dict):
+    if isinstance(value, dict):
         assert set(value.keys()) <= set(['keyfile', 'certfile'])
         return (value['keyfile'], value.get('certfile', None))
-    elif value:
+    if value:
         return ()
-    else:
-        return None
 
 
 init()
