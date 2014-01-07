@@ -76,10 +76,10 @@ class SwiftStorage(Storage):
             if not directory:
                 raise
             for inode in directory:
+                # trim extra trailing slashes
                 if inode['name'].endswith('/'):
-                    yield inode['name'].split('/')[-2]
-                else:
-                    yield inode['name'].split('/')[-1]
+                    inode['name'] = inode['name'][:-1]
+                yield inode['name'].replace(self._root_path[1:] + '/', '', 1)
         except Exception:
             raise OSError("No such directory: {}".format(path))
 
