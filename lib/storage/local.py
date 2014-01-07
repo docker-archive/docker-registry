@@ -34,7 +34,7 @@ class LocalStorage(Storage):
             f.write(content)
         return path
 
-    def stream_read(self, path):
+    def stream_read(self, path, bytes_range=None):
         path = self._init_path(path)
         with open(path, mode='rb') as f:
             while True:

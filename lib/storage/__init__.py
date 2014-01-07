@@ -83,7 +83,7 @@ class Storage(object):
     def put_content(self, path, content):
         raise NotImplementedError
 
-    def stream_read(self, path):
+    def stream_read(self, path, bytes_range=None):
         raise NotImplementedError
 
     def stream_write(self, path, fp):

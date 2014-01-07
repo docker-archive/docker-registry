@@ -191,7 +191,7 @@ class GlanceStorageLayers(Storage):
         props = {propname: content}
         image.update(properties=props, purge_props=False)
 
-    def stream_read(self, path):
+    def stream_read(self, path, bytes_range=None):
         (image, propname) = self._init_path(path, False)
         if propname:
             raise ValueError('Wrong call (should be get_content)')
