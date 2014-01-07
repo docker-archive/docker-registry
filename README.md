@@ -122,6 +122,41 @@ to `s3`.
 1. `boto_bucket`: string, the bucket name
 1. `storage_path`: string, the sub "folder" where image data will be stored.
 
+### Elliptics options
+
+These options configure your [Elliptics](http://reverbrain.com/elliptics/) storage. These are used when `storage` is set
+to `elliptics`.
+
+1. `nodes`: Elliptics remotes
+1. `wait-timeout`: time to wait for the operation complete
+1. `check_timeout`: timeout for pinging node
+1. `io-thread-num`: number of IO threads in processing pool
+1. `net-thread-num`: number of threads in network processing pool
+1. `nonblocking_io_thread_num`: number of IO threads in processing pool dedicated to nonblocking ops
+1. `groups`: Elliptics groups registry should use
+1. `verbosity`: Elliptics logger verbosity (0...4)
+1. `logfile`: path to Elliptics logfile (default: `dev/stderr`)
+
+Example:
+```yaml
+dev:
+  storage: elliptics
+  nodes:
+      elliptics-host1: 1025
+      elliptics-host2: 1025
+      ...
+      hostN: port
+  wait-timeout: 60
+  check_timeout: 60
+  io-thread-num: 2
+  net-thread-num: 2
+  nonblocking_io_thread_num: 2
+  groups: [1, 2, 3]
+  verbosity: 4
+  logfile: "/tmp/logfile.log"
+  loglevel: debug
+```
+
 ### Email options
 
 Settings these options makes the Registry send an email on each code Exception:
@@ -166,6 +201,7 @@ things up dramatically since it will reduce roundtrips to S3.
   1. `storage_alternate`: storage engine to use when Glance storage fails, 
       e.g. `local`
   1. If you use `storage_alternate` local, remeber to set `storage_path`
+1. `elliptics`: store images in [Elliptics](http://reverbrain.com/elliptics/) key-value storage
 
 #### Persist local storage
 

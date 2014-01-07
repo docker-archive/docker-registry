@@ -1,7 +1,11 @@
 """
 Elliptics is a fault tolerant distributed key/value storage.
-See: http://reverbrain.com/elliptics and
-https://github.com/reverbrain/elliptics
+See http://reverbrain.com/elliptics and
+https://github.com/reverbrain/elliptics for additional info.
+
+Docs: http://doc.reverbrain.com/
+Deployment guide: http://doc.reverbrain.com/elliptics:server-tutorial
+Packages: http://repo.reverbrain.com/
 """
 
 import itertools
@@ -19,36 +23,49 @@ class EllipticsStorage(Storage):
 
     def __init__(self, config):
         cfg = elliptics.Config()
-        log = elliptics.Logger("/dev/stderr", config.get('verbosity', 0))
-
+        # The parameter which sets the time to wait for the operation complete
         cfg.config.wait_timeout = config.get("wait-timeout", 60)
-        cfg.config.io_thread_num = config.get("io-thread-num", 1)
-        cfg.config.net_thread_num = config.get("net-thread-num", 1)
-        cfg.config.groups = config.get('groups', [])
+        # The parameter which sets the timeout for pinging node
+        cfg.config.check_timeout = config.get("check_timeout", 60)
+        # Number of IO threads in processing pool
+        cfg.config.io_thread_num = config.get("io-thread-num", 2)
+        # Number of threads in network processing pool
+        cfg.config.net_thread_num = config.get("net-thread-num", 2)
+        # Number of IO threads in processing pool dedicated to nonblocking ops
+        nonblock_io_threads = config.get("nonblocking_io_thread_num", 2)
+        cfg.config.nonblocking_io_thread_num = nonblock_io_threads
+        groups = config.get('groups', [])
+        if len(groups) == 0:
+            raise ValueError("Specify groups")
 
+        # loglevel of elliptics logger
+        elliptics_log_level = config.get('verbosity', 0)
+
+        # path to logfile
+        elliptics_log_file = config.get('logfile', '/dev/stderr')
+        log = elliptics.Logger(elliptics_log_file, elliptics_log_level)
         self._elliptics_node = elliptics.Node(log, cfg)
+
         for host, port in config.get('nodes').iteritems():
             self._elliptics_node.add_remote(host, port)
 
         self._session = elliptics.Session(self._elliptics_node)
-        self._session.groups = config.get('groups', [])
-        if len(self._session.groups) == 0:
-            raise ValueError("Specify groups")
+        self._session.groups = groups
         self._session.set_namespace(NAMESPACE)
 
     def s_find(self, tags):
         r = self._session.find_all_indexes(list(tags))
         r.wait()
         result = r.get()
-        return [i.indexes[0].data for i in itertools.chain(result)]
+        return [str(i.indexes[0].data) for i in itertools.chain(result)]
 
     def s_remove(self, key):
         self._session.remove(key)
         self._session.set_indexes(key, [], [])
 
     def s_read(self, path):
-        res = self._session.read_data(path, 0, 0).get()[0]
-        return res.data
+        res = self._session.read_data(path, offset=0, size=0).get()[0]
+        return str(res.data)
 
     def s_write(self, key, value, tags):
         self._session.write_data(key, str(value)).wait()
