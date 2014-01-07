@@ -1,5 +1,8 @@
 
+import datetime
 import logging
+import re
+import time
 
 import flask
 import simplejson as json
@@ -13,6 +16,7 @@ from .app import app
 
 store = storage.load()
 logger = logging.getLogger(__name__)
+RE_USER_AGENT = re.compile('([^\s/]+)/([^\s/]+)')
 
 
 @app.route('/v1/repositories/<path:repository>/properties', methods=['PUT'])
@@ -48,8 +52,7 @@ def get_properties(namespace, repo):
     })
 
 
-@app.route('/v1/repositories/<path:repository>/tags',
-           methods=['GET'])
+@app.route('/v1/repositories/<path:repository>/tags', methods=['GET'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
 def get_tags(namespace, repository):
@@ -68,8 +71,7 @@ def get_tags(namespace, repository):
     return toolkit.response(data)
 
 
-@app.route('/v1/repositories/<path:repository>/tags/<tag>',
-           methods=['GET'])
+@app.route('/v1/repositories/<path:repository>/tags/<tag>', methods=['GET'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
 def get_tag(namespace, repository, tag):
@@ -81,6 +83,40 @@ def get_tag(namespace, repository, tag):
     except IOError:
         return toolkit.api_error('Tag not found', 404)
     return toolkit.response(data)
+
+
+@app.route('/v1/repositories/<path:repository>/json', methods=['GET'])
+@toolkit.parse_repository_name
+@toolkit.requires_auth
+def get_repository_json(namespace, repository):
+    json_path = store.repository_json_path(namespace, repository)
+    data = {'last_update': None,
+            'docker_version': None,
+            'docker_go_version': None,
+            'arch': 'amd64',
+            'os': 'linux',
+            'kernel': None}
+    try:
+        data = json.loads(store.get_content(json_path))
+    except IOError:
+        # We ignore the error, we'll serve the default json declared above
+        pass
+    return toolkit.response(data)
+
+
+def create_repository_json(user_agent):
+    props = {
+        'last_update': int(time.mktime(datetime.datetime.utcnow().timetuple()))
+    }
+    ua = dict(RE_USER_AGENT.findall(user_agent))
+    if 'docker' in ua:
+        props['docker_version'] = ua['docker']
+    if 'go' in ua:
+        props['docker_go_version'] = ua['go']
+    for k in ['arch', 'kernel', 'os']:
+        if k in ua:
+            props[k] = ua[k].lower()
+    return json.dumps(props)
 
 
 @app.route('/v1/repositories/<path:repository>/tags/<tag>',
@@ -103,6 +139,12 @@ def put_tag(namespace, repository, tag):
     sender = flask.current_app._get_current_object()
     signals.tag_created.send(sender, namespace=namespace,
                              repository=repository, tag=tag, value=data)
+    if tag == 'latest':
+        # Write some meta-data about the repos
+        ua = flask.request.headers.get('user-agent', '')
+        data = create_repository_json(user_agent=ua)
+        json_path = store.repository_json_path(namespace, repository)
+        store.put_content(json_path, data)
     return toolkit.response()
 
 
