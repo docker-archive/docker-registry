@@ -33,36 +33,35 @@ def generate_ancestry(image_id, parent_id=None):
     store.put_content(store.image_ancestry_path(image_id), json.dumps(data))
 
 
-class LayerArchive(object):
-    '''Context manager for untaring a possibly xz/lzma compressed archive.'''
+class Archive(object):
+    """file-object wrapper for decompressing xz compressed tar archives
+    This class wraps a file-object that contains tar archive data. The data
+    will be optionally decompressed with lzma/xz if found to be a compressed
+    archive.
+    """
+
     def __init__(self, fobj):
-        self.orig_fobj = fobj
-        self.lzma_fobj = None
-        self.tar_obj = None
+        self.fobj = fobj
+        self.compressed = True
+        self.decompressor = lzma.LZMADecompressor()
 
-    def __enter__(self):
-        target_fobj = self.orig_fobj
-        try:
-            # try to decompress the archive
-            self.lzma_fobj = lzma.LZMAFile(filename=target_fobj)
-            self.lzma_fobj.read()
-            self.lzma_fobj.seek(0)
-        except lzma._lzma.LZMAError:
-            pass  # its okay if we can't
-        else:
-            target_fobj = self.lzma_fobj
-        finally:  # reset whatever fp we ended up using
-            target_fobj.seek(0)
+    def read(self, size):
+        buf = self.fobj.read(size)
+        if self.compressed:
+            try:
+                buf = self.decompressor.decompress(buf)
+            except lzma._lzma.LZMAError:
+                self.compressed = False
+        return buf
 
-        # untar the fobj, whether it was the original or the lzma
-        self.tar_obj = tarfile.open(mode='r|*', fileobj=target_fobj)
-        return self.tar_obj
+    def seek(self, *args, **kwargs):
+        return self.fobj.seek(*args, **kwargs)
 
-    def __exit__(self, type, value, traceback):
-        # clean up
-        self.tar_obj.close()
-        self.lzma_fobj.close()
-        self.orig_fobj.seek(0)
+    def close(self, *args, **kwargs):
+        return self.fobj.close(*args, **kwargs)
+
+    def tell(self, *args, **kwargs):
+        return self.fobj.tell(*args, **kwargs)
 
 
 def serialize_tar_info(tar_info):
@@ -129,10 +128,10 @@ def get_image_files_from_fobj(layer_file):
 
     '''
     layer_file.seek(0)
-    with LayerArchive(layer_file) as tar_fobj:
-        # read passed in tarfile directly
-        files = read_tarfile(tar_fobj)
-
+    archive_file = Archive(layer_file)
+    tar_file = tarfile.open(fileobj=archive_file)
+    files = read_tarfile(tar_file)
+    layer_file.close()
     return files
 
 

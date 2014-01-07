@@ -35,5 +35,4 @@ def init():
                                    password=redis_opts['password'])
     cache_prefix = 'cache_path:{0}'.format(cfg.get('storage_path', '/'))
 
-
 init()

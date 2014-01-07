@@ -48,7 +48,6 @@ def _get_xzfile(filenames):
     lzma_fobj = StringIO.StringIO()
     xz_file = lzma.open(lzma_fobj, 'w')
     xz_file.write(tar_data.read())
-    xz_file.close()
     lzma_fobj.seek(0)
     return lzma_fobj
 
@@ -62,36 +61,38 @@ class TestLayers(base.TestCase):
     def test_tar_archive(self):
         tfobj = _get_tarfile(self.filenames)
 
-        with layers.LayerArchive(tfobj) as tar:
-            members = tar.getmembers()
-            for tarinfo in members:
-                self.assertIn(tarinfo.name, self.filenames)
+        archive = layers.Archive(tfobj)
+        tar = tarfile.open(fileobj=archive)
+        members = tar.getmembers()
+        for tarinfo in members:
+            self.assertIn(tarinfo.name, self.filenames)
 
     def test_xz_archive(self):
         tfobj = _get_xzfile(self.filenames)
-        xzfobj = lzma.open(tfobj)
-
-        with layers.LayerArchive(xzfobj) as tar:
-            members = tar.getmembers()
-            for tarinfo in members:
-                self.assertIn(tarinfo.name, self.filenames)
+        archive = layers.Archive(tfobj)
+        tar = tarfile.open(fileobj=archive)
+        members = tar.getmembers()
+        for tarinfo in members:
+            self.assertIn(tarinfo.name, self.filenames)
 
     def test_info_serialization(self):
         tfobj = _get_tarfile(self.filenames)
-        with layers.LayerArchive(tfobj) as tar:
-            members = tar.getmembers()
-            for tarinfo in members:
-                sinfo = layers.serialize_tar_info(tarinfo)
-                self.assertTrue(sinfo[0] in self.filenames)
-                self.assertTrue(sinfo[1:] == ('f', False, 0, 0, 420, 0, 0))
+        archive = layers.Archive(tfobj)
+        tar = tarfile.open(fileobj=archive)
+        members = tar.getmembers()
+        for tarinfo in members:
+            sinfo = layers.serialize_tar_info(tarinfo)
+            self.assertTrue(sinfo[0] in self.filenames)
+            self.assertTrue(sinfo[1:] == ('f', False, 0, 0, 420, 0, 0))
 
     def test_tar_serialization(self):
         tfobj = _get_tarfile(self.filenames)
-        with layers.LayerArchive(tfobj) as tar:
-            infos = layers.read_tarfile(tar)
-            for tarinfo in infos:
-                self.assertIn(tarinfo[0], self.filenames)
-                self.assertTrue(tarinfo[1:] == ('f', False, 0, 0, 420, 0, 0))
+        archive = layers.Archive(tfobj)
+        tar = tarfile.open(fileobj=archive)
+        infos = layers.read_tarfile(tar)
+        for tarinfo in infos:
+            self.assertIn(tarinfo[0], self.filenames)
+            self.assertTrue(tarinfo[1:] == ('f', False, 0, 0, 420, 0, 0))
 
     def test_layer_cache(self):
         layer_id = rndstr(16)
