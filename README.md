@@ -163,8 +163,11 @@ Settings these options makes the Registry send an email on each code Exception:
 
 1. `email_exceptions`:
   1. `smtp_host`: hostname to connect to using SMTP
+  1. `smtp_port`: port number to connect to using SMTP
   1. `smtp_login`: username to use when connecting to authenticated SMTP
   1. `smtp_password`: password to use when connecting to authenticated SMTP
+  1. `smtp_secure`: boolean, true for TLS to using SMTP. this could be a path
+                    to the TLS key file for client authentication.
   1. `from_addr`: email address to use when sending email
   1. `to_addr`: email address to send exceptions to
 
