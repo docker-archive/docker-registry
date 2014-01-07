@@ -122,6 +122,7 @@ def save_last_line_parsed(time):
         return
     key = cache_key(control_cache_key)
     redis_conn.set(key, time)
+    logger.info('Last time saved: {0}'.format(time))
 
 
 def get_last_line_parsed():
@@ -182,6 +183,7 @@ def generate_bandwidth_data(start_time, min_time, time_interval):
     last_time_parsed = get_last_line_parsed()
     if last_time_parsed:
         last_time_parsed = convert_str_to_datetime(last_time_parsed)
+        logger.info('Last time parsed: {0}'.format(last_time_parsed))
     for item in parsed_data:
         str_start_time, str_end_time, str_layer_size, key = parse_data(item)
         if str_end_time:
@@ -194,8 +196,8 @@ def generate_bandwidth_data(start_time, min_time, time_interval):
         if bandwidth:
             end_time = convert_str_to_datetime(str_end_time)
             if last_time_parsed:
-                if last_time_parsed < end_time:
-                    continue
+                if last_time_parsed > end_time:
+                    break
             if end_time < min_time:
                 break
             if items >= total_items:
