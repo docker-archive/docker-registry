@@ -9,6 +9,8 @@ from . import Storage
 
 class LocalStorage(Storage):
 
+    supports_bytes_range = True
+
     def __init__(self, config):
         self._config = config
         self._root_path = self._config.storage_path
@@ -36,9 +38,28 @@ class LocalStorage(Storage):
 
     def stream_read(self, path, bytes_range=None):
         path = self._init_path(path)
+        nb_bytes = 0
+        total_size = 0
         with open(path, mode='rb') as f:
+            if bytes_range:
+                f.seek(bytes_range[0])
+                total_size = bytes_range[1] - bytes_range[0] + 1
             while True:
-                buf = f.read(self.buffer_size)
+                buf = None
+                if bytes_range:
+                    # Bytes Range is enabled
+                    buf_size = self.buffer_size
+                    if nb_bytes + buf_size > total_size:
+                        # We make sure we don't read out of the range
+                        buf_size = total_size - nb_bytes
+                    if buf_size > 0:
+                        buf = f.read(buf_size)
+                        nb_bytes += len(buf)
+                    else:
+                        # We're at the end of the range
+                        buf = ''
+                else:
+                    buf = f.read(self.buffer_size)
                 if not buf:
                     break
                 yield buf
@@ -59,7 +80,6 @@ class LocalStorage(Storage):
     def list_directory(self, path=None):
         prefix = path + '/'
         path = self._init_path(path)
-
         exists = False
         for d in os.listdir(path):
             exists = True
