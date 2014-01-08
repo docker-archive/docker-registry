@@ -181,6 +181,7 @@ def generate_bandwidth_data(start_time, min_time, time_interval):
     items = 1
     parsed_data = read_file(sys.argv[1])
     last_time_parsed = get_last_line_parsed()
+    most_recent_parsing = None
     if last_time_parsed:
         last_time_parsed = convert_str_to_datetime(last_time_parsed)
         logger.info('Last time parsed: {0}'.format(last_time_parsed))
@@ -207,7 +208,8 @@ def generate_bandwidth_data(start_time, min_time, time_interval):
                     save_bandwidth(bandwidth_items,
                                    time_interval,
                                    num_items)
-                    save_last_line_parsed(str_end_time)
+                    if not most_recent_parsing:
+                        most_recent_parsing = str_end_time
                     time_interval, items = \
                         update_current_interval(items,
                                                 logging_interval,
@@ -223,6 +225,8 @@ def generate_bandwidth_data(start_time, min_time, time_interval):
             num_items[time_interval] = \
                 num_items.get(time_interval, 0.0) + 1
             end_times.pop(key, None)
+    if most_recent_parsing:
+        save_last_line_parsed(most_recent_parsing)
 
 
 def run():
