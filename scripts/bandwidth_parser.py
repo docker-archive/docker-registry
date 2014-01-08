@@ -197,11 +197,14 @@ def generate_bandwidth_data(start_time, min_time, time_interval):
         if bandwidth:
             end_time = convert_str_to_datetime(str_end_time)
             if last_time_parsed:
-                if last_time_parsed > end_time:
+                if last_time_parsed >= end_time:
+                    logger.info('Remaining data parsed already. Stopping...')
                     break
             if end_time < min_time:
+                logger.info('Minimum date reached. Stopping...')
                 break
             if items >= total_items:
+                logger.info('Maximum number of elements reached. Stopping...')
                 break
             if time_interval > end_time:
                 if bandwidth_items.get(time_interval, 0):
