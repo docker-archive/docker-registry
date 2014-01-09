@@ -131,7 +131,6 @@ def get_image_files_from_fobj(layer_file):
     archive_file = Archive(layer_file)
     tar_file = tarfile.open(fileobj=archive_file)
     files = read_tarfile(tar_file)
-    layer_file.close()
     return files
 
 
