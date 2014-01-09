@@ -9,7 +9,7 @@ Create the configuration
 The Docker Registry comes with a sample configuration file,
 `config_sample.yml`. Copy this to `config.yml` to provide a basic
 configuration:
- 
+
 ```
 cp config_sample.yml config.yml
 ```
@@ -66,7 +66,7 @@ dev:
 test:
     storage: local
     storage_path: /tmp/tmpdockertmp
-```    
+```
 
 
 Location of the config file
@@ -74,10 +74,10 @@ Location of the config file
 
 ### DOCKER_REGISTRY_CONFIG
 
-Specify the config file to be used by setting `DOCKER_REGISTRY_CONFIG` in your 
+Specify the config file to be used by setting `DOCKER_REGISTRY_CONFIG` in your
 environment: `export DOCKER_REGISTRY_CONFIG=config.yml`
 
-The default location of the config file is `config.yml`, located in the source 
+The default location of the config file is `config.yml`, located in the source
 directory.
 
 
@@ -96,7 +96,7 @@ Available configuration options
 ### Authentication options
 
 1. `standalone`: boolean, run the server in stand-alone mode. This means that
-   the Index service on index.docker.io will not be used for anything. This 
+   the Index service on index.docker.io will not be used for anything. This
    implies `disable_token_auth`.
 
 1. `index_endpoint`: string, configures the hostname of the Index endpoint.
@@ -115,8 +115,8 @@ to `s3`.
 1. `s3_access_key`: string, S3 access key
 1. `s3_secret_key`: string, S3 secret key
 1. `s3_bucket`: string, S3 bucket name
-1. `s3_encrypt`: boolean, if true, the container will be encrypted on the 
-      server-side by S3 and will be stored in an encrypted form while at rest 
+1. `s3_encrypt`: boolean, if true, the container will be encrypted on the
+      server-side by S3 and will be stored in an encrypted form while at rest
       in S3.
 1. `s3_secure`: boolean, true for HTTPS to S3
 1. `boto_bucket`: string, the bucket name
@@ -201,7 +201,7 @@ things up dramatically since it will reduce roundtrips to S3.
   1. `storage_path` is a subdir in your S3 bucker
   1. remember to set all `s3_*` options (see above)
 1. `glance`: store images on Glance (OpenStack)
-  1. `storage_alternate`: storage engine to use when Glance storage fails, 
+  1. `storage_alternate`: storage engine to use when Glance storage fails,
       e.g. `local`
   1. If you use `storage_alternate` local, remeber to set `storage_path`
 1. `elliptics`: store images in [Elliptics](http://reverbrain.com/elliptics/) key-value storage
@@ -210,7 +210,7 @@ things up dramatically since it will reduce roundtrips to S3.
 
 If you use any type of local store along with a registry running within a docker
 remember to use a data volume for the `storage_path`. Please read the documentation
-for [data volumes](http://docs.docker.io/en/latest/use/working_with_volumes/) for more information. 
+for [data volumes](http://docs.docker.io/en/latest/use/working_with_volumes/) for more information.
 
 Example:
 
@@ -220,8 +220,8 @@ docker run -p 5000 -v /tmp/registry:/tmp/registry registry
 
 ### Privileged access
 
-Privileged access allows you to make direct requests to the registry by using 
-an RSA key pair. The `privileged_key` config entry, if set, must indicate a 
+Privileged access allows you to make direct requests to the registry by using
+an RSA key pair. The `privileged_key` config entry, if set, must indicate a
 path to a file containing the public key.
 If it is not set, privileged access is disabled.
 
@@ -241,11 +241,11 @@ Run the Registry
 ### The fast way:
 
 ```
-docker run -p 5000 registry
+docker run -p 5000:5000 registry
 ```
 
-NOTE: The container will try to allocate the port 5000 by default, if the port
-is already taken, find out which one has been taken by running "docker ps"
+NOTE: The container will try to allocate the port 5000. If the port
+is already taken, find out which container is already using it by running "docker ps"
 
 ### The old way:
 
@@ -292,18 +292,18 @@ them for a username, password, and email.
 
 ### What about a Production environment?
 
-The recommended setting to run the Registry in a prod environment is gunicorn 
+The recommended setting to run the Registry in a prod environment is gunicorn
 behind a nginx server which supports chunked transfer-encoding (nginx >= 1.3.9).
 
-You could use for instance supervisord to spawn the registry with 8 workers 
+You could use for instance supervisord to spawn the registry with 8 workers
 using this command:
 
 ```
 gunicorn -k gevent --max-requests 100 --graceful-timeout 3600 -t 3600 -b localhost:5000 -w 8 wsgi:application
 ```
 
-Note that when using multiple workers, the secret_key for the Flask session 
-must be set explicitly in config.yml. Otherwise each worker will use its own 
+Note that when using multiple workers, the secret_key for the Flask session
+must be set explicitly in config.yml. Otherwise each worker will use its own
 random secret key, leading to unpredictable behavior.
 
 
@@ -311,14 +311,14 @@ random secret key, leading to unpredictable behavior.
 
 [Here is an nginx configuration file example.](https://github.com/dotcloud/docker-registry/blob/master/contrib/nginx.conf)
 
-And you might want to add 
+And you might want to add
 [Basic auth on Nginx](http://wiki.nginx.org/HttpAuthBasicModule) to protect it
 (if you're not using it on your local network):
 
 
 #### Apache
 
-Enable mod_proxy using `a2enmod proxy_http`, then use this snippet forward 
+Enable mod_proxy using `a2enmod proxy_http`, then use this snippet forward
 requests to the Docker Registry:
 
 ```
@@ -343,7 +343,7 @@ dotcloud push
 Run tests
 ---------
 
-If you want to submit a pull request, please run the unit tests using tox 
+If you want to submit a pull request, please run the unit tests using tox
 before submitting anything to the repos:
 
 ```
