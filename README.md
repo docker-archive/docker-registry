@@ -215,7 +215,7 @@ for [data volumes](http://docs.docker.io/en/latest/use/working_with_volumes/) fo
 Example:
 
 ```
-docker run -p 5000 -v /tmp/registry:/tmp/registry stackbrew/registry 
+docker run -p 5000 -v /tmp/registry:/tmp/registry registry
 ```
 
 ### Privileged access
@@ -241,7 +241,7 @@ Run the Registry
 ### The fast way:
 
 ```
-docker run -p 5000 stackbrew/registry
+docker run -p 5000 registry
 ```
 
 NOTE: The container will try to allocate the port 5000 by default, if the port
