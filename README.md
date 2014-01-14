@@ -227,13 +227,17 @@ If it is not set, privileged access is disabled.
 
 #### Generating keys with `openssl`
 
+You will need to install the python-rsa package (`pip install rsa`) in addition to using `openssl`.
+Generating the public key using openssl will lead to producing a key in a format not supported by 
+the RSA library the registry is using.
+
 Generate private key:
 
     openssl genrsa  -out private.pem 2048
 
-Associated public key:
+Associated public key :
 
-    openssl rsa -in private.pem -out public.pem -outform PEM -pubout
+    pyrsa-priv2pub -i private.pem -o public.pem
 
 Run the Registry
 ----------------
