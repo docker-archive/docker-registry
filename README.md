@@ -258,7 +258,7 @@ is already taken, find out which container is already using it by running "docke
 Install the system requirements for building a Python library:
 
 ```
-sudo apt-get install build-essential python-dev libevent-dev python-pip libssl-dev
+sudo apt-get install build-essential python-dev libevent-dev python-pip libssl-dev liblzma-dev
 ```
 
 Then install the Registry app:
