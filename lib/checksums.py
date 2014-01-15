@@ -24,7 +24,7 @@ def sha256_string(s):
     return hashlib.sha256(s).hexdigest()
 
 
-def TarSum(object):
+class TarSum(object):
 
     def __init__(self, tarfp, json_data):
         self.tarfp = tarfp
