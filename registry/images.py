@@ -141,7 +141,6 @@ def put_image_layer(image_id):
         # encoding (Gunicorn)
         input_stream = flask.request.environ['wsgi.input']
     # compute checksums
-    csums = []
     sr = toolkit.SocketReader(input_stream)
     tmp, store_hndlr = storage.temp_store_handler()
     sr.add_handler(store_hndlr)
@@ -150,19 +149,20 @@ def put_image_layer(image_id):
     store.stream_write(layer_path, sr)
 
     # Read tar data from the tempfile
+    csums = []
+    tar = None
+    tarsum = checksums.TarSum(json_data)
     try:
         tmp.seek(0)
         tar = tarfile.open(mode='r|*', fileobj=tmp)
-        tarsum = checksums.TarSum(tar, json_data)
         tarfilesinfo = layers.TarFilesInfo()
         for member in tar:
-            tarsum.append(member)
+            tarsum.append(member, tar)
             tarfilesinfo.append(member)
-    except tarfile.ReadError as e:
-        if e.message != 'empty file':
-            # NOTE(samalba): ignore empty tarfiles but still let the tarsum
-            # compute with json data
-            raise
+        layers.set_image_files_cache(image_id, tarfilesinfo.json())
+    except (IOError, tarfile.TarError) as e:
+        logger.debug('put_image_layer: Error when reading Tar stream tarsum. '
+                     'Disabling TarSum, TarFilesInfo. Error: {0}'.format(e))
     finally:
         if tar:
             tar.close()
@@ -171,7 +171,6 @@ def put_image_layer(image_id):
     # All data have been consumed from the tempfile
     csums.append('sha256:{0}'.format(h.hexdigest()))
     csums.append(tarsum.compute())
-    layers.set_image_files_cache(image_id, tarfilesinfo.json())
 
     try:
         checksum = store.get_content(store.image_checksum_path(image_id))

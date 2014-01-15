@@ -1,10 +1,8 @@
 
 import hashlib
 import logging
-import tarfile
 
 
-TarError = tarfile.TarError
 logger = logging.getLogger(__name__)
 
 
@@ -26,15 +24,14 @@ def sha256_string(s):
 
 class TarSum(object):
 
-    def __init__(self, tarfp, json_data):
-        self.tarfp = tarfp
+    def __init__(self, json_data):
         self.json_data = json_data
         self.header_fields = ('name', 'mode', 'uid', 'gid', 'size', 'mtime',
                               'type', 'linkname', 'uname', 'gname', 'devmajor',
                               'devminor')
         self.hashes = []
 
-    def append(self, member):
+    def append(self, member, tarobj):
         header = ''
         for field in self.header_fields:
             value = getattr(member, field)
@@ -47,7 +44,7 @@ class TarSum(object):
         h = None
         try:
             if member.size > 0:
-                f = self.tarfp.extractfile(member)
+                f = tarobj.extractfile(member)
                 h = sha256_file(f, header)
             else:
                 h = sha256_string(header)
