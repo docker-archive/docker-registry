@@ -1,5 +1,4 @@
 
-import contextlib
 import tempfile
 
 import config
@@ -103,31 +102,11 @@ class Storage(object):
         raise NotImplementedError
 
 
-@contextlib.contextmanager
-def store_stream(stream):
-    """Stores the entire stream to a temporary file."""
-    tmpf = tempfile.TemporaryFile()
-    while True:
-        try:
-            buf = stream.read(4096)
-            if not buf:
-                break
-            tmpf.write(buf)
-        except IOError:
-            break
-    tmpf.seek(0)
-    yield tmpf
-    tmpf.close()
-
-
 def temp_store_handler():
     tmpf = tempfile.TemporaryFile()
 
     def fn(buf):
-        try:
-            tmpf.write(buf)
-        except IOError:
-            pass
+        tmpf.write(buf)
 
     return tmpf, fn
 

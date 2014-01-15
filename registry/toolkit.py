@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 class SocketReader(object):
+
     def __init__(self, fp):
         self._fp = fp
         self.handlers = []
