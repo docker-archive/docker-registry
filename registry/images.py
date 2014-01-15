@@ -149,21 +149,30 @@ def put_image_layer(image_id):
     sr.add_handler(sum_hndlr)
     store.stream_write(layer_path, sr)
 
-    # read layer files and cache them
-    try:
-        files_json = json.dumps(layers.get_image_files_from_fobj(tmp))
-        layers.set_image_files_cache(image_id, files_json)
-    except Exception as e:
-        logger.debug('put_image_layer: Error when caching layer file-tree:'
-                     '{0}'.format(e))
-
-    csums.append('sha256:{0}'.format(h.hexdigest()))
+    # Read tar data from the tempfile
     try:
         tmp.seek(0)
-        csums.append(checksums.compute_tarsum(tmp, json_data))
-    except (IOError, checksums.TarError) as e:
-        logger.debug('put_image_layer: Error when computing tarsum '
-                     '{0}'.format(e))
+        tar = tarfile.open(mode='r|*', fileobj=tmp)
+        tarsum = checksums.TarSum(tar, json_data)
+        tarfilesinfo = layers.TarFilesInfo()
+        for member in tar:
+            tarsum.append(member)
+            tarfilesinfo.append(member)
+    except tarfile.ReadError as e:
+        if e.message != 'empty file':
+            # NOTE(samalba): ignore empty tarfiles but still let the tarsum
+            # compute with json data
+            raise
+    finally:
+        if tar:
+            tar.close()
+        tmp.close()
+
+    # All data have been consumed from the tempfile
+    csums.append('sha256:{0}'.format(h.hexdigest()))
+    csums.append(tarsum.compute())
+    layers.set_image_files_cache(image_id, tarfilesinfo.json())
+
     try:
         checksum = store.get_content(store.image_checksum_path(image_id))
     except IOError:
@@ -175,8 +184,6 @@ def put_image_layer(image_id):
     if checksum not in csums:
         logger.debug('put_image_layer: Wrong checksum')
         return toolkit.api_error('Checksum mismatch, ignoring the layer')
-
-    tmp.close()
 
     # Checksum is ok, we remove the marker
     store.remove(mark_path)

@@ -64,6 +64,20 @@ class Archive(object):
         return self.fobj.tell(*args, **kwargs)
 
 
+class TarFilesInfo(object):
+
+    def __init__(self):
+        self.infos = []
+
+    def append(self, member):
+        info = serialize_tar_info(member)
+        if info is not None:
+            self.infos.append(info)
+
+    def json(self):
+        return json.dumps(self.infos)
+
+
 def serialize_tar_info(tar_info):
     '''serialize a tarfile.TarInfo instance
     Take a single tarfile.TarInfo instance and serialize it to a
