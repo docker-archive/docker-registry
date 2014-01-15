@@ -47,14 +47,14 @@ class LocalStorage(Storage):
         # Size is mandatory
         path = self._init_path(path, create=True)
         with open(path, mode='wb') as f:
-            while True:
-                try:
+            try:
+                while True:
                     buf = fp.read(self.buffer_size)
                     if not buf:
                         break
                     f.write(buf)
-                except IOError:
-                    break
+            except IOError:
+                pass
 
     def list_directory(self, path=None):
         prefix = path + '/'

@@ -47,8 +47,8 @@ class S3Storage(BotoStorage):
         mp = self._boto_bucket.initiate_multipart_upload(
             path, encrypt_key=(self._config.s3_encrypt is True))
         num_part = 1
-        while True:
-            try:
+        try:
+            while True:
                 buf = fp.read(buffer_size)
                 if not buf:
                     break
@@ -56,6 +56,6 @@ class S3Storage(BotoStorage):
                 mp.upload_part_from_file(io, num_part)
                 num_part += 1
                 io.close()
-            except IOError:
-                break
+        except IOError:
+            pass
         mp.complete_upload()
