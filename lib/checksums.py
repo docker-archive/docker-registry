@@ -34,7 +34,7 @@ class TarSum(object):
                               'devminor')
         self.hashes = []
 
-    def read_tarmember(self, member):
+    def append(self, member):
         header = ''
         for field in self.header_fields:
             value = getattr(member, field)
