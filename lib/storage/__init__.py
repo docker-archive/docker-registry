@@ -1,5 +1,4 @@
 
-import contextlib
 import tempfile
 
 import config
