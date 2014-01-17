@@ -77,3 +77,17 @@ openstack:
     storage_alternate: local
     storage_path: /tmp/registry
     loglevel: debug
+
+# This flavor stores the images in Glance (to integrate with openstack)
+# and tags in Swift. 
+openstack-swift:
+    storage: glance
+    storage_path: /registry
+    storage_alternate: swift
+    # keystone authorization
+    swift_authurl: REPLACEME
+    swift_container: REPLACEME
+    swift_user: REPLACEME
+    swift_password: REPLACEME
+    swift_tenant_name: REPLACEME
+    swift_region_name: REPLACEME

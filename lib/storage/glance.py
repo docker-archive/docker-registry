@@ -10,6 +10,7 @@ import signals
 from . import Storage
 from .local import LocalStorage
 from .s3 import S3Storage
+from .swift import SwiftStorage
 
 
 class GlanceStorage(object):
@@ -28,6 +29,8 @@ class GlanceStorage(object):
             self._storage_tags = S3Storage(config)
         elif kind == 'local':
             self._storage_tags = LocalStorage(config)
+        elif kind == 'swift':
+            self._storage_tags = SwiftStorage(config)
         else:
             raise ValueError('Not supported storage \'{0}\''.format(kind))
 
