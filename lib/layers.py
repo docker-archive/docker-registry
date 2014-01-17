@@ -41,27 +41,40 @@ class Archive(object):
     """
 
     def __init__(self, fobj):
-        self.fobj = fobj
+        super(Archive, self).__init__(filename=fobj)
         self.compressed = True
-        self.decompressor = lzma.LZMADecompressor()
 
-    def read(self, size):
-        buf = self.fobj.read(size)
+    def _proxy(self, method, *args, **kwargs):
+        if not self.compressed:
+            return getattr(self._fp, method)(*args, **kwargs)
         if self.compressed:
             try:
-                buf = self.decompressor.decompress(buf)
-            except lzma._lzma.LZMAError:
+                return getattr(super(Archive, self), method)(*args, **kwargs)
+            except lzma._lzma.LZMAError as e:
+                print "Disabling LZMA compression {0}".format(e)
                 self.compressed = False
-        return buf
+                return getattr(self._fp, method)(*args, **kwargs)
 
-    def seek(self, *args, **kwargs):
-        return self.fobj.seek(*args, **kwargs)
+    def tell(self):
+        return self._proxy('tell')
 
-    def close(self, *args, **kwargs):
-        return self.fobj.close(*args, **kwargs)
+    def close(self):
+        return self._proxy('close')
 
-    def tell(self, *args, **kwargs):
-        return self.fobj.tell(*args, **kwargs)
+    def seek(self, offset, whence=0):
+        return self._proxy('seek', offset, whence)
+
+    def read(self, size=-1):
+        return self._proxy('read', size)
+
+    def _check_can_seek(self):
+        return True
+
+    def seekable(self):
+        return True
+
+    def readable(self):
+        return True
 
 
 class TarFilesInfo(object):
