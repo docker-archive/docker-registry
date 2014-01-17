@@ -12,6 +12,7 @@ htmlcov
 config/config.yml
 config/*.pem
 newrelic.ini
+reports
 
 # Packages
 *.egg
