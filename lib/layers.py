@@ -33,7 +33,7 @@ def generate_ancestry(image_id, parent_id=None):
     store.put_content(store.image_ancestry_path(image_id), json.dumps(data))
 
 
-class Archive(object):
+class Archive(lzma.LZMAFile):
     """file-object wrapper for decompressing xz compressed tar archives
     This class wraps a file-object that contains tar archive data. The data
     will be optionally decompressed with lzma/xz if found to be a compressed
@@ -50,8 +50,7 @@ class Archive(object):
         if self.compressed:
             try:
                 return getattr(super(Archive, self), method)(*args, **kwargs)
-            except lzma._lzma.LZMAError as e:
-                print "Disabling LZMA compression {0}".format(e)
+            except lzma._lzma.LZMAError:
                 self.compressed = False
                 return getattr(self._fp, method)(*args, **kwargs)
 
