@@ -96,6 +96,9 @@ class ParallelKey(object):
 
 
 class BotoStorage(Storage):
+
+    supports_bytes_range = True
+
     def __init__(self, config):
         self._config = config
         self._root_path = self._config.storage_path
@@ -123,11 +126,16 @@ class BotoStorage(Storage):
 
     def stream_read(self, path, bytes_range=None):
         path = self._init_path(path)
-        key = self._boto_bucket.lookup(path)
+        headers = None
+        if bytes_range:
+            headers = {'Range': 'bytes={0}-{1}'.format(*bytes_range)}
+        key = self._boto_bucket.lookup(path, headers=headers)
         if not key:
             raise IOError('No such key: \'{0}\''.format(path))
-        if key.size > 1024 * 1024:
+        if not bytes_range and key.size > 1024 * 1024:
             # Use the parallel key only if the key size is > 1MB
+            # And if bytes_range is not enabled (since ParallelKey is already
+            # using bytes range)
             key = ParallelKey(key)
         while True:
             buf = key.read(self.buffer_size)
