@@ -40,8 +40,8 @@ class Archive(object):
     archive.
     """
 
-    def __init__(self, fobj):
-        super(Archive, self).__init__(filename=fobj)
+    def __init__(self, *args, **kwargs):
+        super(Archive, self).__init__(*args, **kwargs)
         self.compressed = True
 
     def _proxy(self, method, *args, **kwargs):
