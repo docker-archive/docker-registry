@@ -48,6 +48,7 @@ def _get_xzfile(filenames):
     lzma_fobj = StringIO.StringIO()
     xz_file = lzma.open(lzma_fobj, 'w')
     xz_file.write(tar_data.read())
+    xz_file.close()
     lzma_fobj.seek(0)
     return lzma_fobj
 
