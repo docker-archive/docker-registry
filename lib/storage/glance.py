@@ -45,7 +45,7 @@ class GlanceStorage(object):
         elif path.startswith(Storage.repositories):
             obj = self._storage_tags
         else:
-            obj = self._storage_base
+            obj = self._storage_layers
         if not hasattr(obj, method_name):
             return
         return getattr(obj, method_name)
@@ -212,6 +212,9 @@ class GlanceStorageLayers(Storage):
         if not propname:
             return True
         return (propname in image.properties)
+
+    def is_private(self, namespace, repository):
+        return False
 
     def remove(self, path):
         (image, propname) = self._init_path(path, False)
