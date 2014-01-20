@@ -11,11 +11,14 @@ store = storage.load()
 
 FILE_TYPES = {
     tarfile.REGTYPE: 'f',
-    tarfile.DIRTYPE: 'd',
+    tarfile.AREGTYPE: 'f',
     tarfile.LNKTYPE: 'l',
     tarfile.SYMTYPE: 's',
     tarfile.CHRTYPE: 'c',
     tarfile.BLKTYPE: 'b',
+    tarfile.DIRTYPE: 'd',
+    tarfile.FIFOTYPE: 'i',
+    tarfile.CONTTYPE: 't',
 }
 
 # queue for requesting diff calculations from workers
@@ -116,7 +119,7 @@ def serialize_tar_info(tar_info):
 
     return (
         filename,
-        FILE_TYPES[tar_info.type],
+        FILE_TYPES.get(tar_info.type, 'u'),
         is_deleted,
         tar_info.size,
         tar_info.mtime,
