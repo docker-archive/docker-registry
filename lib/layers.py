@@ -19,6 +19,9 @@ FILE_TYPES = {
     tarfile.DIRTYPE: 'd',
     tarfile.FIFOTYPE: 'i',
     tarfile.CONTTYPE: 't',
+    tarfile.GNUTYPE_LONGNAME: 'L',
+    tarfile.GNUTYPE_LONGLINK: 'K',
+    tarfile.GNUTYPE_SPARSE: 'S',
 }
 
 # queue for requesting diff calculations from workers
