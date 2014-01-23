@@ -103,7 +103,10 @@ def get_private_image_layer(image_id):
             return toolkit.api_error('Image not found', 404)
         if not store.is_private(*repository):
             return toolkit.api_error('Image not found', 404)
-        return _get_image_layer(image_id)
+        headers = None
+        if store.supports_bytes_range:
+            headers['Accept-Ranges'] = 'bytes'
+        return _get_image_layer(image_id, headers)
     except IOError:
         return toolkit.api_error('Image not found', 404)
 
@@ -114,6 +117,8 @@ def get_private_image_layer(image_id):
 @set_cache_headers
 def get_image_layer(image_id, headers):
     try:
+        if store.supports_bytes_range:
+            headers['Accept-Ranges'] = 'bytes'
         repository = toolkit.get_repository()
         if repository and store.is_private(*repository):
             return toolkit.api_error('Image not found', 404)
