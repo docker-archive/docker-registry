@@ -20,7 +20,6 @@ logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
 @app.route('/_ping')
 @app.route('/v1/_ping')
 def ping():
-    raise RuntimeError('Blah blah, error man!')
     return toolkit.response(headers={
         'X-Docker-Registry-Standalone': cfg.standalone is not False
     })
