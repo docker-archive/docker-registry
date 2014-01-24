@@ -52,7 +52,7 @@ def set_cache_headers(f):
     return wrapper
 
 
-def _get_image_layer(image_id, headers=None):
+def _get_image_layer(image_id, headers=None, bytes_range=None):
     if headers is None:
         headers = {}
     try:
@@ -68,7 +68,12 @@ def _get_image_layer(image_id, headers=None):
             else:
                 logger.warn('nginx_x_accel_redirect config set,'
                             ' but storage is not LocalStorage')
-        return flask.Response(store.stream_read(path), headers=headers)
+        status = None
+        if bytes_range:
+            status = 206
+            headers['Content-Range'] = '{0}-{1}/*'.format(*bytes_range)
+        return flask.Response(store.stream_read(path, bytes_range),
+                              headers=headers, status=status)
     except IOError:
         return toolkit.api_error('Image not found', 404)
 
@@ -119,6 +124,8 @@ def get_image_layer(image_id, headers):
     try:
         if store.supports_bytes_range:
             headers['Accept-Ranges'] = 'bytes'
+            # FIXME: not done
+            bytes_range = self._parse_bytes_range()
         repository = toolkit.get_repository()
         if repository and store.is_private(*repository):
             return toolkit.api_error('Image not found', 404)
