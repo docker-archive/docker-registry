@@ -1,5 +1,9 @@
-import flask
 import logging
+import os
+
+import bugsnag
+import bugsnag.flask
+import flask
 
 import config
 import toolkit
@@ -16,6 +20,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
 @app.route('/_ping')
 @app.route('/v1/_ping')
 def ping():
+    raise RuntimeError('Blah blah, error man!')
     return toolkit.response(headers={
         'X-Docker-Registry-Standalone': cfg.standalone is not False
     })
@@ -58,6 +63,18 @@ def init():
             secure=secure_args)
         mail_handler.setLevel(logging.ERROR)
         app.logger.addHandler(mail_handler)
+    # Configure bugsnag
+    info = cfg.bugsnag
+    if info:
+        root_path = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                 '..'))
+        bugsnag.configure(api_key=info,
+                          project_root=root_path,
+                          release_stage=cfg.flavor,
+                          notify_release_stages=[cfg.flavor],
+                          app_version=VERSION
+                          )
+        bugsnag.flask.handle_exceptions(app)
 
 
 def _adapt_smtp_secure(value):

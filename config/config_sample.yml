@@ -53,6 +53,8 @@ prod:
         smtp_secure: false
         from_addr: docker-registry@localdomain.local
         to_addr: noise+dockerregistry@localdomain.local
+    # Enable bugsnag (set the API key)
+    bugsnag: REPLACEME
 
 # This flavor is automatically used by unit tests
 test:
