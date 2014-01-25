@@ -1,5 +1,6 @@
 
 import json
+import random
 
 import base
 
@@ -10,9 +11,7 @@ class TestImages(base.TestCase):
         image_id = self.gen_random_string()
         layer_data = self.gen_random_string(1024)
         self.upload_image(image_id, parent_id=None, layer=layer_data)
-
         resp = self.http_client.get('/v1/images/{0}/layer'.format(image_id))
-
         self.assertEqual(layer_data, resp.data)
 
     def test_nginx_accel_redirect_layer(self):
@@ -84,3 +83,18 @@ class TestImages(base.TestCase):
                           parent_id=None,
                           layer=layer_data,
                           set_checksum_callback=set_checksum_callback)
+
+    def test_bytes_range(self):
+        image_id = self.gen_random_string()
+        layer_data = self.gen_random_string(1024)
+        b = random.randint(0, len(layer_data) / 2)
+        bytes_range = (b, random.randint(b + 1, len(layer_data) - 1))
+        headers = {'Range': 'bytes={0}-{1}'.format(*bytes_range)}
+        self.upload_image(image_id, parent_id=None, layer=layer_data)
+        url = '/v1/images/{0}/layer'.format(image_id)
+        resp = self.http_client.get(url, headers=headers)
+        expected_data = layer_data[bytes_range[0]:bytes_range[1] + 1]
+        received_data = resp.data
+        msg = 'expected size: {0}; got: {1}'.format(len(expected_data),
+                                                    len(received_data))
+        self.assertEqual(expected_data, received_data, msg)

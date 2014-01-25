@@ -51,7 +51,8 @@ class TestLocalStorage(base.TestCase):
             for buf in self._storage.stream_read(filename, bytes_range):
                 data += buf
             expected_content = content[bytes_range[0]:bytes_range[1] + 1]
-            msg = '{0} - {1}'.format(len(data), len(expected_content))
+            msg = 'expected size: {0}; got: {1}'.format(len(expected_content),
+                                                        len(data))
             self.assertEqual(data, expected_content,
                              ('Bytes range request returned different '
                               'content: {0}'.format(msg)))

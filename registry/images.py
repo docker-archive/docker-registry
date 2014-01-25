@@ -96,11 +96,36 @@ def _get_image_json(image_id, headers=None):
     return toolkit.response(data, headers=headers, raw=True)
 
 
+def _parse_bytes_range():
+    headers = flask.request.headers
+    range_header = headers.get('range')
+    if not range_header:
+        return
+    log_msg = ('_parse_bytes_range: Malformed bytes range request header: '
+               '{0}'.format(range_header))
+    if not range_header.startswith('bytes='):
+        logger.debug(log_msg)
+        return
+    bytes_range = range_header[6:].split('-')
+    if len(bytes_range) != 2:
+        logger.debug(log_msg)
+        return
+    try:
+        return (int(bytes_range[0]), int(bytes_range[1]))
+    except ValueError:
+        logger.debug(log_msg)
+
+
 @app.route('/v1/private_images/<image_id>/layer', methods=['GET'])
 @toolkit.requires_auth
 @require_completion
 def get_private_image_layer(image_id):
     try:
+        headers = None
+        bytes_range = None
+        if store.supports_bytes_range:
+            headers['Accept-Ranges'] = 'bytes'
+            bytes_range = _parse_bytes_range()
         repository = toolkit.get_repository()
         if not repository:
             # No auth token found, either standalone registry or privileged
@@ -108,10 +133,7 @@ def get_private_image_layer(image_id):
             return toolkit.api_error('Image not found', 404)
         if not store.is_private(*repository):
             return toolkit.api_error('Image not found', 404)
-        headers = None
-        if store.supports_bytes_range:
-            headers['Accept-Ranges'] = 'bytes'
-        return _get_image_layer(image_id, headers)
+        return _get_image_layer(image_id, headers, bytes_range)
     except IOError:
         return toolkit.api_error('Image not found', 404)
 
@@ -122,16 +144,16 @@ def get_private_image_layer(image_id):
 @set_cache_headers
 def get_image_layer(image_id, headers):
     try:
+        bytes_range = None
         if store.supports_bytes_range:
             headers['Accept-Ranges'] = 'bytes'
-            # FIXME: not done
-            bytes_range = self._parse_bytes_range()
+            bytes_range = _parse_bytes_range()
         repository = toolkit.get_repository()
         if repository and store.is_private(*repository):
             return toolkit.api_error('Image not found', 404)
         # If no auth token found, either standalone registry or privileged
         # access. In both cases, access is always "public".
-        return _get_image_layer(image_id, headers)
+        return _get_image_layer(image_id, headers, bytes_range)
     except IOError:
         return toolkit.api_error('Image not found', 404)
 
