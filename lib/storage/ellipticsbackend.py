@@ -106,7 +106,7 @@ class EllipticsStorage(Storage):
                 break
         self.put_content(path, ''.join(chunks))
 
-    def stream_read(self, path):
+    def stream_read(self, path, bytes_range=None):
         yield self.get_content(path)
 
     def list_directory(self, path=None):

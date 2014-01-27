@@ -54,7 +54,7 @@ class SwiftStorage(Storage):
         except Exception:
             raise IOError("Could not put content: {}".format(path))
 
-    def stream_read(self, path):
+    def stream_read(self, path, bytes_range=None):
         try:
             for buf in self.get_content(path, self.buffer_size):
                 yield buf

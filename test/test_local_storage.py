@@ -1,5 +1,6 @@
 
 import cStringIO as StringIO
+import random
 
 import base
 import storage
@@ -42,6 +43,19 @@ class TestLocalStorage(base.TestCase):
         for buf in self._storage.stream_read(filename):
             data += buf
         self.assertEqual(content, data)
+        # test bytes_range only if the storage backend suppports it
+        if self._storage.supports_bytes_range:
+            b = random.randint(0, len(content) / 2)
+            bytes_range = (b, random.randint(b + 1, len(content) - 1))
+            data = ''
+            for buf in self._storage.stream_read(filename, bytes_range):
+                data += buf
+            expected_content = content[bytes_range[0]:bytes_range[1] + 1]
+            msg = 'expected size: {0}; got: {1}'.format(len(expected_content),
+                                                        len(data))
+            self.assertEqual(data, expected_content,
+                             ('Bytes range request returned different '
+                              'content: {0}'.format(msg)))
         # test remove
         self._storage.remove(filename)
         self.assertFalse(self._storage.exists(filename))

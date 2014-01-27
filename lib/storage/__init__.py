@@ -21,6 +21,8 @@ class Storage(object):
     images = 'images'
     # Set the IO buffer to 128kB
     buffer_size = 128 * 1024
+    # By default no storage plugin supports it
+    supports_bytes_range = False
 
     #FIXME(samalba): Move all path resolver in each module (out of the base)
     def images_list_path(self, namespace, repository):
@@ -83,7 +85,7 @@ class Storage(object):
     def put_content(self, path, content):
         raise NotImplementedError
 
-    def stream_read(self, path):
+    def stream_read(self, path, bytes_range=None):
         raise NotImplementedError
 
     def stream_write(self, path, fp):
