@@ -9,6 +9,7 @@ Packages: http://repo.reverbrain.com/
 """
 
 import itertools
+import logging
 
 import cache_lru
 
@@ -16,7 +17,9 @@ from . import Storage
 
 import elliptics
 
-NAMESPACE = "DOCKER"
+
+DEFAULT_NAMESPACE = "DOCKER"
+logger = logging.getLogger(__name__)
 
 
 class EllipticsStorage(Storage):
@@ -34,8 +37,8 @@ class EllipticsStorage(Storage):
         # Number of IO threads in processing pool dedicated to nonblocking ops
         nonblock_io_threads = config.get("nonblocking_io_thread_num", 2)
         cfg.config.nonblocking_io_thread_num = nonblock_io_threads
-        groups = config.get('groups', [])
-        if len(groups) == 0:
+        self.groups = config.get('groups', [])
+        if len(self.groups) == 0:
             raise ValueError("Specify groups")
 
         # loglevel of elliptics logger
@@ -46,12 +49,27 @@ class EllipticsStorage(Storage):
         log = elliptics.Logger(elliptics_log_file, elliptics_log_level)
         self._elliptics_node = elliptics.Node(log, cfg)
 
-        for host, port in config.get('nodes').iteritems():
-            self._elliptics_node.add_remote(host, port)
+        self.namespace = config.get('namespace', DEFAULT_NAMESPACE)
+        logger.info("Using namespace %s", self.namespace)
 
-        self._session = elliptics.Session(self._elliptics_node)
-        self._session.groups = groups
-        self._session.set_namespace(NAMESPACE)
+        at_least_one = False
+        for host, port in config.get('nodes').iteritems():
+            try:
+                self._elliptics_node.add_remote(host, port)
+                at_least_one = True
+            except Exception as err:
+                logger.error("Failed to add remote %s:%d %s", host, port, err)
+
+        if not at_least_one:
+            raise Exception("Unable to connect to Elliptics")
+
+    @property
+    def _session(self):
+        session = elliptics.Session(self._elliptics_node)
+        session.groups = self.groups
+        session.set_namespace(self.namespace)
+        session.exceptions_policy = elliptics.exceptions_policy.no_exceptions
+        return session
 
     def s_find(self, tags):
         r = self._session.find_all_indexes(list(tags))
@@ -60,18 +78,32 @@ class EllipticsStorage(Storage):
         return [str(i.indexes[0].data) for i in itertools.chain(result)]
 
     def s_remove(self, key):
-        self._session.remove(key)
-        self._session.set_indexes(key, [], [])
+        self._session.remove(key).wait()
+        self._session.set_indexes(key, [], []).wait()
 
     def s_read(self, path):
-        res = self._session.read_data(path, offset=0, size=0).get()[0]
+        r = self._session.read_data(path, offset=0, size=0)
+        r.wait()
+        err = r.error()
+        if err.code != 0:
+            raise IOError("Reading failed {0}".format(err))
+
+        res = r.get()[0]
         return str(res.data)
 
     def s_write(self, key, value, tags):
-        self._session.write_data(key, str(value)).wait()
+        # Write data with given key
+        r = self._session.write_data(key, str(value))
+        r.wait()
+        err = r.error()
+        if err.code != 0:
+            raise IOError("Writing failed {0}".format(err))
+
+        # Set indexes
         r = self._session.set_indexes(key, list(tags), [key] * len(tags))
         r.wait()
-        return r.successful()
+        if err.code != 0:
+            raise IOError("Setting indexes failed {0}".format(err))
 
     @cache_lru.get
     def get_content(self, path):
