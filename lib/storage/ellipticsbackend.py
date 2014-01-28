@@ -27,33 +27,33 @@ class EllipticsStorage(Storage):
     def __init__(self, config):
         cfg = elliptics.Config()
         # The parameter which sets the time to wait for the operation complete
-        cfg.config.wait_timeout = config.get("wait-timeout", 60)
+        cfg.config.wait_timeout = config.get("elliptics_wait_timeout", 60)
         # The parameter which sets the timeout for pinging node
-        cfg.config.check_timeout = config.get("check_timeout", 60)
+        cfg.config.check_timeout = config.get("elliptics_check_timeout", 60)
         # Number of IO threads in processing pool
-        cfg.config.io_thread_num = config.get("io-thread-num", 2)
+        cfg.config.io_thread_num = config.get("elliptics_io_thread_num", 2)
         # Number of threads in network processing pool
-        cfg.config.net_thread_num = config.get("net-thread-num", 2)
+        cfg.config.net_thread_num = config.get("elliptics_net_thread_num", 2)
         # Number of IO threads in processing pool dedicated to nonblocking ops
-        nonblock_io_threads = config.get("nonblocking_io_thread_num", 2)
-        cfg.config.nonblocking_io_thread_num = nonblock_io_threads
-        self.groups = config.get('groups', [])
+        nblock_iothreads = config.get("elliptics_nonblocking_io_thread_num", 2)
+        cfg.config.nonblocking_io_thread_num = nblock_iothreads
+        self.groups = config.get('elliptics_groups', [])
         if len(self.groups) == 0:
             raise ValueError("Specify groups")
 
         # loglevel of elliptics logger
-        elliptics_log_level = config.get('verbosity', 0)
+        elliptics_log_level = config.get('elliptics_verbosity', 0)
 
         # path to logfile
-        elliptics_log_file = config.get('logfile', '/dev/stderr')
+        elliptics_log_file = config.get('elliptics_logfile', '/dev/stderr')
         log = elliptics.Logger(elliptics_log_file, elliptics_log_level)
         self._elliptics_node = elliptics.Node(log, cfg)
 
-        self.namespace = config.get('namespace', DEFAULT_NAMESPACE)
+        self.namespace = config.get('elliptics_namespace', DEFAULT_NAMESPACE)
         logger.info("Using namespace %s", self.namespace)
 
         at_least_one = False
-        for host, port in config.get('nodes').iteritems():
+        for host, port in config.get('elliptics_nodes').iteritems():
             try:
                 self._elliptics_node.add_remote(host, port)
                 at_least_one = True

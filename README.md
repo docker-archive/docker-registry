@@ -127,34 +127,34 @@ to `s3`.
 These options configure your [Elliptics](http://reverbrain.com/elliptics/) storage. These are used when `storage` is set
 to `elliptics`.
 
-1. `nodes`: Elliptics remotes
-1. `wait-timeout`: time to wait for the operation complete
-1. `check_timeout`: timeout for pinging node
-1. `io-thread-num`: number of IO threads in processing pool
-1. `net-thread-num`: number of threads in network processing pool
-1. `nonblocking_io_thread_num`: number of IO threads in processing pool dedicated to nonblocking ops
-1. `groups`: Elliptics groups registry should use
-1. `verbosity`: Elliptics logger verbosity (0...4)
-1. `logfile`: path to Elliptics logfile (default: `dev/stderr`)
+1. `elliptics_nodes`: Elliptics remotes
+1. `elliptics_wait_timeout`: time to wait for the operation complete
+1. `elliptics_check_timeout`: timeout for pinging node
+1. `elliptics_io_thread_num`: number of IO threads in processing pool
+1. `elliptics_net_thread_num`: number of threads in network processing pool
+1. `elliptics_nonblocking_io_thread_num`: number of IO threads in processing pool dedicated to nonblocking ops
+1. `elliptics_groups`: Elliptics groups registry should use
+1. `elliptics_verbosity`: Elliptics logger verbosity (0...4)
+1. `elliptics_logfile`: path to Elliptics logfile (default: `dev/stderr`)
 
 Example:
 ```yaml
 dev:
   storage: elliptics
-  nodes:
+  elliptics_nodes:
       elliptics-host1: 1025
       elliptics-host2: 1025
       ...
       hostN: port
-  wait-timeout: 60
-  check_timeout: 60
-  io-thread-num: 2
-  net-thread-num: 2
-  nonblocking_io_thread_num: 2
-  groups: [1, 2, 3]
-  verbosity: 4
-  logfile: "/tmp/logfile.log"
-  loglevel: debug
+  elliptics_wait_timeout: 60
+  elliptics_check_timeout: 60
+  elliptics_io_thread_num: 2
+  elliptics_net_thread_num: 2
+  elliptics_nonblocking_io_thread_num: 2
+  elliptics_groups: [1, 2, 3]
+  elliptics_verbosity: 4
+  elliptics_logfile: "/tmp/logfile.log"
+  elliptics_loglevel: debug
 ```
 
 ### Email options
