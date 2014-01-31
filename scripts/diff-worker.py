@@ -18,8 +18,8 @@ import storage
 
 store = storage.load()
 
-redis_default_host = os.environ.get('REDIS_PORT_6379_TCP_ADDR', '0.0.0.0')
-redis_default_port = int(os.environ.get('REDIS_PORT_6379_TCP_PORT', '6379'))
+redis_default_host = os.environ.get('DOCKER_REDIS_1_PORT_6379_TCP_ADDR', '0.0.0.0')
+redis_default_port = int(os.environ.get('DOCKER_REDIS_1_PORT_6379_TCP_PORT', '6379'))
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -88,6 +88,7 @@ def handle_request(layer_id, redis_conn):
         log.info("Another worker is processing %s. Skipping." % layer_id)
 
 if __name__ == '__main__':
+    print "WTTTFFFF"
     parser = get_parser()
     options = parser.parse_args()
     redis_conn = get_redis_connection(options)

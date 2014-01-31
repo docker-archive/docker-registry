@@ -103,8 +103,26 @@ def get_repository_json(namespace, repository):
         pass
     return toolkit.response(data)
 
+@app.route('/v1/repositories/<path:repository>/<tag>/json', methods=['GET'])
+@toolkit.parse_repository_name
+@toolkit.requires_auth
+def get_repository_tag_json(namespace, repository, tag):
+    json_path = store.repository_tag_json_path(namespace, repository, tag)
+    data = {'last_update': None,
+            'docker_version': None,
+            'docker_go_version': None,
+            'arch': 'amd64',
+            'os': 'linux',
+            'kernel': None}
+    try:
+        data = json.loads(store.get_content(json_path))
+    except IOError:
+        # We ignore the error, we'll serve the default json declared above
+        pass
+    return toolkit.response(data)
 
-def create_repository_json(user_agent):
+
+def create_tag_json(user_agent):
     props = {
         'last_update': int(time.mktime(datetime.datetime.utcnow().timetuple()))
     }
@@ -139,10 +157,12 @@ def put_tag(namespace, repository, tag):
     sender = flask.current_app._get_current_object()
     signals.tag_created.send(sender, namespace=namespace,
                              repository=repository, tag=tag, value=data)
-    if tag == 'latest':
-        # Write some meta-data about the repos
-        ua = flask.request.headers.get('user-agent', '')
-        data = create_repository_json(user_agent=ua)
+    # Write some meta-data about the repos
+    ua = flask.request.headers.get('user-agent', '')
+    data = create_tag_json(user_agent=ua)
+    json_path = store.repository_tag_json_path(namespace, repository, tag)
+    store.put_content(json_path, data)
+    if tag == "latest": # TODO : deprecate this for v2
         json_path = store.repository_json_path(namespace, repository)
         store.put_content(json_path, data)
     return toolkit.response()

@@ -66,6 +66,12 @@ class Storage(object):
                                          namespace,
                                          repository)
 
+    def repository_tag_json_path(self, namespace, repository, tag):
+        return '{0}/{1}/{2}/{3}_json'.format(self.repositories,
+                                         namespace,
+                                         repository,
+                                         tag)
+
     def index_images_path(self, namespace, repository):
         return '{0}/{1}/{2}/_index_images'.format(self.repositories,
                                                   namespace,
