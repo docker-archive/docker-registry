@@ -85,6 +85,8 @@ def get_tag(namespace, repository, tag):
     return toolkit.response(data)
 
 
+# warning: this endpoint is deprecated in favor of tag-specific json
+# implemented by get_repository_tag_json
 @app.route('/v1/repositories/<path:repository>/json', methods=['GET'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
@@ -103,7 +105,10 @@ def get_repository_json(namespace, repository):
         pass
     return toolkit.response(data)
 
-@app.route('/v1/repositories/<path:repository>/<tag>/json', methods=['GET'])
+
+@app.route(
+    '/v1/repositories/<path:repository>/tags/<tag>/json',
+    methods=['GET'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
 def get_repository_tag_json(namespace, repository, tag):
@@ -162,7 +167,7 @@ def put_tag(namespace, repository, tag):
     data = create_tag_json(user_agent=ua)
     json_path = store.repository_tag_json_path(namespace, repository, tag)
     store.put_content(json_path, data)
-    if tag == "latest": # TODO : deprecate this for v2
+    if tag == "latest":  # TODO(dustinlacewell) : deprecate this for v2
         json_path = store.repository_json_path(namespace, repository)
         store.put_content(json_path, data)
     return toolkit.response()
