@@ -41,6 +41,7 @@ def set_properties(namespace, repo):
 
 
 @app.route('/v1/repositories/<path:repository>/properties', methods=['GET'])
+@toolkit.source_lookup()
 @toolkit.parse_repository_name
 @toolkit.requires_auth
 def get_properties(namespace, repo):
@@ -53,6 +54,7 @@ def get_properties(namespace, repo):
 
 
 @app.route('/v1/repositories/<path:repository>/tags', methods=['GET'])
+@toolkit.source_lookup()
 @toolkit.parse_repository_name
 @toolkit.requires_auth
 def get_tags(namespace, repository):
@@ -72,6 +74,7 @@ def get_tags(namespace, repository):
 
 
 @app.route('/v1/repositories/<path:repository>/tags/<tag>', methods=['GET'])
+@toolkit.source_lookup()
 @toolkit.parse_repository_name
 @toolkit.requires_auth
 def get_tag(namespace, repository, tag):
@@ -86,6 +89,7 @@ def get_tag(namespace, repository, tag):
 
 
 @app.route('/v1/repositories/<path:repository>/json', methods=['GET'])
+@toolkit.source_lookup()
 @toolkit.parse_repository_name
 @toolkit.requires_auth
 def get_repository_json(namespace, repository):

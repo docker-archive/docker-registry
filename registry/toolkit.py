@@ -24,6 +24,27 @@ class SocketReader(object):
         self._fp = fp
         self.handlers = []
 
+    def __iter__(self):
+        return self.iterate()
+
+    def iterate(self, chunk_size=-1):
+        if isinstance(self._fp, requests.Response):
+            if chunk_size == -1:
+                chunk_size = 1024
+            for chunk in self._fp.iter_content(chunk_size):
+                logger.debug('Read %d bytes' % len(chunk))
+                for handler in self.handlers:
+                    handler(chunk)
+                yield chunk
+        else:
+            chunk = self._fp.read(chunk_size)
+            while chunk:
+                logger.debug('Read %d bytes' % len(chunk))
+                for handler in self.handlers:
+                    handler(chunk)
+                yield chunk
+                chunk = self._fp.read(chunk_size)
+
     def add_handler(self, handler):
         self.handlers.append(handler)
 
@@ -161,6 +182,76 @@ def check_token(args):
         # We enforce the IP check only when not using SSL
         session['from'] = get_remote_ip()
     return True
+
+
+def is_mirror():
+    cfg = config.load()
+    return not not cfg.get('source')
+
+
+def source_lookup(cache=False, stream=False):
+    def decorator(f):
+        @functools.wraps(f)
+        def wrapper(*args, **kwargs):
+            logger.debug('Entering source_lookup')
+            cfg = config.load()
+            source = cfg.get('source')
+            if not source:
+                logger.debug('No source configured, business as usual')
+                return f(*args, **kwargs)
+            else:
+                logger.debug('Source provided, registry acts as mirror')
+                resp = f(*args, **kwargs)
+                if resp.status_code != 404:
+                    logger.debug('Status code is not 404, no source lookup required')
+                    return resp
+                source_url = '{0}{1}'.format(source, flask.request.path)
+                headers = {}
+                for k, v in flask.request.headers.iteritems():
+                    if k.lower() != 'location' and k.lower() != 'host':
+                        headers[k] = v
+                source_resp = requests.get(
+                    source_url,
+                    headers=headers,
+                    #cookies=flask.request.cookies,
+                    stream=stream
+                )
+                if source_resp.status_code != 200:
+                    logger.debug('Source responded to request with non-200 status')
+                    logger.debug('Request: GET {0}\nHeaders: {1}'.format(source_url, headers))
+                    logger.debug('Response: {0}\n{1}\n'.format(source_resp.status_code, source_resp.text))
+                    return resp
+
+                store = storage.load()
+
+                if not stream:
+                    logger.debug('JSON data found on source, writing response...')
+                    resp_data = source_resp.json()
+                    if cache:
+                        # TODO: save resp_data to storage
+                        pass
+                    return response(
+                        data=resp_data,
+                        headers=source_resp.headers,
+                    )
+                logger.debug('Layer data found on source, preparing to stream response...')
+                layer_path = store.image_layer_path(kwargs['image_id'])
+
+                sr = SocketReader(source_resp)
+                tmp, hndlr = storage.temp_store_handler()
+                sr.add_handler(hndlr)
+
+                def generate():
+                    for chunk in sr.iterate(1024):
+                        yield chunk
+                    logger.debug('>> Writing to store')
+                    # TODO: this could be done outside of the request context
+                    tmp.seek(0)
+                    store.stream_write(layer_path, tmp)
+                    tmp.close()
+                return flask.Response(generate(), headers=source_resp.headers)
+        return wrapper
+    return decorator
 
 
 def check_signature():

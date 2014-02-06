@@ -72,6 +72,8 @@ def _get_image_layer(image_id, headers=None, bytes_range=None):
         if bytes_range:
             status = 206
             headers['Content-Range'] = '{0}-{1}/*'.format(*bytes_range)
+        if not store.exists(path):
+            return toolkit.api_error('Image not found', 404)
         return flask.Response(store.stream_read(path, bytes_range),
                               headers=headers, status=status)
     except IOError:
@@ -142,6 +144,7 @@ def get_private_image_layer(image_id):
 @toolkit.requires_auth
 @require_completion
 @set_cache_headers
+@toolkit.source_lookup(cache=True, stream=True)
 def get_image_layer(image_id, headers):
     try:
         bytes_range = None
@@ -268,6 +271,7 @@ def get_private_image_json(image_id):
 @toolkit.requires_auth
 @require_completion
 @set_cache_headers
+@toolkit.source_lookup(cache=True)
 def get_image_json(image_id, headers):
     try:
         repository = toolkit.get_repository()
@@ -284,6 +288,7 @@ def get_image_json(image_id, headers):
 @toolkit.requires_auth
 @require_completion
 @set_cache_headers
+@toolkit.source_lookup(cache=True)
 def get_image_ancestry(image_id, headers):
     try:
         data = store.get_content(store.image_ancestry_path(image_id))
