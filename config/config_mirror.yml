@@ -1,7 +1,7 @@
 # The `common' part is automatically included (and possibly overriden by all
 # other flavors)
 common:
-    secret_key: genderfluidityisthenewqueer
+    secret_key: REPLACEME
     source: https://registry-1.docker.io
 
 dev:
