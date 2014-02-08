@@ -11,9 +11,9 @@ RUN apt-get update; \
     apt-get install -y git-core build-essential python-dev \
     libevent1-dev python-openssl liblzma-dev wget; \
     rm /var/lib/apt/lists/*_*
-RUN cd /tmp; wget http://python-distribute.org/distribute_setup.py
-RUN cd /tmp; python distribute_setup.py; easy_install pip; \
-    rm distribute_setup.py
+RUN cd /tmp; wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
+RUN cd /tmp; python ez_setup.py; easy_install pip; \
+    rm ez_setup.py
 ADD . /docker-registry
 ADD ./config/boto.cfg /etc/boto.cfg
 
