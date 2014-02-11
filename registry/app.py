@@ -1,8 +1,12 @@
 import logging
 import os
 
-import bugsnag
-import bugsnag.flask
+try:
+    import bugsnag
+    import bugsnag.flask
+except ImportError as e:
+    _bugsnag_import_error = e
+    bugsnag = None
 import flask
 
 import config
@@ -65,6 +69,8 @@ def init():
     # Configure bugsnag
     info = cfg.bugsnag
     if info:
+        if not bugsnag:
+            raise _bugsnag_import_error
         root_path = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                  '..'))
         bugsnag.configure(api_key=info,
