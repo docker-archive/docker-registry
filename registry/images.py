@@ -240,7 +240,7 @@ def put_image_checksum(image_id):
     if err:
         return toolkit.api_error(err)
     if checksum not in flask.session.get('checksum', []):
-        logger.debug('put_image_layer: Wrong checksum')
+        logger.debug('put_image_checksum: Wrong checksum')
         return toolkit.api_error('Checksum mismatch')
     # Checksum is ok, we remove the marker
     store.remove(mark_path)
