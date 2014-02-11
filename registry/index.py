@@ -105,8 +105,8 @@ def get_repository_images(namespace, repository):
     except IOError:
         resp = toolkit.api_error('images not found', 404)
         if toolkit.is_mirror():
-            # FIXME: this needs to be a config option, defaults to cfg.source
-            source_index = 'https://index.docker.io'
+            cfg = config.load()
+            source_index = cfg.get('source_index', cfg.get('source'))
             u = '{2}/v1/repositories/{0}/{1}/images'.format(
                 namespace, repository, source_index
             )

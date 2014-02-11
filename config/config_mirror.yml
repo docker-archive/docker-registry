@@ -3,6 +3,7 @@
 common:
     secret_key: REPLACEME
     source: https://registry-1.docker.io
+    source_index: https://index.docker.io
 
 dev:
     storage: local
