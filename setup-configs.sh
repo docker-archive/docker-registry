@@ -36,7 +36,7 @@ elif [ "$SETTINGS_FLAVOR" = "openstack-swift" ] ; then
     config=${config//swift_authurl: REPLACEME/swift_authurl: $OS_AUTH_URL};
     config=${config//swift_user: REPLACEME/swift_user: $OS_USERNAME};
     config=${config//swift_password: REPLACEME/swift_password: $OS_PASSWORD};
-    config=${config//swift_tenant_name: REPLACEME/swift_tenant_name: $OS_USERNAME};
+    config=${config//swift_tenant_name: REPLACEME/swift_tenant_name: $OS_TENANT_NAME};
     config=${config//swift_region_name: REPLACEME/swift_region_name: $OS_REGION_NAME};
     printf '%s\n' "$config" >config/config.yml
 fi
