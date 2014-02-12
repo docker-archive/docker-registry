@@ -41,7 +41,6 @@ def set_properties(namespace, repo):
 
 
 @app.route('/v1/repositories/<path:repository>/properties', methods=['GET'])
-@toolkit.source_lookup()
 @toolkit.parse_repository_name
 @toolkit.requires_auth
 def get_properties(namespace, repo):
@@ -54,7 +53,6 @@ def get_properties(namespace, repo):
 
 
 @app.route('/v1/repositories/<path:repository>/tags', methods=['GET'])
-@toolkit.source_lookup()
 @toolkit.parse_repository_name
 @toolkit.requires_auth
 def get_tags(namespace, repository):
@@ -69,12 +67,19 @@ def get_tags(namespace, repository):
                 continue
             data[tag_name[4:]] = store.get_content(fname)
     except OSError:
+        # FIXME: If a mirror has replicated some tags, but not all,
+        # the source lookup will not trigger.
+        if toolkit.is_mirror():
+            source_resp = toolkit.lookup_source(flask.request.path)
+            if source_resp is not None:
+                return toolkit.response(source_resp.json(),
+                                        headers=source_resp.headers)
+
         return toolkit.api_error('Repository not found', 404)
     return toolkit.response(data)
 
 
 @app.route('/v1/repositories/<path:repository>/tags/<tag>', methods=['GET'])
-@toolkit.source_lookup()
 @toolkit.parse_repository_name
 @toolkit.requires_auth
 def get_tag(namespace, repository, tag):
@@ -84,16 +89,24 @@ def get_tag(namespace, repository, tag):
     try:
         data = store.get_content(store.tag_path(namespace, repository, tag))
     except IOError:
+        if toolkit.is_mirror():
+            source_resp = toolkit.lookup_source(flask.request.path)
+            if source_resp is not None:
+                data = source_resp.text
+                store.put_content(store.tag_path(namespace, repository, tag),
+                                  data)
+                toolkit.response(json.loads(data), headers=source_resp.headers)
+
         return toolkit.api_error('Tag not found', 404)
     return toolkit.response(data)
 
 
 @app.route('/v1/repositories/<path:repository>/json', methods=['GET'])
-@toolkit.source_lookup()
 @toolkit.parse_repository_name
 @toolkit.requires_auth
 def get_repository_json(namespace, repository):
     json_path = store.repository_json_path(namespace, repository)
+    headers = {}
     data = {'last_update': None,
             'docker_version': None,
             'docker_go_version': None,
@@ -103,9 +116,14 @@ def get_repository_json(namespace, repository):
     try:
         data = json.loads(store.get_content(json_path))
     except IOError:
-        # We ignore the error, we'll serve the default json declared above
-        pass
-    return toolkit.response(data)
+        if toolkit.is_mirror():
+            source_resp = toolkit.lookup_source(flask.request.path)
+            if source_resp is not None:
+                data = source_resp.text
+                headers = source_resp.headers
+                store.put_content(json_path, data)
+        # else we ignore the error, we'll serve the default json declared above
+    return toolkit.response(data, headers=headers)
 
 
 def create_repository_json(user_agent):
