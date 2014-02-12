@@ -161,8 +161,8 @@ class TestWorkflow(base.TestCase):
             computed_checksum = checksums.compute_simple(tmpfile, json_data)
             tmpfile.close()
             self.assertEqual(checksum, computed_checksum)
-        # Remove image tags
-        resp = requests.delete('{0}/v1/repositories/{1}/{2}/tags'.format(
+        # Remove the repository
+        resp = requests.delete('{0}/v1/repositories/{1}/{2}/'.format(
             self.registry_endpoint, namespace, repos), cookies=self.cookies)
         self.assertEqual(resp.status_code, 200, resp.text)
         self.update_cookies(resp)

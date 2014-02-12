@@ -204,16 +204,36 @@ def _delete_tag(namespace, repository, tag):
     return toolkit.response()
 
 
-@app.route('/v1/repositories/<path:repository>/tags',
-           methods=['DELETE'])
+@app.route('/v1/repositories/<path:repository>/', methods=['DELETE'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
 def delete_repository(namespace, repository):
+    """Remove a repository from storage
+
+    This endpoint exists in both the registry API [1] and the indexer
+    API [2], but has the same semantics in each instance.  It's in the
+    tags module (instead of the index module which handles most
+    repository tasks) because it should be available regardless of
+    whether the rest of the index-module endpoints are enabled via the
+    'standalone' config setting.
+
+    [1]: http://docs.docker.io/en/latest/reference/api/registry_api/#delete--v1-repositories-%28namespace%29-%28repository%29-
+    [2]: http://docs.docker.io/en/latest/reference/api/index_api/#delete--v1-repositories-%28namespace%29-%28repo_name%29-
+    """
     logger.debug("[delete_repository] namespace={0}; repository={1}".format(
                  namespace, repository))
     try:
-        store.remove(store.tag_path(namespace, repository))
-        #TODO(samalba): Trigger tags_deleted signals
+        for tag_name, tag_content in get_tags(
+                namespace=namespace, repository=repository):
+            delete_tag(
+                namespace=namespace, repository=repository, tag=tag_name)
+        # TODO(wking): remove images, but may need refcounting
+        store.remove(store.repository_path(
+            namespace=namespace, repository=repository))
     except OSError:
         return toolkit.api_error('Repository not found', 404)
+    else:
+        sender = flask.current_app._get_current_object()
+        signals.repository_deleted.send(
+            sender, namespace=namespace, repository=repository)
     return toolkit.response()

@@ -104,7 +104,7 @@ class TestTags(base.TestCase):
         self.assertEqual(resp.status_code, 404, resp.data)
 
         # test whole delete
-        url = '/v1/repositories/foo/{0}/tags'.format(repos_name)
+        url = '/v1/repositories/foo/{0}/'.format(repos_name)
         resp = self.http_client.delete(url)
         self.assertEqual(resp.status_code, 200, resp.data)
         url = '/v1/repositories/foo/{0}/tags'.format(repos_name)
