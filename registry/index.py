@@ -133,8 +133,3 @@ def delete_repository_images(namespace, repository):
 @toolkit.parse_repository_name
 def put_repository_auth(namespace, repository):
     return toolkit.response('OK')
-
-
-@app.route('/v1/search', methods=['GET'])
-def get_search():
-    return toolkit.response({})

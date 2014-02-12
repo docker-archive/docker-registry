@@ -12,6 +12,7 @@ class Storage(object):
     """Storage is organized as follow:
     $ROOT/images/<image_id>/json
     $ROOT/images/<image_id>/layer
+    $ROOT/index/json
     $ROOT/repositories/<namespace>/<repository_name>/<tag_name>
     """
 
@@ -19,6 +20,7 @@ class Storage(object):
     # the code which uses Storage
     repositories = 'repositories'
     images = 'images'
+    index = 'index'
     # Set the IO buffer to 128kB
     buffer_size = 128 * 1024
     # By default no storage plugin supports it
@@ -84,6 +86,9 @@ class Storage(object):
 
     def is_private(self, namespace, repository):
         return self.exists(self.private_flag_path(namespace, repository))
+
+    def index_path(self):
+        return '{0}/json'.format(self.index)
 
     def get_content(self, path):
         raise NotImplementedError
