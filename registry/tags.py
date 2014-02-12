@@ -52,20 +52,27 @@ def get_properties(namespace, repo):
     })
 
 
+def get_tags(namespace, repository):
+    tag_path = store.tag_path(namespace, repository)
+    for fname in store.list_directory(tag_path):
+        full_tag_name = fname.split('/').pop()
+        if not full_tag_name.startswith('tag_'):
+            continue
+        tag_name = full_tag_name[4:]
+        tag_content = store.get_content(fname)
+        yield (tag_name, tag_content)
+
+
 @app.route('/v1/repositories/<path:repository>/tags', methods=['GET'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
-def get_tags(namespace, repository):
+def _get_tags(namespace, repository):
     logger.debug("[get_tags] namespace={0}; repository={1}".format(namespace,
                  repository))
-    data = {}
     try:
-        for fname in store.list_directory(store.tag_path(namespace,
-                                                         repository)):
-            tag_name = fname.split('/').pop()
-            if not tag_name.startswith('tag_'):
-                continue
-            data[tag_name[4:]] = store.get_content(fname)
+        data = {tag_name: tag_content
+                for tag_name, tag_content
+                in get_tags(namespace=namespace, repository=repository)}
     except OSError:
         return toolkit.api_error('Repository not found', 404)
     return toolkit.response(data)
