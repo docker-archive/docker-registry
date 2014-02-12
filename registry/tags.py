@@ -180,18 +180,22 @@ def put_tag(namespace, repository, tag):
     return toolkit.response()
 
 
+def delete_tag(namespace, repository, tag):
+    logger.debug("[delete_tag] namespace={0}; repository={1}; tag={2}".format(
+                 namespace, repository, tag))
+    store.remove(store.tag_path(namespace, repository, tag))
+    sender = flask.current_app._get_current_object()
+    signals.tag_deleted.send(
+        sender, namespace=namespace, repository=repository, tag=tag)
+
+
 @app.route('/v1/repositories/<path:repository>/tags/<tag>',
            methods=['DELETE'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
-def delete_tag(namespace, repository, tag):
-    logger.debug("[delete_tag] namespace={0}; repository={1}; tag={2}".format(
-                 namespace, repository, tag))
+def _delete_tag(namespace, repository, tag):
     try:
-        store.remove(store.tag_path(namespace, repository, tag))
-        sender = flask.current_app._get_current_object()
-        signals.tag_deleted.send(sender, namespace=namespace,
-                                 repository=repository, tag=tag)
+        delete_tag(namespace=namespace, repository=repository, tag=tag)
     except OSError:
         return toolkit.api_error('Tag not found', 404)
     return toolkit.response()
