@@ -4,8 +4,12 @@ common:
     secret_key: REPLACEME
     source: https://registry-1.docker.io
     source_index: https://index.docker.io
+    tags_cache:
+        enabled: true
+        ttl: 240       # hours
 
 dev:
     storage: local
     storage_path: /tmp/registry
     loglevel: debug
+    cache: true
