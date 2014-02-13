@@ -36,8 +36,8 @@ environment: `export SETTINGS_FLAVOR=dev`
 The default environment is `dev`.
 
 NOTE: it's possible to load environment variables from the config file
-with a simple syntax: _env:VARIABLENAME. Check this syntax in action
-in the example below...
+with a simple syntax: `_env:VARIABLENAME[:DEFAULT]`. Check this syntax
+in action in the example below...
 
 
 #### Example config
