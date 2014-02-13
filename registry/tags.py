@@ -92,10 +92,8 @@ def get_tag(namespace, repository, tag):
         if toolkit.is_mirror():
             source_resp = toolkit.lookup_source(flask.request.path)
             if source_resp is not None:
-                data = source_resp.text
-                store.put_content(store.tag_path(namespace, repository, tag),
-                                  data)
-                toolkit.response(json.loads(data), headers=source_resp.headers)
+                toolkit.response(source_resp.json(),
+                                 headers=source_resp.headers)
 
         return toolkit.api_error('Tag not found', 404)
     return toolkit.response(data)
