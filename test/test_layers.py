@@ -1,9 +1,9 @@
 import backports.lzma as lzma
+import cStringIO as StringIO
 import json
 import os
 import random
 import string
-import StringIO
 import tarfile
 
 import base
@@ -12,13 +12,6 @@ import storage.local
 
 # from mock import patch
 # from mockredis import mock_strict_redis_client
-
-
-class SeekableStringIO(StringIO.StringIO):
-    def seekable(self):
-        return True
-
-StringIO.StringIO = SeekableStringIO
 
 
 def comp(n, f, *args, **kwargs):
