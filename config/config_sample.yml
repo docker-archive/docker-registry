@@ -31,6 +31,8 @@ common:
     # Let gunicorn set this environment variable or set a random string here
     secret_key: _env:SECRET_KEY
 
+    search_index: "_env:SEARCH_INDEX:"
+
 
 # This is the default configuration when no flavor is specified
 dev:

@@ -46,6 +46,7 @@ in action in the example below...
 
 common:
     loglevel: info
+    search_index: "_env:SEARCH_INDEX:"
 
 prod:
     loglevel: warn
@@ -203,6 +204,22 @@ dev:
   gs_secret_key: bGoa+V7g/yqDXvKRqq+JTFn4uQZbPiQJo4pf9RzJ
   gs_secure: false
 ```
+
+### Search-engine options
+
+The Docker Registry can optionally use [SQLAlchemy][] to index
+repository information in a database, for the `GET /v1/search`
+[endpoint][search-endpoint].  You can configure the backend with a
+configuration like:
+
+```yaml
+search_index: "_env:SEARCH_INDEX:"
+```
+
+you can use the `SEARCH_INDEX` environment variable to configure the
+string passed to [create_engine][].  If the configured `search_index`
+is empty, no index is built, and the search endpoint always returns
+empty results.
 
 ### Email options
 
@@ -404,3 +421,9 @@ pip install tox
 cd docker-registry/
 tox
 ```
+
+[SQLAlchemy]: http://docs.sqlalchemy.org/
+[search-endpoint]:
+  http://docs.docker.io/en/latest/reference/api/index_api/#get--v1-search
+[create_engine]:
+  http://docs.sqlalchemy.org/en/latest/core/engines.html#sqlalchemy.create_engine

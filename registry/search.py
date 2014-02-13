@@ -1,8 +1,17 @@
 __all__ = ['get_search']
 
 import flask
-import simplejson as json
+try:
+    import sqlalchemy
+    import sqlalchemy.exc
+    import sqlalchemy.ext.declarative
+    import sqlalchemy.orm
+    import sqlalchemy.sql.functions
+except ImportError as e:
+    _sqlalchemy_import_error = e
+    sqlalchemy = None
 
+import config
 import signals
 import storage
 import toolkit
@@ -10,11 +19,38 @@ import toolkit
 from .app import app
 
 
+cfg = config.load()
+index = None
 store = storage.load()
-#index = Index()
 
 
-class Index (dict):
+if sqlalchemy:
+    Base = sqlalchemy.ext.declarative.declarative_base()
+
+    class Version (Base):
+        "Schema version for the search-index database"
+        __tablename__ = 'version'
+
+        id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+
+        def __repr__(self):
+            return '<{0}(id={1})>'.format(type(self).__name__, self.id)
+
+    class Repository (Base):
+        "Repository description"
+        __tablename__ = 'repository'
+
+        id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+        name = sqlalchemy.Column(
+            sqlalchemy.String, nullable=False, unique=True)
+        description = sqlalchemy.Column(sqlalchemy.String)
+
+        def __repr__(self):
+            return "<{0}(name='{1}', description='{2}')>".format(
+                type(self).__name__, self.name, self.description)
+
+
+class Index (object):
     """Maintain an index of repository data
 
     The index is a dictionary.  The keys are
@@ -23,43 +59,33 @@ class Index (dict):
 
       index['library/ubuntu'] = 'An ubuntu image...'
     """
-    def __init__(self):
-        super(Index, self).__init__()
+    def __init__(self, database):
+        self._engine = sqlalchemy.create_engine(database)
+        self._session = sqlalchemy.orm.sessionmaker(bind=self._engine)
         self.version = 1
-        self.load()
+        self._setup_database()
         signals.repository_created.connect(self._handler_repository_created)
-        signals.repository_updated.connect(self._handler_repository_created)
+        signals.repository_updated.connect(self._handler_repository_updated)
         signals.repository_deleted.connect(self._handler_repository_deleted)
 
-    def load(self):
-        regenerated = False
+    def _setup_database(self):
+        session = self._session()
         try:
-            index_content = store.get_content(store.index_path())
-        except (OSError, IOError):
-            index_data = self._regenerate_index()
-            regenerated = True
-        else:
-            data = json.loads(index_content)
-            if data['version'] != self.version:
+            version = session.query(
+                sqlalchemy.sql.functions.max(Version.id)).first()[0]
+        except sqlalchemy.exc.OperationalError:
+            version = None
+        if version:
+            if version != self.version:
                 raise NotImplementedError(
-                    'unrecognized search index version {0}'.format(
-                        data['version']))
-            index_data = data['index']
-        self.clear()
-        self.update(index_data)
-        if regenerated:
-            self.save()
+                    'unrecognized search index version {0}'.format(version))
+        else:
+            self._generate_index(session=session)
+        session.close()
 
-    def save(self):
-        index_data = {
-            'version': self.version,
-            'index': dict(self),
-        }
-        store.put_content(store.index_path(), json.dumps(index_data))
-
-    def _regenerate_index(self):
-        index_data = {}
-        description = ''  # TODO(wking): store descriptions
+    def _generate_index(self, session):
+        Base.metadata.create_all(self._engine)
+        session.add(Version(id=self.version))
         try:
             namespace_paths = list(
                 store.list_directory(path=store.repositories))
@@ -74,41 +100,68 @@ class Index (dict):
                 repository_paths = []
             for path in repository_paths:
                 repository = path.rsplit('/', 1)[-1]
-                key = '{0}/{1}'.format(namespace, repository)
-                index_data[key] = description
-        return index_data
+                name = '{0}/{1}'.format(namespace, repository)
+                description = None  # TODO(wking): store descriptions
+                session.add(Repository(name=name, description=description))
+        session.commit()
 
     def _handler_repository_created(
             self, sender, namespace, repository, value):
-        key = '{0}/{1}'.format(namespace, repository)
+        name = '{0}/{1}'.format(namespace, repository)
         description = ''  # TODO(wking): store descriptions
-        self[key] = description
-        self.save()
+        session = self._session()
+        session.add(Repository(name=name, description=description))
+        session.commit()
+        session.close()
+
+    def _handler_repository_updated(
+            self, sender, namespace, repository, value):
+        name = '{0}/{1}'.format(namespace, repository)
+        description = ''  # TODO(wking): store descriptions
+        session = self._session()
+        session.query(Repository).filter(
+            Repository.name == name).update(
+                values={'description': description},
+                synchronize_session=False)
+        session.commit()
+        session.close()
 
     def _handler_repository_deleted(self, sender, namespace, repository):
-        key = '{0}/{1}'.format(namespace, repository)
-        try:
-            self.pop(key)
-        except KeyError:
-            pass
-        else:
-            self.save()
+        name = '{0}/{1}'.format(namespace, repository)
+        session = self._session()
+        session.query(Repository).filter(Repository.name == name).delete()
+        session.commit()
+        session.close()
+
+    def results(self, search_term):
+        session = self._session()
+        like_term = '%{}%'.format(search_term)
+        repositories = session.query(Repository).filter(
+            sqlalchemy.sql.or_(
+                Repository.name.like(like_term),
+                Repository.description.like(like_term)))
+        return [
+            {
+                'name': repo.name,
+                'description': repo.description,
+            }
+            for repo in repositories]
 
 
-index = Index()
+# Enable the search index
+if cfg.search_index:
+    if not sqlalchemy:
+        raise _sqlalchemy_import_error
+    index = Index(database=cfg.search_index)
 
 
 @app.route('/v1/search', methods=['GET'])
 def get_search():
     search_term = flask.request.args.get('q', '')
-    results = [
-        {
-            'name': name,
-            'description': description,
-        }
-        for name, description in index.items()
-        if search_term in name
-        or search_term in description]
+    if index is None:
+        results = []
+    else:
+        results = index.results(search_term=search_term)
     return toolkit.response({
         'query': search_term,
         'num_results': len(results),

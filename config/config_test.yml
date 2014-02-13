@@ -14,3 +14,5 @@ test:
     gs_access_key: _env:GS_ACCESS_KEY
     gs_secret_key: _env:GS_SECRET_KEY 
     gs_secure: false
+
+    search_index: sqlite:////tmp/docker-registry.db
