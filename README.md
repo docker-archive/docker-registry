@@ -227,6 +227,16 @@ backend-specific configuration options are:
       `sqlalchemy_index_database`, which is passed through to
       [create_engine][].
 
+If `search_backend` is neither empty nor one of the above backends, it
+should point to a module:
+
+```yaml
+search_backend: foo.registry.index.xapian
+```
+
+In this case, the module is imported, and an instance of it's `Index`
+class is used as the search backend.
+
 ### Email options
 
 Settings these options makes the Registry send an email on each code Exception:

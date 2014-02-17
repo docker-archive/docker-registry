@@ -1,6 +1,7 @@
 """Index backends for the search endpoint
 """
 
+import importlib
 import signals
 
 import config
@@ -76,5 +77,10 @@ def load(kind=None):
     if kind == 'sqlalchemy':
         from . import db
         return db.SQLAlchemyIndex()
+    try:
+        module = importlib.import_module(kind)
+    except ImportError:
+        pass
     else:
-        raise NotImplementedError('Unknown index type {0!r}'.format(kind))
+        return module.Index()
+    raise NotImplementedError('Unknown index type {0!r}'.format(kind))
