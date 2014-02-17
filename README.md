@@ -46,7 +46,9 @@ in action in the example below...
 
 common:
     loglevel: info
-    search_index: "_env:SEARCH_INDEX:"
+    search_backend: "_env:SEARCH_BACKEND:"
+    sqlalchemy_index_database:
+        "_env:SQLALCHEMY_INDEX_DATABASE:sqlite:////tmp/docker-registry.db"
 
 prod:
     loglevel: warn
@@ -207,19 +209,23 @@ dev:
 
 ### Search-engine options
 
-The Docker Registry can optionally use [SQLAlchemy][] to index
-repository information in a database, for the `GET /v1/search`
-[endpoint][search-endpoint].  You can configure the backend with a
-configuration like:
+The Docker Registry can optionally index repository information in a
+database for the `GET /v1/search` [endpoint][search-endpoint].  You
+can configure the backend with a configuration like:
 
 ```yaml
-search_index: "_env:SEARCH_INDEX:"
+search_backend: "_env:SEARCH_BACKEND:"
 ```
 
-you can use the `SEARCH_INDEX` environment variable to configure the
-string passed to [create_engine][].  If the configured `search_index`
-is empty, no index is built, and the search endpoint always returns
-empty results.
+The `search_backend` setting selects the search backend to use.  If
+`search_backend` is empty, no index is built, and the search endpoint
+always returns empty results.  Currently supported backends and their
+backend-specific configuration options are:
+
+* `sqlalchemy': Use [SQLAlchemy][].
+    * The backing database is selected with
+      `sqlalchemy_index_database`, which is passed through to
+      [create_engine][].
 
 ### Email options
 
@@ -422,8 +428,8 @@ cd docker-registry/
 tox
 ```
 
-[SQLAlchemy]: http://docs.sqlalchemy.org/
 [search-endpoint]:
   http://docs.docker.io/en/latest/reference/api/index_api/#get--v1-search
+[SQLAlchemy]: http://docs.sqlalchemy.org/
 [create_engine]:
   http://docs.sqlalchemy.org/en/latest/core/engines.html#sqlalchemy.create_engine
