@@ -194,6 +194,8 @@ class GlanceStorageLayers(Storage):
         (image, propname) = self._init_path(path)
         if not propname:
             raise ValueError('Wrong call (should be stream_write)')
+        if 'meta__files' in propname:
+            return
         props = {propname: content}
         image.update(properties=props, purge_props=False)
 
