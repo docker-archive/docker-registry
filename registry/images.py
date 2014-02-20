@@ -161,7 +161,7 @@ def get_image_layer(image_id, headers):
                 sr.add_handler(hndlr)
 
                 def generate():
-                    for chunk in sr.iterate(1024):
+                    for chunk in sr.iterate(store.buffer_size):
                         yield chunk
                     # FIXME: this could be done outside of the request context
                     tmp.seek(0)
@@ -296,8 +296,8 @@ def get_image_json(image_id, headers):
                 data = source_resp.content
                 json_path = store.image_json_path(image_id)
                 store.put_content(json_path, data)
-                return toolkit.response(json.loads(data),
-                                        headers=source_resp.headers)
+                return toolkit.response(data, headers=source_resp.headers,
+                                        raw=True)
         return toolkit.api_error('Image not found', 404)
 
 
@@ -315,8 +315,8 @@ def get_image_ancestry(image_id, headers):
             if source_resp is not None:
                 data = source_resp.text
                 store.put_content(ancestry_path, data)
-                return toolkit.response(json.loads(data),
-                                        headers=source_resp.headers)
+                return toolkit.response(data, headers=source_resp.headers,
+                                        raw=True)
         return toolkit.api_error('Image not found', 404)
     return toolkit.response(json.loads(data), headers=headers)
 

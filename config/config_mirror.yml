@@ -6,7 +6,7 @@ common:
     source_index: https://index.docker.io
     tags_cache:
         enabled: true
-        ttl: 240       # hours
+        ttl: 864000       # seconds
 
 dev:
     storage: local

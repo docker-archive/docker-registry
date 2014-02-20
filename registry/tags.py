@@ -71,8 +71,10 @@ def get_tags(namespace, repository):
     except OSError:
         if toolkit.is_mirror():
             cfg = config.load()
+            tags_cache_cfg = cfg.get('tags_cache', None)
             # if we use the tags cache, try to find tags list in redis
-            if cfg.get('tags_cache')['enabled'] and cache.redis_conn:
+            if (tags_cache_cfg and tags_cache_cfg.get('enabled', False) and
+                    cache.redis_conn):
                 data = cache.redis_conn.get('{0}:{1}'.format(
                     cache.cache_prefix, tag_path
                 ))
@@ -84,11 +86,12 @@ def get_tags(namespace, repository):
                 data = source_resp.text
                 # if we use the tags cache, save the list in redis
                 # with the appropriate ttl (default 48 hours)
-                if cfg.get('tags_cache')['enabled'] and cache.redis_conn:
-                    ttl = cfg.get('tags_cache').get('ttl', 48)
+                if (tags_cache_cfg and tags_cache_cfg.get('enabled', False) and
+                        cache.redis_conn):
+                    ttl = tags_cache_cfg.get('ttl', 48 * 3600)
                     cache.redis_conn.setex('{0}:{1}'.format(
                         cache.cache_prefix, tag_path
-                    ), ttl * 3600, data)
+                    ), ttl, data)
                 return toolkit.response(json.loads(data),
                                         headers=source_resp.headers)
 
@@ -109,8 +112,10 @@ def get_tag(namespace, repository, tag):
     except IOError:
         if toolkit.is_mirror():
             cfg = config.load()
+            tags_cache_cfg = cfg.get('tags_cache', None)
             # if we use the tags cache, try to find tag in redis
-            if cfg.get('tags_cache')['enabled'] and cache.redis_conn:
+            if (tags_cache_cfg and tags_cache_cfg.get('enabled', False) and
+                    cache.redis_conn):
                 data = cache.redis_conn.get('{0}:{1}'.format(
                     cache.cache_prefix, tag_path
                 ))
@@ -121,11 +126,12 @@ def get_tag(namespace, repository, tag):
                 data = source_resp.text
                 # if we use the tags cache, save tag in redis
                 # with the appropriate ttl (default 48 hours)
-                if cfg.get('tags_cache')['enabled'] and cache.redis_conn:
-                    ttl = cfg.get('tags_cache').get('ttl', 48)
+                if (tags_cache_cfg and tags_cache_cfg.get('enabled', False) and
+                        cache.redis_conn):
+                    ttl = tags_cache_cfg.get('ttl', 48 * 3600)
                     cache.redis_conn.setex('{0}:{1}'.format(
                         cache.cache_prefix, tag_path
-                    ), ttl * 3600, data)
+                    ), ttl, data)
                 return toolkit.response(json.loads(data),
                                         headers=source_resp.headers)
 
