@@ -1,2 +1,4 @@
 contrib
 .tox
+reports
+test
