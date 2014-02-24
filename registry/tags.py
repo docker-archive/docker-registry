@@ -142,6 +142,7 @@ def get_tag(namespace, repository, tag):
 @app.route('/v1/repositories/<path:repository>/json', methods=['GET'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
+@toolkit.source_lookup(stream=False, cache=True)
 def get_repository_json(namespace, repository):
     json_path = store.repository_json_path(namespace, repository)
     headers = {}
@@ -155,11 +156,10 @@ def get_repository_json(namespace, repository):
         data = json.loads(store.get_content(json_path))
     except IOError:
         if toolkit.is_mirror():
-            source_resp = toolkit.lookup_source(flask.request.path)
-            if source_resp is not None:
-                data = source_resp.text
-                headers = source_resp.headers
-                store.put_content(json_path, data)
+            # use code 404 to trigger the source_lookup decorator.
+            # TODO: make sure this doesn't break anything or have the decorator
+            # rewrite the status code before sending
+            return toolkit.response(data, code=404, headers=headers)
         # else we ignore the error, we'll serve the default json declared above
     return toolkit.response(data, headers=headers)
 

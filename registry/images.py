@@ -139,6 +139,7 @@ def get_private_image_layer(image_id):
 @toolkit.requires_auth
 @require_completion
 @set_cache_headers
+@toolkit.source_lookup(cache=True, stream=True)
 def get_image_layer(image_id, headers):
     try:
         bytes_range = None
@@ -152,22 +153,6 @@ def get_image_layer(image_id, headers):
         # access. In both cases, access is always "public".
         return _get_image_layer(image_id, headers, bytes_range)
     except IOError:
-        if toolkit.is_mirror():
-            source_resp = toolkit.lookup_source(flask.request.path, True)
-            if source_resp is not None:
-                layer_path = store.image_layer_path(image_id)
-                sr = toolkit.SocketReader(source_resp)
-                tmp, hndlr = storage.temp_store_handler()
-                sr.add_handler(hndlr)
-
-                def generate():
-                    for chunk in sr.iterate(store.buffer_size):
-                        yield chunk
-                    # FIXME: this could be done outside of the request context
-                    tmp.seek(0)
-                    store.stream_write(layer_path, tmp)
-                    tmp.close()
-                return flask.Response(generate(), headers=source_resp.headers)
         return toolkit.api_error('Image not found', 404)
 
 
@@ -281,6 +266,7 @@ def get_private_image_json(image_id):
 @toolkit.requires_auth
 @require_completion
 @set_cache_headers
+@toolkit.source_lookup(cache=True, stream=False)
 def get_image_json(image_id, headers):
     try:
         repository = toolkit.get_repository()
@@ -290,14 +276,6 @@ def get_image_json(image_id, headers):
         # access. In both cases, access is always "public".
         return _get_image_json(image_id, headers)
     except IOError:
-        if toolkit.is_mirror():
-            source_resp = toolkit.lookup_source(flask.request.path)
-            if source_resp is not None:
-                data = source_resp.content
-                json_path = store.image_json_path(image_id)
-                store.put_content(json_path, data)
-                return toolkit.response(data, headers=source_resp.headers,
-                                        raw=True)
         return toolkit.api_error('Image not found', 404)
 
 
@@ -305,18 +283,12 @@ def get_image_json(image_id, headers):
 @toolkit.requires_auth
 @require_completion
 @set_cache_headers
+@toolkit.source_lookup(cache=True, stream=False)
 def get_image_ancestry(image_id, headers):
     ancestry_path = store.image_ancestry_path(image_id)
     try:
         data = store.get_content(ancestry_path)
     except IOError:
-        if toolkit.is_mirror():
-            source_resp = toolkit.lookup_source(flask.request.path)
-            if source_resp is not None:
-                data = source_resp.text
-                store.put_content(ancestry_path, data)
-                return toolkit.response(data, headers=source_resp.headers,
-                                        raw=True)
         return toolkit.api_error('Image not found', 404)
     return toolkit.response(json.loads(data), headers=headers)
 
