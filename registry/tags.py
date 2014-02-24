@@ -7,8 +7,6 @@ import time
 import flask
 import simplejson as json
 
-import cache
-import config
 import signals
 import storage
 import toolkit
@@ -57,6 +55,7 @@ def get_properties(namespace, repo):
 @app.route('/v1/repositories/<path:repository>/tags', methods=['GET'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
+@toolkit.source_lookup_tag
 def get_tags(namespace, repository):
     logger.debug("[get_tags] namespace={0}; repository={1}".format(namespace,
                  repository))
@@ -69,32 +68,6 @@ def get_tags(namespace, repository):
                 continue
             data[tag_name[4:]] = store.get_content(fname)
     except OSError:
-        if toolkit.is_mirror():
-            cfg = config.load()
-            tags_cache_cfg = cfg.get('tags_cache', None)
-            # if we use the tags cache, try to find tags list in redis
-            if (tags_cache_cfg and tags_cache_cfg.get('enabled', False) and
-                    cache.redis_conn):
-                data = cache.redis_conn.get('{0}:{1}'.format(
-                    cache.cache_prefix, tag_path
-                ))
-                if data is not None:
-                    return toolkit.response(json.loads(data))
-
-            source_resp = toolkit.lookup_source(flask.request.path)
-            if source_resp is not None:
-                data = source_resp.text
-                # if we use the tags cache, save the list in redis
-                # with the appropriate ttl (default 48 hours)
-                if (tags_cache_cfg and tags_cache_cfg.get('enabled', False) and
-                        cache.redis_conn):
-                    ttl = tags_cache_cfg.get('ttl', 48 * 3600)
-                    cache.redis_conn.setex('{0}:{1}'.format(
-                        cache.cache_prefix, tag_path
-                    ), ttl, data)
-                return toolkit.response(json.loads(data),
-                                        headers=source_resp.headers)
-
         return toolkit.api_error('Repository not found', 404)
     return toolkit.response(data)
 
@@ -102,6 +75,7 @@ def get_tags(namespace, repository):
 @app.route('/v1/repositories/<path:repository>/tags/<tag>', methods=['GET'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
+@toolkit.source_lookup_tag
 def get_tag(namespace, repository, tag):
     logger.debug("[get_tag] namespace={0}; repository={1}; tag={2}".format(
                  namespace, repository, tag))
@@ -110,31 +84,6 @@ def get_tag(namespace, repository, tag):
     try:
         data = store.get_content(tag_path)
     except IOError:
-        if toolkit.is_mirror():
-            cfg = config.load()
-            tags_cache_cfg = cfg.get('tags_cache', None)
-            # if we use the tags cache, try to find tag in redis
-            if (tags_cache_cfg and tags_cache_cfg.get('enabled', False) and
-                    cache.redis_conn):
-                data = cache.redis_conn.get('{0}:{1}'.format(
-                    cache.cache_prefix, tag_path
-                ))
-                if data is not None:
-                    return toolkit.response(json.loads(data))
-            source_resp = toolkit.lookup_source(flask.request.path)
-            if source_resp is not None:
-                data = source_resp.text
-                # if we use the tags cache, save tag in redis
-                # with the appropriate ttl (default 48 hours)
-                if (tags_cache_cfg and tags_cache_cfg.get('enabled', False) and
-                        cache.redis_conn):
-                    ttl = tags_cache_cfg.get('ttl', 48 * 3600)
-                    cache.redis_conn.setex('{0}:{1}'.format(
-                        cache.cache_prefix, tag_path
-                    ), ttl, data)
-                return toolkit.response(json.loads(data),
-                                        headers=source_resp.headers)
-
         return toolkit.api_error('Tag not found', 404)
     return toolkit.response(data)
 

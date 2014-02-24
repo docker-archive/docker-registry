@@ -11,6 +11,7 @@ import requests
 import rsa
 import simplejson as json
 
+import cache
 import config
 import storage
 
@@ -220,16 +221,74 @@ def lookup_source(path, stream=False, source=None):
     return source_resp
 
 
+def source_lookup_tag(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        cfg = config.load()
+        source = cfg.get('source')
+        tags_cache_cfg = cfg.get('tags_cache', None)
+        cache_enabled = (tags_cache_cfg and
+                         tags_cache_cfg.get('enabled', False) and
+                         cache.redis_conn)
+        ttl = tags_cache_cfg.get('ttl', 48 * 3600)
+        resp = f(*args, **kwargs)
+        if not source:
+            return resp
+
+        if resp.status_code != 404:
+            logger.debug('Status code is not 404, no source '
+                         'lookup required')
+            return resp
+
+        if not cache_enabled:
+            # No tags cache, just return
+            source_resp = lookup_source(
+                flask.request.path, stream=False, source=source
+            )
+            if not source_resp:
+                return resp
+            return response(data=source_resp.content,
+                            headers=source_resp.headers, raw=True)
+
+        store = storage.load()
+        request_path = flask.request.path
+
+        if request_path.endswith('/tags'):
+            # client GETs a list of tags
+            tag_path = store.tag_path(kwargs['namespace'],
+                                      kwargs['repository'])
+        else:
+            # client GETs a single tag
+            tag_path = store.tag_path(kwargs['namespace'],
+                                      kwargs['repository'], kwargs['tag'])
+
+        data = cache.redis_conn.get('{0}:{1}'.format(
+            cache.cache_prefix, tag_path
+        ))
+        if data is not None:
+            return response(data=data, headers=resp.headers, raw=True)
+        source_resp = lookup_source(
+            flask.request.path, stream=False, source=source
+        )
+        if not source_resp:
+            return resp
+        data = source_resp.content
+        cache.redis_conn.setex('{0}:{1}'.format(
+            cache.cache_prefix, tag_path
+        ), ttl, data)
+        return response(data=data, headers=source_resp.headers, raw=True)
+
+
 def source_lookup(cache=False, stream=False):
     def decorator(f):
         @functools.wraps(f)
         def wrapper(*args, **kwargs):
             cfg = config.load()
             source = cfg.get('source')
-            if not source:
-                return f(*args, **kwargs)
-            logger.debug('Source provided, registry acts as mirror')
             resp = f(*args, **kwargs)
+            if not source:
+                return resp
+            logger.debug('Source provided, registry acts as mirror')
             if resp.status_code != 404:
                 logger.debug('Status code is not 404, no source '
                              'lookup required')
