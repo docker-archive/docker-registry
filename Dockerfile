@@ -14,10 +14,13 @@ RUN apt-get update; \
 RUN cd /tmp; wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
 RUN cd /tmp; python ez_setup.py; easy_install pip; \
     rm ez_setup.py
+
+ADD requirements.txt /docker-registry/
+RUN cd /docker-registry && pip install -r requirements.txt
+
 ADD . /docker-registry
 ADD ./config/boto.cfg /etc/boto.cfg
 
-RUN cd /docker-registry && pip install -r requirements.txt
 RUN cp --no-clobber /docker-registry/config/config_sample.yml /docker-registry/config/config.yml
 
 EXPOSE 5000
