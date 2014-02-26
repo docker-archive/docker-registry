@@ -217,8 +217,8 @@ def delete_repository(namespace, repository):
     whether the rest of the index-module endpoints are enabled via the
     'standalone' config setting.
 
-    [1]: http://docs.docker.io/en/latest/reference/api/registry_api/#delete--v1-repositories-%28namespace%29-%28repository%29-
-    [2]: http://docs.docker.io/en/latest/reference/api/index_api/#delete--v1-repositories-%28namespace%29-%28repo_name%29-
+    [1]: http://docs.docker.io/en/latest/reference/api/registry_api/#delete--v1-repositories-%28namespace%29-%28repository%29- # nopep8
+    [2]: http://docs.docker.io/en/latest/reference/api/index_api/#delete--v1-repositories-%28namespace%29-%28repo_name%29- # nopep8
     """
     logger.debug("[delete_repository] namespace={0}; repository={1}".format(
                  namespace, repository))
