@@ -1,10 +1,15 @@
 ## Gunicorn config file
 
 import os
-
+import random
+import string
 
 flavor = os.environ.get('SETTINGS_FLAVOR', 'dev')
 
+os.environ['SECRET_KEY'] = ''.join(
+    [random.choice(string.ascii_lowercase + string.ascii_uppercase +
+     string.digits) for x in range(128)])
+reload = True
 bind = '0.0.0.0:{0}'.format(os.environ.get('PORT_WWW', 8000))
 graceful_timeout = 3600
 timeout = 3600
@@ -18,6 +23,7 @@ access_log_format = ('%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" '
                      '"%(a)s" %(D)s %({X-Docker-Size}o)s')
 
 if flavor == 'prod' or flavor == 'staging':
+    reload = False
     workers = 8
     debug = False
     log_level = 'info'
