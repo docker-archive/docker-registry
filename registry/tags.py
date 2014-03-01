@@ -184,7 +184,10 @@ def delete_tag(namespace, repository, tag):
     logger.debug("[delete_tag] namespace={0}; repository={1}; tag={2}".format(
                  namespace, repository, tag))
     store.remove(store.tag_path(namespace, repository, tag))
+    store.remove(store.repository_tag_json_path(namespace, repository, tag))
     sender = flask.current_app._get_current_object()
+    if tag == "latest":  # TODO(wking) : deprecate this for v2
+        store.remove(store.repository_json_path(namespace, repository))
     signals.tag_deleted.send(
         sender, namespace=namespace, repository=repository, tag=tag)
 
