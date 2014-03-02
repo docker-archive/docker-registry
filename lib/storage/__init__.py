@@ -150,6 +150,9 @@ def load(kind=None):
     elif kind == 'gcs':
         import gcs
         store = gcs.GSStorage(cfg)
+    elif kind == 'gcs_oauth2':
+        import gcs_oauth2
+        store = gcs_oauth2.GSOAuth2Storage(cfg)
     else:
         raise ValueError('Not supported storage \'{0}\''.format(kind))
     _storage[kind] = store
