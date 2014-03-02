@@ -26,7 +26,7 @@ class GSStorage(BotoStorage):
                 import sys
                 import threading
 
-                from gslib.third_party.oauth2_plugin import oauth2_plugin
+                from gslib.third_party.oauth2_plugin import oauth2_plugin # flake8: noqa
                 from gslib.third_party.oauth2_plugin import oauth2_client
 
                 oauth2_client.token_exchange_lock = threading.Lock()
