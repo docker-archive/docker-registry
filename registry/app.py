@@ -43,10 +43,9 @@ def after_request(response):
 
 def init():
     # Configure the secret key
-    if cfg.secret_key:
-        flask.Flask.secret_key = cfg.secret_key
-    else:
-        flask.Flask.secret_key = toolkit.gen_random_string(64)
+    if not cfg.secret_key:
+        raise RuntimeError('Config error: `secret_key\' is not set')
+    flask.Flask.secret_key = cfg.secret_key
     # Configure the email exceptions
     info = cfg.email_exceptions
     if info:
