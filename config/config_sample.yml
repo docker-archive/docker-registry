@@ -19,6 +19,14 @@ common:
     gs_secret_key: REPLACEME
     gs_secure: REPLACEME
 
+    # OAuth 2.0 authentication with the storage.
+    # Supported for Google Cloud Storage only, requires gsutil
+    # (for oauth2_plugin and getting credentials) to be installed.
+    # See: https://developers.google.com/storage/docs/gsutil_install.
+    # If this is set to true, gs_access_key, gs_secret_key and gs_secure
+    # are not needed.
+    oauth2: REPLACEME 
+
     # Set a random string here
     secret_key: REPLACEME
 
