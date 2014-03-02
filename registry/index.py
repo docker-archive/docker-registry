@@ -59,7 +59,11 @@ def update_index_images(namespace, repository, data):
             iid = i['id']
             if iid in images and 'checksum' in images[iid]:
                 continue
-            images[iid] = i
+            i_data = {'id': iid}
+            for key in ['checksum']:
+                if key in i:
+                    i_data[key] = i[key]
+            images[iid] = i_data
         data = images.values()
         store.put_content(path, json.dumps(data))
     except IOError:
