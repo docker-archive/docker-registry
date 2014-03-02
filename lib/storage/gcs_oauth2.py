@@ -32,5 +32,5 @@ class GSOAuth2Storage(GSStorage):
         GSStorage.__init__(self, config)
 
     def makeConnection(self):
-        self.uri = boto.storage_uri(self._config.boto_bucket, 'gs')
-        return self.uri.connect()
+        uri = boto.storage_uri(self._config.boto_bucket, 'gs')
+        return uri.connect()
