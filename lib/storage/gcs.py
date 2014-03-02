@@ -21,6 +21,25 @@ class GSStorage(BotoStorage):
         BotoStorage.__init__(self, config)
 
     def makeConnection(self):
+        if self._config.oauth2 is True:
+            try:
+                import sys
+                import threading
+
+                from gslib.third_party.oauth2_plugin import oauth2_plugin
+                from gslib.third_party.oauth2_plugin import oauth2_client
+
+                oauth2_client.token_exchange_lock = threading.Lock()
+
+                uri = boto.storage_uri(self._config.boto_bucket, 'gs')
+                return uri.connect()
+            except ImportError:
+                logger.error('To use OAuth 2.0 with Google Cloud Storage '
+                             ' gsutil must be installed ('
+                             '"https://developers.google.com/storage/docs/'
+                             'gsutil_install")')
+                sys.exit(1)
+
         return boto.gs.connection.GSConnection(
             self._config.gs_access_key,
             self._config.gs_secret_key,
