@@ -205,6 +205,7 @@ def _delete_tag(namespace, repository, tag):
 
 
 @app.route('/v1/repositories/<path:repository>/', methods=['DELETE'])
+@app.route('/v1/repositories/<path:repository>/tags', methods=['DELETE'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
 def delete_repository(namespace, repository):
