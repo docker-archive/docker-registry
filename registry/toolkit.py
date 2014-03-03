@@ -223,7 +223,7 @@ def lookup_source(path, stream=False, source=None):
 
 def source_lookup_tag(f):
     @functools.wraps(f)
-    def wrapper(*args, **kwargs):
+    def wrapper(namespace, repository, *args, **kwargs):
         cfg = config.load()
         source = cfg.get('source')
         tags_cache_cfg = cfg.get('tags_cache', None)
@@ -231,7 +231,7 @@ def source_lookup_tag(f):
                          tags_cache_cfg.get('enabled', False) and
                          cache.redis_conn)
         ttl = tags_cache_cfg.get('ttl', 48 * 3600)
-        resp = f(*args, **kwargs)
+        resp = f(namespace, repository, *args, **kwargs)
         if not source:
             return resp
 
@@ -255,12 +255,10 @@ def source_lookup_tag(f):
 
         if request_path.endswith('/tags'):
             # client GETs a list of tags
-            tag_path = store.tag_path(kwargs['namespace'],
-                                      kwargs['repository'])
+            tag_path = store.tag_path(namespace, repository)
         else:
             # client GETs a single tag
-            tag_path = store.tag_path(kwargs['namespace'],
-                                      kwargs['repository'], kwargs['tag'])
+            tag_path = store.tag_path(namespace, repository, kwargs['tag'])
 
         data = cache.redis_conn.get('{0}:{1}'.format(
             cache.cache_prefix, tag_path
@@ -277,6 +275,7 @@ def source_lookup_tag(f):
             cache.cache_prefix, tag_path
         ), ttl, data)
         return response(data=data, headers=source_resp.headers, raw=True)
+    return wrapper
 
 
 def source_lookup(cache=False, stream=False):
@@ -354,7 +353,7 @@ def store_mirrored_data(data, endpoint, args, store):
     for arg in arglist:
         pm_args[arg] = args[arg]
     logger.debug('Path method args: {0}'.format(pm_args))
-    storage_path = store[path_method](**pm_args)
+    storage_path = getattr(store, path_method)(**pm_args)
     logger.debug('Storage path: {0}'.format(storage_path))
     store.put_content(storage_path, data)
 
