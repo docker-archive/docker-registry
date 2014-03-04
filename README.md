@@ -81,6 +81,11 @@ The default location of the config file is `config.yml`, located in
 the `config` subdirectory.  If `DOCKER_REGISTRY_CONFIG` is a relative
 path, that path is expanded relative to the `config` subdirectory.
 
+It is possible to mount the configuration file into the docker image
+
+```
+sudo docker run -p 5000:5000 -v /home/user/registry-conf:/registry-conf -e DOCKER_REGISTRY_CONFIG=/registry-conf/config.yml
+```
 
 Available configuration options
 ===============================
