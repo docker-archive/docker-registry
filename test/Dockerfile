@@ -9,7 +9,8 @@ FROM registry
 MAINTAINER Daniel Mizyrycki <daniel@docker.com>
 
 # Add docker-registry testing dependencies
-RUN apt-get install -y --no-install-recommends libssl-dev
+RUN apt-get update
+RUN apt-get install -y --no-install-recommends libssl-dev libffi-dev
 RUN pip install -r /docker-registry/test-requirements.txt
 RUN pip install tox==1.6.1
 
