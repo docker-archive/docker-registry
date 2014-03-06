@@ -106,8 +106,8 @@ def get_repository_json(namespace, repository):
     except IOError:
         if toolkit.is_mirror():
             # use code 404 to trigger the source_lookup decorator.
-            # TODO: make sure this doesn't break anything or have the decorator
-            # rewrite the status code before sending
+            # TODO(joffrey): make sure this doesn't break anything or have the
+            # decorator rewrite the status code before sending
             return toolkit.response(data, code=404, headers=headers)
         # else we ignore the error, we'll serve the default json declared above
     return toolkit.response(data, headers=headers)

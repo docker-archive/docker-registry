@@ -204,7 +204,7 @@ def lookup_source(path, stream=False, source=None):
     source_resp = requests.get(
         source_url,
         headers=headers,
-        #cookies=flask.request.cookies,
+        cookies=flask.request.cookies,
         stream=stream
     )
     if source_resp.status_code != 200:
@@ -226,7 +226,7 @@ def source_lookup_tag(f):
     def wrapper(namespace, repository, *args, **kwargs):
         cfg = config.load()
         source = cfg.get('source')
-        tags_cache_cfg = cfg.get('tags_cache', None)
+        tags_cache_cfg = cfg.get('tags_cache', {})
         cache_enabled = (tags_cache_cfg and
                          tags_cache_cfg.get('enabled', False) and
                          cache.redis_conn)
@@ -264,7 +264,7 @@ def source_lookup_tag(f):
             cache.cache_prefix, tag_path
         ))
         if data is not None:
-            return response(data=data, headers=resp.headers, raw=True)
+            return response(data=data, raw=True)
         source_resp = lookup_source(
             flask.request.path, stream=False, source=source
         )
@@ -341,7 +341,9 @@ def store_mirrored_data(data, endpoint, args, store):
     logger.debug('Endpoint: {0}'.format(endpoint))
     path_method, arglist = ({
         '/v1/images/<image_id>/json': ('image_json_path', ('image_id',)),
-        '/v1/images/<image_id>/ancestry': ('ancestry_path', ('image_id',)),
+        '/v1/images/<image_id>/ancestry': (
+            'image_ancestry_path', ('image_id',)
+        ),
         '/v1/repositories/<path:repository>/json': (
             'registry_json_path', ('namespace', 'repository')
         ),
