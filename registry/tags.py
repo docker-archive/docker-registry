@@ -7,6 +7,7 @@ import time
 import flask
 import simplejson as json
 
+import mirroring
 import signals
 import storage
 import toolkit
@@ -55,7 +56,7 @@ def get_properties(namespace, repo):
 @app.route('/v1/repositories/<path:repository>/tags', methods=['GET'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
-@toolkit.source_lookup_tag
+@mirroring.source_lookup_tag
 def get_tags(namespace, repository):
     logger.debug("[get_tags] namespace={0}; repository={1}".format(namespace,
                  repository))
@@ -75,7 +76,7 @@ def get_tags(namespace, repository):
 @app.route('/v1/repositories/<path:repository>/tags/<tag>', methods=['GET'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
-@toolkit.source_lookup_tag
+@mirroring.source_lookup_tag
 def get_tag(namespace, repository, tag):
     logger.debug("[get_tag] namespace={0}; repository={1}; tag={2}".format(
                  namespace, repository, tag))
@@ -91,7 +92,7 @@ def get_tag(namespace, repository, tag):
 @app.route('/v1/repositories/<path:repository>/json', methods=['GET'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
-@toolkit.source_lookup(stream=False, cache=True)
+@mirroring.source_lookup(stream=False, cache=True)
 def get_repository_json(namespace, repository):
     json_path = store.repository_json_path(namespace, repository)
     headers = {}
