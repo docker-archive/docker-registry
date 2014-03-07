@@ -1,10 +1,10 @@
 import logging
 
 import flask
-import requests
 import simplejson as json
 
 import config
+import mirroring
 import storage
 import toolkit
 
@@ -97,32 +97,14 @@ def put_repository(namespace, repository, images=False):
 @app.route('/v1/repositories/<path:repository>/images', methods=['GET'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
+@mirroring.source_lookup(index_route=True)
 def get_repository_images(namespace, repository):
     data = None
     try:
         path = store.index_images_path(namespace, repository)
         data = store.get_content(path)
     except IOError:
-        resp = toolkit.api_error('images not found', 404)
-        if toolkit.is_mirror():
-            cfg = config.load()
-            source_index = cfg.get('source_index', cfg.get('source'))
-            u = '{2}/v1/repositories/{0}/{1}/images'.format(
-                namespace, repository, source_index
-            )
-            logger.info('Hitting {0}'.format(u))
-            index_resp = requests.get(u, headers={
-                'X-Docker-Token': True
-            })
-            if index_resp.status_code != 200:
-                return resp
-            data = index_resp.json()
-            headers = index_resp.headers
-            headers['x-docker-endpoints'] = get_endpoints()
-            logger.info(data)
-            logger.info(headers)
-            return toolkit.response(data, 200, headers)
-        return resp
+        return toolkit.api_error('images not found', 404)
     headers = generate_headers(namespace, repository, 'read')
     return toolkit.response(data, 200, headers, True)
 

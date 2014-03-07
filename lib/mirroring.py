@@ -106,12 +106,14 @@ def source_lookup_tag(f):
     return wrapper
 
 
-def source_lookup(cache=False, stream=False):
+def source_lookup(cache=False, stream=False, index_route=False):
     def decorator(f):
         @functools.wraps(f)
         def wrapper(*args, **kwargs):
             cfg = config.load()
             source = cfg.get('source')
+            if index_route:
+                source = cfg.get('source_index', source)
             resp = f(*args, **kwargs)
             if not source:
                 return resp
