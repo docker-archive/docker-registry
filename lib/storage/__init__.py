@@ -26,9 +26,9 @@ class Storage(object):
 
     #FIXME(samalba): Move all path resolver in each module (out of the base)
     def images_list_path(self, namespace, repository):
-        return '{0}/{1}/{2}/_images_list'.format(self.repositories,
-                                                 namespace,
-                                                 repository)
+        repository_path = self.repository_path(
+            namespace=namespace, repository=repository)
+        return '{0}/_images_list'.format(repository_path)
 
     def image_json_path(self, image_id):
         return '{0}/{1}/json'.format(self.images, image_id)
@@ -51,30 +51,36 @@ class Storage(object):
     def image_diff_path(self, image_id):
         return '{0}/{1}/_diff'.format(self.images, image_id)
 
+    def repository_path(self, namespace, repository):
+        return '{0}/{1}/{2}'.format(
+            self.repositories, namespace, repository)
+
     def tag_path(self, namespace, repository, tagname=None):
+        repository_path = self.repository_path(
+            namespace=namespace, repository=repository)
         if not tagname:
-            return '{0}/{1}/{2}'.format(self.repositories,
-                                        namespace,
-                                        repository)
-        return '{0}/{1}/{2}/tag_{3}'.format(self.repositories,
-                                            namespace,
-                                            repository,
-                                            tagname)
+            return repository_path
+        return '{0}/tag_{1}'.format(repository_path, tagname)
 
     def repository_json_path(self, namespace, repository):
-        return '{0}/{1}/{2}/json'.format(self.repositories,
-                                         namespace,
-                                         repository)
+        repository_path = self.repository_path(
+            namespace=namespace, repository=repository)
+        return '{0}/json'.format(repository_path)
+
+    def repository_tag_json_path(self, namespace, repository, tag):
+        repository_path = self.repository_path(
+            namespace=namespace, repository=repository)
+        return '{0}/tag{1}_json'.format(repository_path, tag)
 
     def index_images_path(self, namespace, repository):
-        return '{0}/{1}/{2}/_index_images'.format(self.repositories,
-                                                  namespace,
-                                                  repository)
+        repository_path = self.repository_path(
+            namespace=namespace, repository=repository)
+        return '{0}/_index_images'.format(repository_path)
 
     def private_flag_path(self, namespace, repository):
-        return '{0}/{1}/{2}/_private'.format(
-            self.repositories, namespace, repository
-        )
+        repository_path = self.repository_path(
+            namespace=namespace, repository=repository)
+        return '{0}/_private'.format(repository_path)
 
     def is_private(self, namespace, repository):
         return self.exists(self.private_flag_path(namespace, repository))

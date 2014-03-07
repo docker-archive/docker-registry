@@ -1,9 +1,9 @@
 import backports.lzma as lzma
+import cStringIO as StringIO
 import json
 import os
 import random
 import string
-import StringIO
 import tarfile
 
 import base
@@ -12,13 +12,6 @@ import storage.local
 
 # from mock import patch
 # from mockredis import mock_strict_redis_client
-
-
-class SeekableStringIO(StringIO.StringIO):
-    def seekable(self):
-        return True
-
-StringIO.StringIO = SeekableStringIO
 
 
 def comp(n, f, *args, **kwargs):
@@ -33,12 +26,14 @@ def rndstr(length=5):
 def _get_tarfile(filenames):
     tfobj = StringIO.StringIO()
     tar = tarfile.TarFile(fileobj=tfobj, mode='w')
+    data = rndstr(512)
     for filename in filenames:
         tarinfo = tarfile.TarInfo(filename)
-        data = StringIO.StringIO()
-        data.write(rndstr(512))
-        data.seek(0)
-        tar.addfile(tarinfo, data)
+        tarinfo.size = len(data)
+        io = StringIO.StringIO()
+        io.write(data)
+        io.seek(0)
+        tar.addfile(tarinfo, io)
     tfobj.seek(0)
     return tfobj
 
@@ -84,7 +79,7 @@ class TestLayers(base.TestCase):
         for tarinfo in members:
             sinfo = layers.serialize_tar_info(tarinfo)
             self.assertTrue(sinfo[0] in self.filenames)
-            self.assertTrue(sinfo[1:] == ('f', False, 0, 0, 420, 0, 0))
+            self.assertTrue(sinfo[1:] == ('f', False, 512, 0, 420, 0, 0))
 
     def test_tar_serialization(self):
         tfobj = _get_tarfile(self.filenames)
@@ -93,7 +88,7 @@ class TestLayers(base.TestCase):
         infos = layers.read_tarfile(tar)
         for tarinfo in infos:
             self.assertIn(tarinfo[0], self.filenames)
-            self.assertTrue(tarinfo[1:] == ('f', False, 0, 0, 420, 0, 0))
+            self.assertTrue(tarinfo[1:] == ('f', False, 512, 0, 420, 0, 0))
 
     def test_layer_cache(self):
         layer_id = rndstr(16)
@@ -106,7 +101,7 @@ class TestLayers(base.TestCase):
         files = layers.get_image_files_from_fobj(tfobj)
         for file in files:
             self.assertIn(file[0], self.filenames)
-            self.assertTrue(file[1:] == ('f', False, 0, 0, 420, 0, 0))
+            self.assertTrue(file[1:] == ('f', False, 512, 0, 420, 0, 0))
 
     def test_get_image_files_json_cached(self):
         layer_id = rndstr(16)
@@ -132,15 +127,15 @@ class TestLayers(base.TestCase):
         file_infos = json.loads(files_json)
         for info in file_infos:
             self.assertIn(info[0], self.filenames)
-            self.assertTrue(info[1:] == [u"f", False, 0, 0, 420, 0, 0])
+            self.assertTrue(info[1:] == [u"f", False, 512, 0, 420, 0, 0])
 
     def test_get_file_info_map(self):
         files = (
-            ("test", "f", False, 0, 0, 420, 0, 0),
+            ("test", "f", False, 512, 0, 420, 0, 0),
         )
         map = layers.get_file_info_map(files)
         self.assertIn("test", map)
-        self.assertTrue(map['test'], ("f", False, 0, 0, 420, 0, 0))
+        self.assertTrue(map['test'], ("f", False, 512, 0, 420, 0, 0))
 
     def test_image_diff_cache(self):
         layer_id = rndstr(16)
@@ -150,14 +145,14 @@ class TestLayers(base.TestCase):
 
     def test_image_diff_json(self):
         layer_1 = (
-            ("deleted", "f", False, 0, 0, 420, 0, 0),
-            ("changed", "f", False, 0, 0, 420, 0, 0),
+            ("deleted", "f", False, 512, 0, 420, 0, 0),
+            ("changed", "f", False, 512, 0, 420, 0, 0),
         )
 
         layer_2 = (
-            ("deleted", "f", True, 0, 0, 420, 0, 0),
-            ("changed", "f", False, 0, 0, 420, 0, 0),
-            ("created", "f", False, 0, 0, 420, 0, 0),
+            ("deleted", "f", True, 512, 0, 420, 0, 0),
+            ("changed", "f", False, 512, 0, 420, 0, 0),
+            ("created", "f", False, 512, 0, 420, 0, 0),
         )
         layer_1_id = rndstr(16)
         layer_2_id = rndstr(16)

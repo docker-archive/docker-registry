@@ -11,7 +11,7 @@ The Docker Registry comes with a sample configuration file,
 configuration:
 
 ```
-cp config_sample.yml config.yml
+cp config/config_sample.yml config/config.yml
 ```
 
 Configuration flavors
@@ -77,9 +77,15 @@ Location of the config file
 Specify the config file to be used by setting `DOCKER_REGISTRY_CONFIG` in your
 environment: `export DOCKER_REGISTRY_CONFIG=config.yml`
 
-The default location of the config file is `config.yml`, located in the source
-directory.
+The default location of the config file is `config.yml`, located in
+the `config` subdirectory.  If `DOCKER_REGISTRY_CONFIG` is a relative
+path, that path is expanded relative to the `config` subdirectory.
 
+It is possible to mount the configuration file into the docker image
+
+```
+sudo docker run -p 5000:5000 -v /home/user/registry-conf:/registry-conf -e DOCKER_REGISTRY_CONFIG=/registry-conf/config.yml
+```
 
 Available configuration options
 ===============================

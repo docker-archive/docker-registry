@@ -19,8 +19,8 @@ common:
     gs_secret_key: REPLACEME
     gs_secure: REPLACEME
 
-    # Set a random string here
-    secret_key: REPLACEME
+    # Let gunicorn set this environment variable or set a random string here
+    secret_key: _env:SECRET_KEY
 
 
 # This is the default configuration when no flavor is specified

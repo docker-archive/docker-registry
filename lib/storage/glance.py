@@ -41,7 +41,13 @@ class GlanceStorage(object):
         elif len(args) > 0 and isinstance(args[0], basestring):
             path = args[0]
         if path.startswith(Storage.images):
-            obj = self._storage_layers
+            # The metadata is to huge as it can be
+            # uploaded to glance (broken pipe).
+            # Lets store it in the tags repository
+            if path.endswith("_files"):
+                obj = self._storage_tags
+            else:
+                obj = self._storage_layers
         elif path.startswith(Storage.repositories):
             obj = self._storage_tags
         else:
@@ -188,6 +194,8 @@ class GlanceStorageLayers(Storage):
         (image, propname) = self._init_path(path)
         if not propname:
             raise ValueError('Wrong call (should be stream_write)')
+        if 'meta__files' in propname:
+            return
         props = {propname: content}
         image.update(properties=props, purge_props=False)
 

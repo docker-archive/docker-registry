@@ -8,12 +8,7 @@ check() {
         fi
 }
 
-WORKER_SECRET_KEY="${WORKER_SECRET_KEY:-$(< /dev/urandom tr -dc A-Za-z0-9 | head -c 32)}"
-sed -i "s/ secret_key: REPLACEME/ secret_key: ${WORKER_SECRET_KEY}/" config/config.yml
-
-if [[ -z "$GUNICORN_WORKERS" ]] ; then
-    GUNICORN_WORKERS=4
-fi
+GUNICORN_WORKERS=${GUNICORN_WORKERS:-4}
 
 if [ "$SETTINGS_FLAVOR" = "prod" ] ; then
     config=$(<config/config.yml);
@@ -38,7 +33,7 @@ elif [ "$SETTINGS_FLAVOR" = "openstack-swift" ] ; then
     config=${config//swift_authurl: REPLACEME/swift_authurl: $OS_AUTH_URL};
     config=${config//swift_user: REPLACEME/swift_user: $OS_USERNAME};
     config=${config//swift_password: REPLACEME/swift_password: $OS_PASSWORD};
-    config=${config//swift_tenant_name: REPLACEME/swift_tenant_name: $OS_USERNAME};
+    config=${config//swift_tenant_name: REPLACEME/swift_tenant_name: $OS_TENANT_NAME};
     config=${config//swift_region_name: REPLACEME/swift_region_name: $OS_REGION_NAME};
     printf '%s\n' "$config" >config/config.yml
 fi

@@ -5,6 +5,7 @@ import simplejson as json
 
 import config
 import mirroring
+import signals
 import storage
 import toolkit
 
@@ -60,6 +61,7 @@ def put_username(username):
 
 def update_index_images(namespace, repository, data):
     path = store.index_images_path(namespace, repository)
+    sender = flask.current_app._get_current_object()
     try:
         images = {}
         data = json.loads(data) + json.loads(store.get_content(path))
@@ -67,10 +69,19 @@ def update_index_images(namespace, repository, data):
             iid = i['id']
             if iid in images and 'checksum' in images[iid]:
                 continue
-            images[iid] = i
+            i_data = {'id': iid}
+            for key in ['checksum']:
+                if key in i:
+                    i_data[key] = i[key]
+            images[iid] = i_data
         data = images.values()
         store.put_content(path, json.dumps(data))
+        signals.repository_updated.send(
+            sender, namespace=namespace, repository=repository, value=data)
     except IOError:
+        signals.repository_created.send(
+            sender, namespace=namespace, repository=repository,
+            value=json.loads(data))
         store.put_content(path, data)
 
 
