@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 def is_mirror():
     cfg = config.load()
-    return bool(cfg.source)
+    return bool(cfg.get('mirroring', False))
 
 
 def lookup_source(path, stream=False, source=None):
@@ -59,8 +59,8 @@ def source_lookup_tag(f):
         if not mirroring_cfg:
             return resp
         source = mirroring_cfg['source']
-        tags_cache_ttl = mirror_cfg.get('tags_cache_ttl',
-                                        DEFAULT_CACHE_TAGS_TTL)
+        tags_cache_ttl = mirroring_cfg.get('tags_cache_ttl',
+                                           DEFAULT_CACHE_TAGS_TTL)
 
         if resp.status_code != 404:
             logger.debug('Status code is not 404, no source '
