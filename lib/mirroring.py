@@ -9,6 +9,7 @@ import registry.toolkit as toolkit
 import storage
 
 
+DEFAULT_CACHE_TAGS_TTL = 48 * 3600
 logger = logging.getLogger(__name__)
 
 
@@ -20,14 +21,18 @@ def is_mirror():
 def lookup_source(path, stream=False, source=None):
     if not source:
         cfg = config.load()
-        source = cfg.get('source')
-        if not source:
-            return None
+        mirroring_cfg = cfg.mirroring
+        if not mirroring_cfg:
+            return
+        source = cfg.mirroring['source']
     source_url = '{0}{1}'.format(source, path)
     headers = {}
     for k, v in flask.request.headers.iteritems():
         if k.lower() != 'location' and k.lower() != 'host':
             headers[k] = v
+    logger.debug('Request: GET {0}\nHeaders: {1}'.format(
+        source_url, headers
+    ))
     source_resp = requests.get(
         source_url,
         headers=headers,
@@ -37,9 +42,6 @@ def lookup_source(path, stream=False, source=None):
     if source_resp.status_code != 200:
         logger.debug('Source responded to request with non-200'
                      ' status')
-        logger.debug('Request: GET {0}\nHeaders: {1}'.format(
-            source_url, headers
-        ))
         logger.debug('Response: {0}\n{1}\n'.format(
             source_resp.status_code, source_resp.text
         ))
@@ -52,23 +54,23 @@ def source_lookup_tag(f):
     @functools.wraps(f)
     def wrapper(namespace, repository, *args, **kwargs):
         cfg = config.load()
-        source = cfg.get('source')
-        tags_cache_cfg = cfg.get('tags_cache', {})
-        cache_enabled = (tags_cache_cfg and
-                         tags_cache_cfg.get('enabled', False) and
-                         cache.redis_conn)
-        ttl = tags_cache_cfg.get('ttl', 48 * 3600)
+        mirroring_cfg = cfg.mirroring
         resp = f(namespace, repository, *args, **kwargs)
-        if not source:
+        if not mirroring_cfg:
             return resp
+        source = mirroring_cfg['source']
+        tags_cache_ttl = mirror_cfg.get('tags_cache_ttl',
+                                        DEFAULT_CACHE_TAGS_TTL)
 
         if resp.status_code != 404:
             logger.debug('Status code is not 404, no source '
                          'lookup required')
             return resp
 
-        if not cache_enabled:
+        if not cache.redis_conn:
             # No tags cache, just return
+            logger.warning('mirroring: Tags cache is disabled, please set a '
+                           'valid `cache\' directive in the config.')
             source_resp = lookup_source(
                 flask.request.path, stream=False, source=source
             )
@@ -100,7 +102,7 @@ def source_lookup_tag(f):
         data = source_resp.content
         cache.redis_conn.setex('{0}:{1}'.format(
             cache.cache_prefix, tag_path
-        ), ttl, data)
+        ), tags_cache_ttl, data)
         return toolkit.response(data=data, headers=source_resp.headers,
                                 raw=True)
     return wrapper
@@ -111,12 +113,13 @@ def source_lookup(cache=False, stream=False, index_route=False):
         @functools.wraps(f)
         def wrapper(*args, **kwargs):
             cfg = config.load()
-            source = cfg.get('source')
-            if index_route:
-                source = cfg.get('source_index', source)
+            mirroring_cfg = cfg.mirroring
             resp = f(*args, **kwargs)
-            if not source:
+            if not mirroring_cfg:
                 return resp
+            source = mirroring_cfg['source']
+            if index_route:
+                source = mirroring_cfg.get('source_index', source)
             logger.debug('Source provided, registry acts as mirror')
             if resp.status_code != 404:
                 logger.debug('Status code is not 404, no source '
