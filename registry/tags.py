@@ -114,7 +114,7 @@ def get_repository_json(namespace, repository):
     try:
         data = json.loads(store.get_content(json_path))
     except IOError:
-        if toolkit.is_mirror():
+        if mirroring.is_mirror():
             # use code 404 to trigger the source_lookup decorator.
             # TODO(joffrey): make sure this doesn't break anything or have the
             # decorator rewrite the status code before sending
