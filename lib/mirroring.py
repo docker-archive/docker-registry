@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 def is_mirror():
     cfg = config.load()
-    return not not cfg.get('source')
+    return bool(cfg.source)
 
 
 def lookup_source(path, stream=False, source=None):
