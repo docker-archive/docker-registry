@@ -1,0 +1,13 @@
+# The `common' part is automatically included (and possibly overriden by all
+# other flavors)
+common:
+    secret_key: REPLACEME
+    mirroring:
+        source: https://registry-1.docker.io
+        source_index: https://index.docker.io
+        tags_cache_ttl: 864000  # seconds
+
+dev:
+    storage: local
+    storage_path: /tmp/registry
+    loglevel: debug

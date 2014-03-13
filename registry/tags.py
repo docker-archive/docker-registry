@@ -7,6 +7,7 @@ import time
 import flask
 import simplejson as json
 
+import mirroring
 import signals
 import storage
 import toolkit
@@ -66,6 +67,7 @@ def get_tags(namespace, repository):
 @app.route('/v1/repositories/<path:repository>/tags', methods=['GET'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
+@mirroring.source_lookup_tag
 def _get_tags(namespace, repository):
     logger.debug("[get_tags] namespace={0}; repository={1}".format(namespace,
                  repository))
@@ -81,12 +83,14 @@ def _get_tags(namespace, repository):
 @app.route('/v1/repositories/<path:repository>/tags/<tag>', methods=['GET'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
+@mirroring.source_lookup_tag
 def get_tag(namespace, repository, tag):
     logger.debug("[get_tag] namespace={0}; repository={1}; tag={2}".format(
                  namespace, repository, tag))
     data = None
+    tag_path = store.tag_path(namespace, repository, tag)
     try:
-        data = store.get_content(store.tag_path(namespace, repository, tag))
+        data = store.get_content(tag_path)
     except IOError:
         return toolkit.api_error('Tag not found', 404)
     return toolkit.response(data)
@@ -97,8 +101,10 @@ def get_tag(namespace, repository, tag):
 @app.route('/v1/repositories/<path:repository>/json', methods=['GET'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
+@mirroring.source_lookup(stream=False, cache=True)
 def get_repository_json(namespace, repository):
     json_path = store.repository_json_path(namespace, repository)
+    headers = {}
     data = {'last_update': None,
             'docker_version': None,
             'docker_go_version': None,
@@ -108,9 +114,13 @@ def get_repository_json(namespace, repository):
     try:
         data = json.loads(store.get_content(json_path))
     except IOError:
-        # We ignore the error, we'll serve the default json declared above
-        pass
-    return toolkit.response(data)
+        if mirroring.is_mirror():
+            # use code 404 to trigger the source_lookup decorator.
+            # TODO(joffrey): make sure this doesn't break anything or have the
+            # decorator rewrite the status code before sending
+            return toolkit.response(data, code=404, headers=headers)
+        # else we ignore the error, we'll serve the default json declared above
+    return toolkit.response(data, headers=headers)
 
 
 @app.route(
