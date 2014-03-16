@@ -72,9 +72,9 @@ def _get_tags(namespace, repository):
     logger.debug("[get_tags] namespace={0}; repository={1}".format(namespace,
                  repository))
     try:
-        data = {tag_name: tag_content
-                for tag_name, tag_content
-                in get_tags(namespace=namespace, repository=repository)}
+        data = dict((tag_name, tag_content)
+                    for tag_name, tag_content
+                    in get_tags(namespace=namespace, repository=repository))
     except OSError:
         return toolkit.api_error('Repository not found', 404)
     return toolkit.response(data)
