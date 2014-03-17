@@ -71,6 +71,14 @@ def _get_image_layer(image_id, headers=None, bytes_range=None):
         else:
             logger.warn('nginx_x_accel_redirect config set,'
                         ' but storage is not LocalStorage')
+
+    # If store allows us to just redirect the client let's do that, we'll
+    # offload a lot of expensive I/O and get faster I/O
+    if cfg.storage_redirect:
+        content_redirect_url = store.content_redirect_url(path)
+        if content_redirect_url:
+            return flask.redirect(content_redirect_url, 302)
+
     status = None
     layer_size = 0
 

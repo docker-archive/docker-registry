@@ -10,6 +10,7 @@ test:
     s3_bucket: _env:S3_BUCKET
     s3_encrypt: _env:S3_ENCRYPT
     s3_secure: _env:S3_SECURE
+    storage_redirect: False
 
     gs_access_key: _env:GS_ACCESS_KEY
     gs_secret_key: _env:GS_SECRET_KEY 

@@ -105,6 +105,7 @@ class BotoStorage(Storage):
         self._boto_conn = self.makeConnection()
         self._boto_bucket = self._boto_conn.get_bucket(
             self._config.boto_bucket)
+        logger.info("Boto based storage initialized")
 
     def _build_connection_params(self):
         kwargs = {'is_secure': (self._config.boto_secure is True)}

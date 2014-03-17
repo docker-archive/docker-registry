@@ -16,3 +16,4 @@ prod:
     s3_encrypt: true
     s3_secure: true
     storage_path: /images
+    storage_redirect: False  # Redirect signed URL for image files
