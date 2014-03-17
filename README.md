@@ -204,7 +204,7 @@ things up dramatically since it will reduce roundtrips to S3.
 1. `local`: store images on local storage
   1. `storage_path` local path to the image store
 1. `s3`: store images on S3
-  1. `storage_path` is a subdir in your S3 bucker
+  1. `storage_path` is a subdir in your S3 bucket
   1. remember to set all `s3_*` options (see above)
 1. `glance`: store images on Glance (OpenStack)
   1. `storage_alternate`: storage engine to use when Glance storage fails,
