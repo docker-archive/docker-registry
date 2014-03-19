@@ -98,6 +98,12 @@ Available configuration options
 1. `loglevel`: string, level of debugging. Any of python's
     [logging](http://docs.python.org/2/library/logging.html) module levels:
     `debug`, `info`, `warn`, `error` or `critical`
+1. If you are using `storage: s3` the
+   [standard boto config file locations](http://docs.pythonboto.org/en/latest/boto_config_tut.html#details)
+   (`/etc/boto.cfg, ~/.boto`) will be used.  If you are using a
+   *non*-Amazon S3-compliant object store, in one of the boto config files'
+   `[Credentials]` section, set `s3_host`, `s3_port` as appropriate for the
+   service you are using.
 
 ### Authentication options
 
