@@ -78,8 +78,18 @@ class EllipticsStorage(Storage):
         return [str(i.indexes[0].data) for i in itertools.chain(result)]
 
     def s_remove(self, key):
-        self._session.remove(key).wait()
-        self._session.set_indexes(key, [], []).wait()
+        r = self._session.remove(key)
+        r.wait()
+        err = r.error()
+        if err.code != 0:
+            logger.warning("Unable to remove key %s %s", key, err.message)
+
+        r = self._session.set_indexes(key, [], [])
+        r.wait()
+        err = r.error()
+        if err.code != 0:
+            logger.warning("Unable to remove indexes for key %s %s",
+                           key, err.message)
 
     def s_read(self, path):
         r = self._session.read_data(path, offset=0, size=0)
@@ -100,8 +110,9 @@ class EllipticsStorage(Storage):
             raise IOError("Writing failed {0}".format(err))
 
         # Set indexes
-        r = self._session.set_indexes(key, list(tags), [key] * len(tags))
+        r = self._session.update_indexes(key, list(tags), [key] * len(tags))
         r.wait()
+        err = r.error()
         if err.code != 0:
             raise IOError("Setting indexes failed {0}".format(err))
 
@@ -145,11 +156,10 @@ class EllipticsStorage(Storage):
         if path is None:
             path = ""
 
-        items = self.s_find(('docker', path))
-        if not items:
+        if not self.exists(path) and path:
             raise OSError('No such directory: \'{0}\''.format(path))
 
-        for item in items:
+        for item in self.s_find(('docker', path)):
             yield item
 
     def exists(self, path):
@@ -159,6 +169,11 @@ class EllipticsStorage(Storage):
 
     @cache_lru.remove
     def remove(self, path):
+        try:
+            for subdir in self.list_directory(path):
+                self.s_remove(subdir)
+        except OSError as err:
+            logger.warning(err)
         self.s_remove(path)
 
     def get_size(self, path):
