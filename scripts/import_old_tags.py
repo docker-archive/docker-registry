@@ -1,12 +1,8 @@
 #!/usr/bin/env python
 
-import os
 import sys
 
-root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(os.path.join(root_path, 'lib'))
-
-import storage
+from docker_registry import storage
 
 
 # Copy/Pasted from old models

@@ -8,7 +8,7 @@ import logging
 import boto.s3.connection
 import boto.s3.key
 
-import cache_lru
+from docker_registry.lib import cache_lru
 
 from boto_base import BotoStorage
 

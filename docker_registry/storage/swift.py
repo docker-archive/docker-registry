@@ -1,5 +1,5 @@
 
-import cache_lru
+from docker_registry.lib import cache_lru
 import swiftclient
 
 from . import Storage

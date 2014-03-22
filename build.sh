@@ -7,7 +7,7 @@ cd $SERVICE_APPROOT
 . ~/env/bin/activate
 
 [ -f requirements.txt ] &&
-    pip install --download-cache=~/.pip-cache -r requirements.txt || exit 1
+    pip install --download-cache=~/.pip-cache . || exit 1
 
 cp -R * ~/
 

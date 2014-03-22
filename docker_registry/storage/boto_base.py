@@ -8,7 +8,7 @@ import math
 import os
 import tempfile
 
-import cache_lru
+from docker_registry.lib import cache_lru
 
 from . import Storage
 

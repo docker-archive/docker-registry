@@ -3,30 +3,26 @@
 
 import logging
 import os
-import sys
 
-root_path = os.path.abspath(os.path.dirname(__file__))
-sys.path.append(os.path.join(root_path, 'lib'))
-
-import registry
+import docker_registry
 
 
 if __name__ == '__main__':
     # Bind to PORT if defined, otherwise default to 5000.
     port = int(os.environ.get('PORT_WWW', 5000))
-    registry.app.debug = True
-    registry.app.run(host='0.0.0.0', port=port)
+    docker_registry.app.debug = True
+    docker_registry.app.run(host='0.0.0.0', port=port)
     # Or you can run:
     # gunicorn --access-logfile - --log-level debug --debug -b 0.0.0.0:5000 \
     #  -w 1 wsgi:application
 else:
     # For uwsgi
-    registry.app.logger.setLevel(logging.INFO)
+    docker_registry.app.logger.setLevel(logging.INFO)
     stderr_logger = logging.StreamHandler()
     stderr_logger.setLevel(logging.INFO)
     stderr_logger.setFormatter(
         logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))
-    registry.app.logger.addHandler(stderr_logger)
-    application = registry.app
+    docker_registry.app.logger.addHandler(stderr_logger)
+    application = docker_registry.app
     # uwsgi
     app = application

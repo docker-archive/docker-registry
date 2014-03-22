@@ -2,12 +2,14 @@ import cStringIO as StringIO
 import hashlib
 import json
 import os
+
 import requests
 
+from docker_registry.lib import checksums
+from docker_registry.lib import config
+from docker_registry import storage
+
 import base
-import checksums
-import config
-import storage
 
 
 cfg = config.load()

@@ -276,7 +276,7 @@ sudo apt-get install build-essential python-dev libevent-dev python-pip libssl-d
 Then install the Registry app:
 
 ```
-sudo pip install -r requirements.txt
+sudo pip install .
 ```
 
 #### On Red Hat-based systems:
@@ -292,7 +292,7 @@ should not require the additional repositories.
 Then install the Registry app:
 
 ```
-sudo python-pip install -r requirements.txt
+sudo python-pip install .
 ```
 
 #### Run it

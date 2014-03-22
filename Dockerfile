@@ -15,11 +15,10 @@ RUN cd /tmp; wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.p
 RUN cd /tmp; python ez_setup.py; easy_install pip; \
     rm ez_setup.py
 
-ADD requirements.txt /docker-registry/
-RUN cd /docker-registry && pip install -r requirements.txt
-
 ADD . /docker-registry
 ADD ./config/boto.cfg /etc/boto.cfg
+
+RUN pip install /docker-registry/
 
 RUN cp --no-clobber /docker-registry/config/config_sample.yml /docker-registry/config/config.yml
 

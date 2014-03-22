@@ -7,7 +7,7 @@ import logging
 import boto.gs.connection
 import boto.gs.key
 
-import cache_lru
+from docker_registry.lib import cache_lru
 
 from boto_base import BotoStorage
 

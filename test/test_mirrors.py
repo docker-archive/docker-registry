@@ -1,10 +1,12 @@
 import json
+
 import mock
 import requests
 
+from docker_registry.lib import config
+from docker_registry.lib import mirroring
+
 import base
-import config
-import mirroring
 
 
 def mock_lookup_source(path, stream=False, source=None):
@@ -45,7 +47,8 @@ class TestMirrorDecorator(base.TestCase):
     def test_is_mirror(self):
         self.assertEqual(mirroring.is_mirror(), True)
 
-    @mock.patch('mirroring.lookup_source', mock_lookup_source)
+    @mock.patch('docker_registry.lib.mirroring.lookup_source',
+                mock_lookup_source)
     def test_source_lookup(self):
         resp = self.http_client.get('/v1/images/cafebabe0145/layer')
         self.assertEqual(resp.status_code, 200)
@@ -67,7 +70,8 @@ class TestMirrorDecorator(base.TestCase):
         resp_4 = self.http_client.get('/v1/images/doe587e8157/json')
         self.assertEqual(resp_4.status_code, 404)
 
-    @mock.patch('mirroring.lookup_source', mock_lookup_source)
+    @mock.patch('docker_registry.lib.mirroring.lookup_source',
+                mock_lookup_source)
     def test_source_lookup_tag(self):
         resp = self.http_client.get('/v1/repositories/testing/test/tags')
         self.assertEqual(resp.status_code, 200)

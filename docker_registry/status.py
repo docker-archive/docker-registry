@@ -1,15 +1,15 @@
 __all__ = ['registry_status']
 
+import socket
+import sys
+
 import gevent.monkey
 gevent.monkey.patch_all()
 
-import cache
-import config
-import gevent
-import socket
-import storage
-import sys
-import toolkit
+from docker_registry.lib import cache
+from docker_registry.lib import config
+from docker_registry import storage
+from docker_registry import toolkit
 
 from .app import app
 

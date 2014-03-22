@@ -19,18 +19,19 @@ class TestImages(base.TestCase):
         layer_data = self.gen_random_string(1024)
         self.upload_image(image_id, parent_id=None, layer=layer_data)
 
-        import registry.images
+        import docker_registry.images
 
         # ensure the storage mechanism is LocalStorage or this test is bad
-        import storage.local
-        self.assertTrue(isinstance(registry.images.store,
-                        storage.local.LocalStorage),
+        from docker_registry.storage import local
+        self.assertTrue(isinstance(docker_registry.images.store,
+                        local.LocalStorage),
                         'Store must be LocalStorage')
 
         # set the nginx accel config
         accel_header = 'X-Accel-Redirect'
         accel_prefix = '/registry'
-        registry.images.cfg._config['nginx_x_accel_redirect'] = accel_prefix
+        docker_registry.images.cfg._config['nginx_x_accel_redirect'] \
+            = accel_prefix
 
         layer_path = 'images/{0}/layer'.format(image_id)
 
@@ -43,7 +44,7 @@ class TestImages(base.TestCase):
 
             self.assertEqual('', resp.data)
         finally:
-            registry.images.cfg._config.pop('nginx_x_accel_redirect')
+            docker_registry.images.cfg._config.pop('nginx_x_accel_redirect')
 
     def test_simple(self):
         image_id = self.gen_random_string()

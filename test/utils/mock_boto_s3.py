@@ -5,13 +5,14 @@ import boto.s3.bucket
 import boto.s3.connection
 import boto.s3.key
 import mock_dict
-import utils
+
+from . import monkeypatch_class
 
 Bucket__init__ = boto.s3.bucket.Bucket.__init__
 
 
 class MultiPartUpload(boto.s3.multipart.MultiPartUpload):
-    __metaclass__ = utils.monkeypatch_class
+    __metaclass__ = monkeypatch_class
 
     def upload_part_from_file(self, io, num_part):
         if num_part == 1:
@@ -24,7 +25,7 @@ class MultiPartUpload(boto.s3.multipart.MultiPartUpload):
 
 
 class S3Connection(boto.s3.connection.S3Connection):
-    __metaclass__ = utils.monkeypatch_class
+    __metaclass__ = monkeypatch_class
 
     def __init__(self, *args, **kwargs):
         return None
@@ -39,7 +40,7 @@ class S3Connection(boto.s3.connection.S3Connection):
 
 
 class Bucket(boto.s3.bucket.Bucket):
-    __metaclass__ = utils.monkeypatch_class
+    __metaclass__ = monkeypatch_class
 
     _bucket = mock_dict.MockDict()
     _bucket.add_dict_methods()
@@ -79,7 +80,7 @@ class Bucket(boto.s3.bucket.Bucket):
 
 
 class Key(boto.s3.key.Key):
-    __metaclass__ = utils.monkeypatch_class
+    __metaclass__ = monkeypatch_class
 
     def exists(self):
         bucket_dict = self.bucket._bucket_dict

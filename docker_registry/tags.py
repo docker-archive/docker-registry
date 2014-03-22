@@ -7,10 +7,10 @@ import time
 import flask
 import simplejson as json
 
-import mirroring
-import signals
-import storage
-import toolkit
+from docker_registry.lib import mirroring
+from docker_registry.lib import signals
+from docker_registry import storage
+from docker_registry import toolkit
 
 from .app import app
 

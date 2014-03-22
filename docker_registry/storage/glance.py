@@ -5,7 +5,7 @@ import flask
 import glanceclient
 from keystoneclient.v2_0 import client as keystoneclient
 
-import signals
+from docker_registry.lib import signals
 
 from . import Storage
 from .local import LocalStorage

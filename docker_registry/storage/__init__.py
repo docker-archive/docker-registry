@@ -1,7 +1,7 @@
 
 import tempfile
 
-import config
+from docker_registry.lib import config
 
 
 __all__ = ['load']

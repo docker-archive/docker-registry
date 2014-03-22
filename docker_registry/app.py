@@ -9,11 +9,11 @@ except ImportError as e:
     bugsnag = None
 import flask
 
-import config
-import toolkit
+from docker_registry.lib import config
+from docker_registry import toolkit
 
 
-VERSION = '0.6.6'
+VERSION = '0.6.7'
 app = flask.Flask('docker-registry')
 cfg = config.load()
 loglevel = getattr(logging, cfg.get('loglevel', 'INFO').upper())

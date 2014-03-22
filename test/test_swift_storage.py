@@ -4,7 +4,8 @@ import StringIO
 # noqa is issued to allow imports do their monkeypatching as side effect
 from utils.mock_swift_storage import Connection   # noqa
 
-import storage
+from docker_registry import storage
+
 import test_local_storage
 
 

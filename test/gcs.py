@@ -1,7 +1,7 @@
 
 import test_storage
 
-import storage
+from docker_registry import storage
 
 
 class TestGSStorage(test_storage.TestLocalStorage):

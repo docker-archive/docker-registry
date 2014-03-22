@@ -6,7 +6,7 @@ from .tags import *
 from .images import *
 from .status import *
 
-import config
+from docker_registry.lib import config
 
 cfg = config.load()
 if cfg.standalone is not False:

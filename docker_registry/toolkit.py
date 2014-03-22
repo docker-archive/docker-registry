@@ -11,8 +11,8 @@ import requests
 import rsa
 import simplejson as json
 
-import config
-import storage
+from docker_registry.lib import config
+from docker_registry import storage
 
 
 logger = logging.getLogger(__name__)

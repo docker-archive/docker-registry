@@ -11,7 +11,7 @@ Packages: http://repo.reverbrain.com/
 import itertools
 import logging
 
-import cache_lru
+from docker_registry.lib import cache_lru
 
 from . import Storage
 
