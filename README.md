@@ -81,6 +81,11 @@ The default location of the config file is `config.yml`, located in
 the `config` subdirectory.  If `DOCKER_REGISTRY_CONFIG` is a relative
 path, that path is expanded relative to the `config` subdirectory.
 
+It is possible to mount the configuration file into the docker image
+
+```
+sudo docker run -p 5000:5000 -v /home/user/registry-conf:/registry-conf -e DOCKER_REGISTRY_CONFIG=/registry-conf/config.yml registry
+```
 
 Available configuration options
 ===============================
@@ -93,6 +98,12 @@ Available configuration options
 1. `loglevel`: string, level of debugging. Any of python's
     [logging](http://docs.python.org/2/library/logging.html) module levels:
     `debug`, `info`, `warn`, `error` or `critical`
+1. If you are using `storage: s3` the
+   [standard boto config file locations](http://docs.pythonboto.org/en/latest/boto_config_tut.html#details)
+   (`/etc/boto.cfg, ~/.boto`) will be used.  If you are using a
+   *non*-Amazon S3-compliant object store, in one of the boto config files'
+   `[Credentials]` section, set `s3_host`, `s3_port` as appropriate for the
+   service you are using.
 
 ### Authentication options
 
@@ -199,7 +210,7 @@ things up dramatically since it will reduce roundtrips to S3.
 1. `local`: store images on local storage
   1. `storage_path` local path to the image store
 1. `s3`: store images on S3
-  1. `storage_path` is a subdir in your S3 bucker
+  1. `storage_path` is a subdir in your S3 bucket
   1. remember to set all `s3_*` options (see above)
 1. `glance`: store images on Glance (OpenStack)
   1. `storage_alternate`: storage engine to use when Glance storage fails,

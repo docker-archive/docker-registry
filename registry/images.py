@@ -8,6 +8,7 @@ import flask
 import simplejson as json
 
 import checksums
+import mirroring
 import storage
 import toolkit
 
@@ -55,36 +56,33 @@ def set_cache_headers(f):
 def _get_image_layer(image_id, headers=None, bytes_range=None):
     if headers is None:
         headers = {}
-    try:
-        accel_uri_prefix = cfg.nginx_x_accel_redirect
-        path = store.image_layer_path(image_id)
-        if accel_uri_prefix:
-            if isinstance(store, storage.local.LocalStorage):
-                accel_uri = '/'.join([accel_uri_prefix, path])
-                headers['X-Accel-Redirect'] = accel_uri
-                logger.debug('send accelerated {0} ({1})'.format(
-                    accel_uri, headers))
-                return flask.Response('', headers=headers)
-            else:
-                logger.warn('nginx_x_accel_redirect config set,'
-                            ' but storage is not LocalStorage')
-        status = None
-        if bytes_range:
-            status = 206
-            headers['Content-Range'] = '{0}-{1}/*'.format(*bytes_range)
-        return flask.Response(store.stream_read(path, bytes_range),
-                              headers=headers, status=status)
-    except IOError:
-        return toolkit.api_error('Image not found', 404)
+
+    accel_uri_prefix = cfg.nginx_x_accel_redirect
+    path = store.image_layer_path(image_id)
+    if accel_uri_prefix:
+        if isinstance(store, storage.local.LocalStorage):
+            accel_uri = '/'.join([accel_uri_prefix, path])
+            headers['X-Accel-Redirect'] = accel_uri
+            logger.debug('send accelerated {0} ({1})'.format(
+                accel_uri, headers))
+            return flask.Response('', headers=headers)
+        else:
+            logger.warn('nginx_x_accel_redirect config set,'
+                        ' but storage is not LocalStorage')
+    status = None
+    if bytes_range:
+        status = 206
+        headers['Content-Range'] = '{0}-{1}/*'.format(*bytes_range)
+    if not store.exists(path):
+        raise IOError("Image layer absent from store")
+    return flask.Response(store.stream_read(path, bytes_range),
+                          headers=headers, status=status)
 
 
 def _get_image_json(image_id, headers=None):
     if headers is None:
         headers = {}
-    try:
-        data = store.get_content(store.image_json_path(image_id))
-    except IOError:
-        return toolkit.api_error('Image not found', 404)
+    data = store.get_content(store.image_json_path(image_id))
     try:
         size = store.get_size(store.image_layer_path(image_id))
         headers['X-Docker-Size'] = str(size)
@@ -142,6 +140,7 @@ def get_private_image_layer(image_id):
 @toolkit.requires_auth
 @require_completion
 @set_cache_headers
+@mirroring.source_lookup(cache=True, stream=True)
 def get_image_layer(image_id, headers):
     try:
         bytes_range = None
@@ -268,6 +267,7 @@ def get_private_image_json(image_id):
 @toolkit.requires_auth
 @require_completion
 @set_cache_headers
+@mirroring.source_lookup(cache=True, stream=False)
 def get_image_json(image_id, headers):
     try:
         repository = toolkit.get_repository()
@@ -284,9 +284,11 @@ def get_image_json(image_id, headers):
 @toolkit.requires_auth
 @require_completion
 @set_cache_headers
+@mirroring.source_lookup(cache=True, stream=False)
 def get_image_ancestry(image_id, headers):
+    ancestry_path = store.image_ancestry_path(image_id)
     try:
-        data = store.get_content(store.image_ancestry_path(image_id))
+        data = store.get_content(ancestry_path)
     except IOError:
         return toolkit.api_error('Image not found', 404)
     return toolkit.response(json.loads(data), headers=headers)

@@ -1,8 +1,11 @@
+import logging
 
 import flask
 import simplejson as json
 
 import config
+import mirroring
+import signals
 import storage
 import toolkit
 
@@ -10,7 +13,7 @@ from .app import app
 
 
 store = storage.load()
-
+logger = logging.getLogger(__name__)
 
 """Those routes are loaded only when `standalone' is enabled in the config
    file. The goal is to make the Registry working without the central Index
@@ -19,12 +22,18 @@ store = storage.load()
 """
 
 
-def generate_headers(namespace, repository, access):
-    cfg = config.load()
+def get_endpoints(cfg=None):
+    if not cfg:
+        cfg = config.load()
     registry_endpoints = cfg.registry_endpoints
     if not registry_endpoints:
         #registry_endpoints = socket.gethostname()
         registry_endpoints = flask.request.environ['HTTP_HOST']
+    return registry_endpoints
+
+
+def generate_headers(namespace, repository, access):
+    registry_endpoints = get_endpoints()
     # The token generated will be invalid against a real Index behind.
     token = 'Token signature={0},repository="{1}/{2}",access={3}'.format(
             toolkit.gen_random_string(), namespace, repository, access)
@@ -52,6 +61,7 @@ def put_username(username):
 
 def update_index_images(namespace, repository, data):
     path = store.index_images_path(namespace, repository)
+    sender = flask.current_app._get_current_object()
     try:
         images = {}
         data = json.loads(data) + json.loads(store.get_content(path))
@@ -59,10 +69,19 @@ def update_index_images(namespace, repository, data):
             iid = i['id']
             if iid in images and 'checksum' in images[iid]:
                 continue
-            images[iid] = i
+            i_data = {'id': iid}
+            for key in ['checksum']:
+                if key in i:
+                    i_data[key] = i[key]
+            images[iid] = i_data
         data = images.values()
         store.put_content(path, json.dumps(data))
+        signals.repository_updated.send(
+            sender, namespace=namespace, repository=repository, value=data)
     except IOError:
+        signals.repository_created.send(
+            sender, namespace=namespace, repository=repository,
+            value=json.loads(data))
         store.put_content(path, data)
 
 
@@ -89,6 +108,7 @@ def put_repository(namespace, repository, images=False):
 @app.route('/v1/repositories/<path:repository>/images', methods=['GET'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
+@mirroring.source_lookup(index_route=True)
 def get_repository_images(namespace, repository):
     data = None
     try:

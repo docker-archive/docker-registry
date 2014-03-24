@@ -13,7 +13,7 @@ import config
 import toolkit
 
 
-VERSION = '0.6.5'
+VERSION = '0.6.6'
 app = flask.Flask('docker-registry')
 cfg = config.load()
 loglevel = getattr(logging, cfg.get('loglevel', 'INFO').upper())
@@ -43,10 +43,9 @@ def after_request(response):
 
 def init():
     # Configure the secret key
-    if cfg.secret_key:
-        flask.Flask.secret_key = cfg.secret_key
-    else:
-        flask.Flask.secret_key = toolkit.gen_random_string(64)
+    if not cfg.secret_key:
+        raise RuntimeError('Config error: `secret_key\' is not set')
+    flask.Flask.secret_key = cfg.secret_key
     # Configure the email exceptions
     info = cfg.email_exceptions
     if info:

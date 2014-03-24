@@ -7,6 +7,7 @@ import time
 import flask
 import simplejson as json
 
+import mirroring
 import signals
 import storage
 import toolkit
@@ -52,20 +53,28 @@ def get_properties(namespace, repo):
     })
 
 
+def get_tags(namespace, repository):
+    tag_path = store.tag_path(namespace, repository)
+    for fname in store.list_directory(tag_path):
+        full_tag_name = fname.split('/').pop()
+        if not full_tag_name.startswith('tag_'):
+            continue
+        tag_name = full_tag_name[4:]
+        tag_content = store.get_content(fname)
+        yield (tag_name, tag_content)
+
+
 @app.route('/v1/repositories/<path:repository>/tags', methods=['GET'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
-def get_tags(namespace, repository):
+@mirroring.source_lookup_tag
+def _get_tags(namespace, repository):
     logger.debug("[get_tags] namespace={0}; repository={1}".format(namespace,
                  repository))
-    data = {}
     try:
-        for fname in store.list_directory(store.tag_path(namespace,
-                                                         repository)):
-            tag_name = fname.split('/').pop()
-            if not tag_name.startswith('tag_'):
-                continue
-            data[tag_name[4:]] = store.get_content(fname)
+        data = dict((tag_name, tag_content)
+                    for tag_name, tag_content
+                    in get_tags(namespace=namespace, repository=repository))
     except OSError:
         return toolkit.api_error('Repository not found', 404)
     return toolkit.response(data)
@@ -74,12 +83,14 @@ def get_tags(namespace, repository):
 @app.route('/v1/repositories/<path:repository>/tags/<tag>', methods=['GET'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
+@mirroring.source_lookup_tag
 def get_tag(namespace, repository, tag):
     logger.debug("[get_tag] namespace={0}; repository={1}; tag={2}".format(
                  namespace, repository, tag))
     data = None
+    tag_path = store.tag_path(namespace, repository, tag)
     try:
-        data = store.get_content(store.tag_path(namespace, repository, tag))
+        data = store.get_content(tag_path)
     except IOError:
         return toolkit.api_error('Tag not found', 404)
     return toolkit.response(data)
@@ -90,8 +101,10 @@ def get_tag(namespace, repository, tag):
 @app.route('/v1/repositories/<path:repository>/json', methods=['GET'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
+@mirroring.source_lookup(stream=False, cache=True)
 def get_repository_json(namespace, repository):
     json_path = store.repository_json_path(namespace, repository)
+    headers = {}
     data = {'last_update': None,
             'docker_version': None,
             'docker_go_version': None,
@@ -101,9 +114,13 @@ def get_repository_json(namespace, repository):
     try:
         data = json.loads(store.get_content(json_path))
     except IOError:
-        # We ignore the error, we'll serve the default json declared above
-        pass
-    return toolkit.response(data)
+        if mirroring.is_mirror():
+            # use code 404 to trigger the source_lookup decorator.
+            # TODO(joffrey): make sure this doesn't break anything or have the
+            # decorator rewrite the status code before sending
+            return toolkit.response(data, code=404, headers=headers)
+        # else we ignore the error, we'll serve the default json declared above
+    return toolkit.response(data, headers=headers)
 
 
 @app.route(
@@ -173,33 +190,61 @@ def put_tag(namespace, repository, tag):
     return toolkit.response()
 
 
+def delete_tag(namespace, repository, tag):
+    logger.debug("[delete_tag] namespace={0}; repository={1}; tag={2}".format(
+                 namespace, repository, tag))
+    store.remove(store.tag_path(namespace, repository, tag))
+    store.remove(store.repository_tag_json_path(namespace, repository, tag))
+    sender = flask.current_app._get_current_object()
+    if tag == "latest":  # TODO(wking) : deprecate this for v2
+        store.remove(store.repository_json_path(namespace, repository))
+    signals.tag_deleted.send(
+        sender, namespace=namespace, repository=repository, tag=tag)
+
+
 @app.route('/v1/repositories/<path:repository>/tags/<tag>',
            methods=['DELETE'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
-def delete_tag(namespace, repository, tag):
-    logger.debug("[delete_tag] namespace={0}; repository={1}; tag={2}".format(
-                 namespace, repository, tag))
+def _delete_tag(namespace, repository, tag):
     try:
-        store.remove(store.tag_path(namespace, repository, tag))
-        sender = flask.current_app._get_current_object()
-        signals.tag_deleted.send(sender, namespace=namespace,
-                                 repository=repository, tag=tag)
+        delete_tag(namespace=namespace, repository=repository, tag=tag)
     except OSError:
         return toolkit.api_error('Tag not found', 404)
     return toolkit.response()
 
 
-@app.route('/v1/repositories/<path:repository>/tags',
-           methods=['DELETE'])
+@app.route('/v1/repositories/<path:repository>/', methods=['DELETE'])
+@app.route('/v1/repositories/<path:repository>/tags', methods=['DELETE'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
 def delete_repository(namespace, repository):
+    """Remove a repository from storage
+
+    This endpoint exists in both the registry API [1] and the indexer
+    API [2], but has the same semantics in each instance.  It's in the
+    tags module (instead of the index module which handles most
+    repository tasks) because it should be available regardless of
+    whether the rest of the index-module endpoints are enabled via the
+    'standalone' config setting.
+
+    [1]: http://docs.docker.io/en/latest/reference/api/registry_api/#delete--v1-repositories-%28namespace%29-%28repository%29- # nopep8
+    [2]: http://docs.docker.io/en/latest/reference/api/index_api/#delete--v1-repositories-%28namespace%29-%28repo_name%29- # nopep8
+    """
     logger.debug("[delete_repository] namespace={0}; repository={1}".format(
                  namespace, repository))
     try:
-        store.remove(store.tag_path(namespace, repository))
-        #TODO(samalba): Trigger tags_deleted signals
+        for tag_name, tag_content in get_tags(
+                namespace=namespace, repository=repository):
+            delete_tag(
+                namespace=namespace, repository=repository, tag=tag_name)
+        # TODO(wking): remove images, but may need refcounting
+        store.remove(store.repository_path(
+            namespace=namespace, repository=repository))
     except OSError:
         return toolkit.api_error('Repository not found', 404)
+    else:
+        sender = flask.current_app._get_current_object()
+        signals.repository_deleted.send(
+            sender, namespace=namespace, repository=repository)
     return toolkit.response()
