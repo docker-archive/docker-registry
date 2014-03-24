@@ -30,7 +30,7 @@ common:
     # If not set default value '/google-cloud-sdk/' is used.
     cloud_sdk_path: REPLACEME
 
-     # Let gunicorn set this environment variable or set a random string here
+    # Let gunicorn set this environment variable or set a random string here
     secret_key: _env:SECRET_KEY
 
 
