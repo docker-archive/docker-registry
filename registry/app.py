@@ -45,7 +45,7 @@ def init():
     # Configure the secret key
     if not cfg.secret_key:
         raise RuntimeError('Config error: `secret_key\' is not set')
-    flask.Flask.secret_key = cfg.secret_key
+    app.secret_key = cfg.secret_key
     # Configure the email exceptions
     info = cfg.email_exceptions
     if info:
