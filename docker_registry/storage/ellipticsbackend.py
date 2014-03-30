@@ -11,11 +11,10 @@ Packages: http://repo.reverbrain.com/
 import itertools
 import logging
 
-from docker_registry.lib import cache_lru
-
-from . import Storage
-
 import elliptics
+
+from ..lib import cache_lru
+from . import Storage
 
 
 DEFAULT_NAMESPACE = "DOCKER"

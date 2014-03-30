@@ -7,9 +7,8 @@ import logging
 import boto.gs.connection
 import boto.gs.key
 
-from docker_registry.lib import cache_lru
-
-from boto_base import BotoStorage
+from ..lib import cache_lru
+from .boto_base import BotoStorage
 
 
 logger = logging.getLogger(__name__)

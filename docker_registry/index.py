@@ -3,11 +3,11 @@ import logging
 import flask
 import simplejson as json
 
-from docker_registry.lib import config
-from docker_registry.lib import mirroring
-from docker_registry.lib import signals
-from docker_registry import storage
-from docker_registry import toolkit
+from . import storage
+from . import toolkit
+from .lib import config
+from .lib import mirroring
+from .lib import signals
 
 from .app import app
 

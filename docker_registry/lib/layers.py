@@ -4,9 +4,9 @@ import tempfile
 import backports.lzma as lzma
 import simplejson as json
 
+from .. import storage
 from . import cache
 from . import rqueue
-from docker_registry import storage
 
 store = storage.load()
 

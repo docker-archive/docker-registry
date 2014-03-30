@@ -2,8 +2,7 @@
 import os
 import shutil
 
-from docker_registry.lib import cache_lru
-
+from ..lib import cache_lru
 from . import Storage
 
 

@@ -3,12 +3,12 @@
 import os
 import setuptools
 
-desc_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                         'README.md')
+_abs_dir = os.path.dirname(os.path.abspath(__file__))
+
+desc_path = os.path.join(_abs_dir, 'README.md')
 long_desc = open(desc_path).read()
 
-req_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                        'requirements.txt')
+req_path = os.path.join(_abs_dir, 'requirements.txt')
 requirements = open(req_path).read()
 
 setuptools.setup(

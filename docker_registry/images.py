@@ -7,15 +7,15 @@ import time
 import flask
 import simplejson as json
 
-from docker_registry.lib import checksums
-from docker_registry.lib import layers
-from docker_registry.lib import mirroring
-from docker_registry import storage
-from docker_registry.storage import local
-from docker_registry import toolkit
-
+from . import storage
+from . import toolkit
 from .app import app
 from .app import cfg
+from .lib import checksums
+from .lib import layers
+from .lib import mirroring
+from .storage import local
+
 
 store = storage.load()
 logger = logging.getLogger(__name__)

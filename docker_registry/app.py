@@ -9,8 +9,8 @@ except ImportError as e:
     bugsnag = None
 import flask
 
-from docker_registry.lib import config
-from docker_registry import toolkit
+from . import toolkit
+from .lib import config
 
 
 VERSION = '0.6.7'

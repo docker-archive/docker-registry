@@ -6,12 +6,11 @@ import sys
 import gevent.monkey
 gevent.monkey.patch_all()
 
-from docker_registry.lib import cache
-from docker_registry.lib import config
-from docker_registry import storage
-from docker_registry import toolkit
-
+from . import storage
+from . import toolkit
 from .app import app
+from .lib import cache
+from .lib import config
 
 _config = config.load()
 

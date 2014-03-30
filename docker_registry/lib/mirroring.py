@@ -3,10 +3,10 @@ import functools
 import logging
 import requests
 
+from .. import storage
+from .. import toolkit
 from . import cache
 from . import config
-from docker_registry import storage
-from docker_registry import toolkit
 
 
 DEFAULT_CACHE_TAGS_TTL = 48 * 3600
