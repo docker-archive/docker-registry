@@ -22,10 +22,20 @@ class S3Storage(BotoStorage):
         BotoStorage.__init__(self, config)
 
     def makeConnection(self):
+        kwargs = {'is_secure': (self._config.s3_secure is True)}
+        config_args = [
+            'host', 'port', 'debug',
+            'proxy', 'proxy_port',
+            'proxy_user', 'proxy_pass'
+        ]
+        for arg in config_args:
+            confkey = 's3_' + arg
+            if getattr(self._config, confkey, None):
+                kwargs[arg] = getattr(self._config, confkey)
         return boto.s3.connection.S3Connection(
             self._config.s3_access_key,
             self._config.s3_secret_key,
-            is_secure=(self._config.s3_secure is True))
+            **kwargs)
 
     def makeKey(self, path):
         return boto.s3.key.Key(self._boto_bucket, path)
