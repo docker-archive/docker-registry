@@ -102,7 +102,7 @@ Available configuration options
    [standard boto config file locations](http://docs.pythonboto.org/en/latest/boto_config_tut.html#details)
    (`/etc/boto.cfg, ~/.boto`) will be used.  If you are using a
    *non*-Amazon S3-compliant object store, in one of the boto config files'
-   `[Credentials]` section, set `s3_host`, `s3_port` as appropriate for the
+   `[Credentials]` section, set `boto_host`, `boto_port` as appropriate for the
    service you are using.
 
 ### Authentication options

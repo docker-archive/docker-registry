@@ -25,15 +25,6 @@ class S3Storage(BotoStorage):
         kwargs = BotoStorage._build_connection_params(self)
         if self._config.s3_secure is not None:
             kwargs['is_secure'] = (self._config.s3_secure is True)
-        config_args = [
-            'host', 'port', 'debug',
-            'proxy', 'proxy_port',
-            'proxy_user', 'proxy_pass'
-        ]
-        for arg in config_args:
-            confkey = 's3_' + arg
-            if getattr(self._config, confkey, None) is not None:
-                kwargs[arg] = getattr(self._config, confkey)
         return kwargs
 
     def makeConnection(self):
