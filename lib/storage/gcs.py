@@ -56,6 +56,12 @@ class GSStorage(BotoStorage):
     def __init__(self, config):
         BotoStorage.__init__(self, config)
 
+    def _build_connection_params(self):
+        kwargs = BotoStorage._build_connection_params(self)
+        if self._config.gs_secure is not None:
+            kwargs['is_secure'] = (self._config.gs_secure is True)
+        return kwargs
+
     def makeConnection(self):
         if self._config.oauth2 is True:
             _UpdateSysPath(self._config)
@@ -64,10 +70,11 @@ class GSStorage(BotoStorage):
             uri = boto.storage_uri(self._config.boto_bucket, 'gs')
             return uri.connect()
 
+        kwargs = self._build_connection_params()
         return boto.gs.connection.GSConnection(
             self._config.gs_access_key,
             self._config.gs_secret_key,
-            is_secure=(self._config.gs_secure is True))
+            **kwargs)
 
     def makeKey(self, path):
         return boto.gs.key.Key(self._boto_bucket, path)

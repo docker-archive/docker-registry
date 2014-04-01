@@ -106,6 +106,19 @@ class BotoStorage(Storage):
         self._boto_bucket = self._boto_conn.get_bucket(
             self._config.boto_bucket)
 
+    def _build_connection_params(self):
+        kwargs = {'is_secure': (self._config.boto_secure is True)}
+        config_args = [
+            'host', 'port', 'debug',
+            'proxy', 'proxy_port',
+            'proxy_user', 'proxy_pass'
+        ]
+        for arg in config_args:
+            confkey = 'boto_' + arg
+            if getattr(self._config, confkey, None) is not None:
+                kwargs[arg] = getattr(self._config, confkey)
+        return kwargs
+
     def _debug_key(self, key):
         """Used for debugging only."""
         orig_meth = key.bucket.connection.make_request
