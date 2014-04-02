@@ -16,6 +16,7 @@ class TestCase(unittest.TestCase):
         self.http_client = registry.app.test_client()
         # Override the method so we can set headers for every single call
         orig_open = self.http_client.open
+
         def _open(*args, **kwargs):
             if 'headers' not in kwargs:
                 kwargs['headers'] = {}
