@@ -177,7 +177,7 @@ def put_image_layer(image_id):
     # compute checksums
     csums = []
     sr = toolkit.SocketReader(input_stream)
-    if toolkit.DockerVersion() < '0.9.1':
+    if toolkit.DockerVersion() < '0.10':
         tmp, store_hndlr = storage.temp_store_handler()
         sr.add_handler(store_hndlr)
     h, sum_hndlr = checksums.simple_checksum_handler(json_data)
@@ -185,8 +185,8 @@ def put_image_layer(image_id):
     store.stream_write(layer_path, sr)
     csums.append('sha256:{0}'.format(h.hexdigest()))
 
-    if toolkit.DockerVersion() < '0.9.1':
-        # NOTE(samalba): After docker 0.9.2, the tarsum is not used to ensure
+    if toolkit.DockerVersion() < '0.10':
+        # NOTE(samalba): After docker 0.10, the tarsum is not used to ensure
         # the image has been transfered correctly.
         logger.debug('put_image_layer: Tarsum is enabled')
         tar = None
@@ -230,9 +230,10 @@ def put_image_layer(image_id):
 @app.route('/v1/images/<image_id>/checksum', methods=['PUT'])
 @toolkit.requires_auth
 def put_image_checksum(image_id):
-    checksum = flask.request.headers.get('X-Docker-Checksum-Payload')
-    if not checksum:
+    if toolkit.DockerVersion() < '0.10':
         checksum = flask.request.headers.get('X-Docker-Checksum')
+    else:
+        checksum = flask.request.headers.get('X-Docker-Checksum-Payload')
     if not checksum:
         return toolkit.api_error('Missing Image\'s checksum')
     if not flask.session.get('checksum'):
