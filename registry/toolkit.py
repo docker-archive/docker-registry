@@ -26,11 +26,11 @@ class DockerVersion(distutils.version.StrictVersion):
     def __init__(self):
         ua = flask.request.headers.get('user-agent', '')
         m = _re_docker_version.search(ua)
-        version = '0.0'
-        if m:
-            version = m.group(1)
-            if '-' in version:
-                version = version.split('-')[0]
+        if not m:
+            raise RuntimeError('toolkit.DockerVersion: cannot parse version')
+        version = m.group(1)
+        if '-' in version:
+            version = version.split('-')[0]
         distutils.version.StrictVersion.__init__(self, version)
 
 
