@@ -298,7 +298,7 @@ sudo python-pip install .
 #### Run it
 
 ```
-gunicorn --access-logfile - --debug -k gevent -b 0.0.0.0:5000 -w 1 wsgi:application
+gunicorn --access-logfile - --debug -k gevent -b 0.0.0.0:5000 -w 1 docker_registry.wsgi:application
 ```
 
 ### How do I setup user accounts?
@@ -315,7 +315,7 @@ You could use for instance supervisord to spawn the registry with 8 workers
 using this command:
 
 ```
-gunicorn -k gevent --max-requests 100 --graceful-timeout 3600 -t 3600 -b localhost:5000 -w 8 wsgi:application
+gunicorn -k gevent --max-requests 100 --graceful-timeout 3600 -t 3600 -b localhost:5000 -w 8 docker_registry.wsgi:application
 ```
 
 Note that when using multiple workers, the secret_key for the Flask session

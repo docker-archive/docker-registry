@@ -29,5 +29,10 @@ setuptools.setup(
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
-    )
+    ),
+    entry_points={
+        'console_scripts': [
+            'docker-registry = docker_registry:run_gunicorn'
+        ]
+    }
 )

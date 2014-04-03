@@ -20,8 +20,8 @@ ADD ./config/boto.cfg /etc/boto.cfg
 
 RUN pip install /docker-registry/
 
-RUN cp --no-clobber /docker-registry/config/config_sample.yml /docker-registry/config/config.yml
+ENV DOCKER_REGISTRY_CONFIG /docker-registry/config/config_sample.yml
 
 EXPOSE 5000
 
-CMD cd /docker-registry && ./setup-configs.sh && exec ./run.sh
+CMD cd /docker-registry && ./setup-configs.sh && exec docker-registry
