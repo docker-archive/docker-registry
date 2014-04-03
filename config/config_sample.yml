@@ -76,12 +76,12 @@ test:
 swift:
     storage: swift
     storage_path: /registry
-    swift_authurl: REPLACEME
-    swift_container: REPLACEME
-    swift_user: REPLACEME
-    swift_password: REPLACEME
-    swift_tenant_name: REPLACEME
-    swift_region_name: REPLACEME
+    swift_authurl: _env:OS_AUTH_URL
+    swift_container: _env:OS_CONTAINER
+    swift_user: _env:OS_USERNAME
+    swift_password: _env:OS_PASSWORD
+    swift_tenant_name: _env:OS_TENANT_NAME
+    swift_region_name: _env:OS_REGION_NAME
 
 # This flavor stores the images in Glance (to integrate with openstack)
 # See also: https://github.com/dotcloud/openstack-docker
