@@ -193,7 +193,7 @@ def put_image_layer(image_id):
             tarsum.append(member, tar)
             tarfilesinfo.append(member)
         layers.set_image_files_cache(image_id, tarfilesinfo.json())
-    except (IOError, tarfile.TarError) as e:
+    except (IOError, tarfile.TarError, UnicodeDecodeError) as e:
         logger.debug('put_image_layer: Error when reading Tar stream tarsum. '
                      'Disabling TarSum, TarFilesInfo. Error: {0}'.format(e))
     finally:
