@@ -31,7 +31,8 @@ def ping():
 
 @app.route('/')
 def root():
-    return toolkit.response('docker-registry server ({0}) (v{1})'.format(cfg.flavor, VERSION))
+    return toolkit.response('docker-registry server ({0}) (v{1})'
+                            .format(cfg.flavor, VERSION))
 
 
 @app.after_request
