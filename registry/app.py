@@ -18,7 +18,7 @@ app = flask.Flask('docker-registry')
 cfg = config.load()
 loglevel = getattr(logging, cfg.get('loglevel', 'INFO').upper())
 logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
-                    level=loglevel)
+    level=loglevel)
 
 
 @app.route('/_ping')
@@ -31,7 +31,7 @@ def ping():
 
 @app.route('/')
 def root():
-    return toolkit.response('docker-registry server ({0})'.format(cfg.flavor))
+    return toolkit.response('docker-registry server ({0}) (v{1})'.format(cfg.flavor, VERSION))
 
 
 @app.after_request
@@ -61,23 +61,23 @@ def init():
             toaddrs=[info['to_addr']],
             subject='Docker registry exception',
             credentials=(info['smtp_login'],
-                         info['smtp_password']),
+            info['smtp_password']),
             secure=secure_args)
         mail_handler.setLevel(logging.ERROR)
         app.logger.addHandler(mail_handler)
-    # Configure bugsnag
+        # Configure bugsnag
     info = cfg.bugsnag
     if info:
         if not bugsnag:
             raise _bugsnag_import_error
         root_path = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                 '..'))
+            '..'))
         bugsnag.configure(api_key=info,
-                          project_root=root_path,
-                          release_stage=cfg.flavor,
-                          notify_release_stages=[cfg.flavor],
-                          app_version=VERSION
-                          )
+            project_root=root_path,
+            release_stage=cfg.flavor,
+            notify_release_stages=[cfg.flavor],
+            app_version=VERSION
+        )
         bugsnag.flask.handle_exceptions(app)
 
 
