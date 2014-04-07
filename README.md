@@ -169,6 +169,41 @@ dev:
   elliptics_loglevel: debug
 ```
 
+### Google Cloud Storage options
+These options configure your [Google Cloud Storage](https://cloud.google.com/products/cloud-storage/) storage.
+These are used when `storage` is set to `gcs`.
+
+1. `boto_bucket`: string, the bucket name
+1. `storage_path`: string, the sub "folder" where image data will be stored.
+1. `oauth2`: boolean, true to enable [OAuth2.0](https://developers.google.com/accounts/docs/OAuth2)
+
+Example:
+```yaml
+dev:
+  boto_bucket: "_env:GCS_BUCKET"
+  storage: gcs
+  storage_path: "_env:STORAGE_PATH:/"
+  oauth2: true
+```
+
+You can also use [developer keys](https://developers.google.com/storage/docs/reference/v1/getting-startedv1#keys) for (if `oauth2` is unset or set to false) instead
+of using [OAuth2.0](https://developers.google.com/accounts/docs/OAuth2). Options to configure then:
+
+1. `gs_access_key`: string, GCS access key
+1. `gs_secret_key`: string, GCS secret key
+1. `gs_secure`: boolean, true for HTTPS to GCS
+
+Example:
+```yaml
+dev:
+  boto_bucket: "_env:GCS_BUCKET"
+  storage: gcs
+  storage_path: "_env:STORAGE_PATH:/"
+  gs_access_key: GOOGTS7C7FUP3AIRVJTE
+  gs_secret_key: bGoa+V7g/yqDXvKRqq+JTFn4uQZbPiQJo4pf9RzJ
+  gs_secure: false
+```
+
 ### Email options
 
 Settings these options makes the Registry send an email on each code Exception:
