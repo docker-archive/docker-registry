@@ -14,6 +14,18 @@ class TestCase(unittest.TestCase):
         unittest.TestCase.__init__(self, *args, **kwargs)
         registry.app.testing = True
         self.http_client = registry.app.test_client()
+        # Override the method so we can set headers for every single call
+        orig_open = self.http_client.open
+
+        def _open(*args, **kwargs):
+            if 'headers' not in kwargs:
+                kwargs['headers'] = {}
+            if 'User-Agent' not in kwargs['headers']:
+                ua = ('docker/0.0 go/go1.2.1 git-commit/3600720 '
+                      'kernel/3.8.0-19-generic os/linux arch/amd64')
+                kwargs['headers']['User-Agent'] = ua
+            return orig_open(*args, **kwargs)
+        self.http_client.open = _open
 
     def gen_random_string(self, length=16):
         return ''.join([random.choice(string.ascii_uppercase + string.digits)

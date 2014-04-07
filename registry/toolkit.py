@@ -1,4 +1,5 @@
 import base64
+import distutils.version
 import functools
 import logging
 import random
@@ -16,6 +17,21 @@ import storage
 
 
 logger = logging.getLogger(__name__)
+_re_docker_version = re.compile('docker/([^\s]+)')
+_re_authorization = re.compile(r'(\w+)[:=][\s"]?([^",]+)"?')
+
+
+class DockerVersion(distutils.version.StrictVersion):
+
+    def __init__(self):
+        ua = flask.request.headers.get('user-agent', '')
+        m = _re_docker_version.search(ua)
+        if not m:
+            raise RuntimeError('toolkit.DockerVersion: cannot parse version')
+        version = m.group(1)
+        if '-' in version:
+            version = version.split('-')[0]
+        distutils.version.StrictVersion.__init__(self, version)
 
 
 class SocketReader(object):
@@ -70,7 +86,7 @@ def response(data=None, code=200, headers=None, raw=False):
         h.update(headers)
     try:
         if raw is False:
-            data = json.dumps(data, indent=4, sort_keys=True, skipkeys=True)
+            data = json.dumps(data, sort_keys=True, skipkeys=True)
     except TypeError:
         data = str(data)
     return flask.current_app.make_response((data, code, h))
@@ -134,9 +150,6 @@ def is_ssl():
     return False
 
 
-_auth_exp = re.compile(r'(\w+)[:=][\s"]?([^",]+)"?')
-
-
 def check_token(args):
     cfg = config.load()
     if cfg.disable_token_auth is True or cfg.standalone is not False:
@@ -147,7 +160,7 @@ def check_token(args):
         return False
     logger.debug('args = {0}'.format(args))
     logger.debug('Auth Token = {0}'.format(auth))
-    auth = dict(_auth_exp.findall(auth))
+    auth = dict(_re_authorization.findall(auth))
     logger.debug('auth = {0}'.format(auth))
     if not auth:
         return False
@@ -255,7 +268,7 @@ def get_repository():
     auth = flask.request.headers.get('authorization', '')
     if not auth:
         return
-    auth = dict(_auth_exp.findall(auth))
+    auth = dict(_re_authorization.findall(auth))
     repository = auth.get('repository')
     if repository is None:
         return ('', '')

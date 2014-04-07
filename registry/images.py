@@ -7,6 +7,7 @@ import time
 import flask
 import simplejson as json
 
+import cache
 import checksums
 import mirroring
 import storage
@@ -174,36 +175,40 @@ def put_image_layer(image_id):
         # encoding (Gunicorn)
         input_stream = flask.request.environ['wsgi.input']
     # compute checksums
+    csums = []
     sr = toolkit.SocketReader(input_stream)
-    tmp, store_hndlr = storage.temp_store_handler()
-    sr.add_handler(store_hndlr)
+    if toolkit.DockerVersion() < '0.10':
+        tmp, store_hndlr = storage.temp_store_handler()
+        sr.add_handler(store_hndlr)
     h, sum_hndlr = checksums.simple_checksum_handler(json_data)
     sr.add_handler(sum_hndlr)
     store.stream_write(layer_path, sr)
-
-    # Read tar data from the tempfile
-    csums = []
-    tar = None
-    tarsum = checksums.TarSum(json_data)
-    try:
-        tmp.seek(0)
-        tar = tarfile.open(mode='r|*', fileobj=tmp)
-        tarfilesinfo = layers.TarFilesInfo()
-        for member in tar:
-            tarsum.append(member, tar)
-            tarfilesinfo.append(member)
-        layers.set_image_files_cache(image_id, tarfilesinfo.json())
-    except (IOError, tarfile.TarError, UnicodeDecodeError) as e:
-        logger.debug('put_image_layer: Error when reading Tar stream tarsum. '
-                     'Disabling TarSum, TarFilesInfo. Error: {0}'.format(e))
-    finally:
-        if tar:
-            tar.close()
-        tmp.close()
-
-    # All data have been consumed from the tempfile
     csums.append('sha256:{0}'.format(h.hexdigest()))
-    csums.append(tarsum.compute())
+
+    if toolkit.DockerVersion() < '0.10':
+        # NOTE(samalba): After docker 0.10, the tarsum is not used to ensure
+        # the image has been transfered correctly.
+        logger.debug('put_image_layer: Tarsum is enabled')
+        tar = None
+        tarsum = checksums.TarSum(json_data)
+        try:
+            tmp.seek(0)
+            tar = tarfile.open(mode='r|*', fileobj=tmp)
+            tarfilesinfo = layers.TarFilesInfo()
+            for member in tar:
+                tarsum.append(member, tar)
+                tarfilesinfo.append(member)
+            layers.set_image_files_cache(image_id, tarfilesinfo.json())
+        except (IOError, tarfile.TarError) as e:
+            logger.debug('put_image_layer: Error when reading Tar stream '
+                         'tarsum. Disabling TarSum, TarFilesInfo. '
+                         'Error: {0}'.format(e))
+        finally:
+            if tar:
+                tar.close()
+            # All data have been consumed from the tempfile
+            csums.append(tarsum.compute())
+            tmp.close()
 
     try:
         checksum = store.get_content(store.image_checksum_path(image_id))
@@ -225,7 +230,10 @@ def put_image_layer(image_id):
 @app.route('/v1/images/<image_id>/checksum', methods=['PUT'])
 @toolkit.requires_auth
 def put_image_checksum(image_id):
-    checksum = flask.request.headers.get('X-Docker-Checksum')
+    if toolkit.DockerVersion() < '0.10':
+        checksum = flask.request.headers.get('X-Docker-Checksum')
+    else:
+        checksum = flask.request.headers.get('X-Docker-Checksum-Payload')
     if not checksum:
         return toolkit.api_error('Missing Image\'s checksum')
     if not flask.session.get('checksum'):
@@ -239,10 +247,15 @@ def put_image_checksum(image_id):
     if err:
         return toolkit.api_error(err)
     if checksum not in flask.session.get('checksum', []):
-        logger.debug('put_image_checksum: Wrong checksum')
+        logger.debug('put_image_checksum: Wrong checksum. '
+                     'Provided: {0}; Expected: {1}'.format(
+                         checksum, flask.session.get('checksum')))
         return toolkit.api_error('Checksum mismatch')
     # Checksum is ok, we remove the marker
     store.remove(mark_path)
+    # We trigger a task on the diff worker if it's running
+    if cache.redis_conn:
+        layers.diff_queue.push(image_id)
     return toolkit.response()
 
 
@@ -403,6 +416,8 @@ def get_image_files(image_id, headers):
 @set_cache_headers
 def get_image_diff(image_id, headers):
     try:
+        if not cache.redis_conn:
+            return toolkit.api_error('Diff queue is disabled', 400)
         repository = toolkit.get_repository()
         if repository and store.is_private(*repository):
             return toolkit.api_error('Image not found', 404)
