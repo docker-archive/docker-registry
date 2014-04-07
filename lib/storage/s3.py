@@ -21,11 +21,18 @@ class S3Storage(BotoStorage):
     def __init__(self, config):
         BotoStorage.__init__(self, config)
 
+    def _build_connection_params(self):
+        kwargs = BotoStorage._build_connection_params(self)
+        if self._config.s3_secure is not None:
+            kwargs['is_secure'] = (self._config.s3_secure is True)
+        return kwargs
+
     def makeConnection(self):
+        kwargs = self._build_connection_params()
         return boto.s3.connection.S3Connection(
             self._config.s3_access_key,
             self._config.s3_secret_key,
-            is_secure=(self._config.s3_secure is True))
+            **kwargs)
 
     def makeKey(self, path):
         return boto.s3.key.Key(self._boto_bucket, path)
