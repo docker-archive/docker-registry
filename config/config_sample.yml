@@ -20,15 +20,13 @@ common:
     gs_secure: REPLACEME
 
     # OAuth 2.0 authentication with the storage.
-    # Supported for Google Cloud Storage only. Requires gcloud util for
-    # oauth2_plugin and getting credentials to be installed.
-    # See: https://developers.google.com/cloud/sdk/.
+    # Supported for Google Cloud Storage only.
     # oauth2 can be set to true or false. If it is set to true, gs_access_key,
     # gs_secret_key and gs_secure are not needed.
+    # Client ID and Client Secret must be set into OAUTH2_CLIENT_ID and
+    # OAUTH2_CLIENT_SECRET environment variables.
+    # See: https://developers.google.com/accounts/docs/OAuth2.
     oauth2: REPLACEME
-    # A path to where Google Cloud SDK is installed.
-    # If not set default value '/google-cloud-sdk/' is used.
-    cloud_sdk_path: REPLACEME
 
     # Let gunicorn set this environment variable or set a random string here
     secret_key: _env:SECRET_KEY
