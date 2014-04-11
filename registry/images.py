@@ -58,6 +58,7 @@ def _get_image_layer(image_id, headers=None, bytes_range=None):
     if headers is None:
         headers = {}
 
+    headers['Content-Type'] = 'application/octet-stream'
     accel_uri_prefix = cfg.nginx_x_accel_redirect
     path = store.image_layer_path(image_id)
     if accel_uri_prefix:
@@ -71,11 +72,29 @@ def _get_image_layer(image_id, headers=None, bytes_range=None):
             logger.warn('nginx_x_accel_redirect config set,'
                         ' but storage is not LocalStorage')
     status = None
-    if bytes_range:
-        status = 206
-        headers['Content-Range'] = '{0}-{1}/*'.format(*bytes_range)
+    layer_size = 0
+
     if not store.exists(path):
         raise IOError("Image layer absent from store")
+    try:
+        layer_size = store.get_size(store.image_layer_path(image_id))
+    except OSError:
+        pass
+    if bytes_range and bytes_range[1] == -1 and not layer_size == 0:
+        bytes_range = (bytes_range[0], layer_size)
+
+    if bytes_range:
+        content_length = bytes_range[1] - bytes_range[0]
+        if not _valid_bytes_range(bytes_range):
+            return flask.Response(status=416, headers=headers)
+        status = 206
+        content_range = (bytes_range[0], bytes_range[1], layer_size)
+        headers['Content-Range'] = '{0}-{1}/{2}'.format(*content_range)
+        headers['Content-Length'] = content_length
+    elif layer_size > 0:
+        headers['Content-Length'] = layer_size
+    else:
+        return flask.Response(status=416, headers=headers)
     return flask.Response(store.stream_read(path, bytes_range),
                           headers=headers, status=status)
 
@@ -106,13 +125,27 @@ def _parse_bytes_range():
         logger.debug(log_msg)
         return
     bytes_range = range_header[6:].split('-')
-    if len(bytes_range) != 2:
+    if len(bytes_range) != 2 and not range_header[-1] == '-':
         logger.debug(log_msg)
         return
+    if len(bytes_range) == 1 or bytes_range[1] == '':
+        bytes_range = (bytes_range[0], -1)
+        try:
+            return (int(bytes_range[0]), -1)
+        except ValueError:
+            logger.debug(log_msg)
     try:
         return (int(bytes_range[0]), int(bytes_range[1]))
     except ValueError:
         logger.debug(log_msg)
+
+
+def _valid_bytes_range(bytes_range):
+    if bytes_range[0] < 0 or bytes_range[1] < 1:
+        return False
+    if bytes_range[1] - bytes_range[0] < 0:
+        return False
+    return True
 
 
 @app.route('/v1/private_images/<image_id>/layer', methods=['GET'])
