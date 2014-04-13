@@ -141,9 +141,11 @@ def _parse_bytes_range():
 
 
 def _valid_bytes_range(bytes_range):
+    if bytes_range[1] < bytes_range[0]:
+        return False
     if bytes_range[0] < 0 or bytes_range[1] < 1:
         return False
-    if bytes_range[1] - bytes_range[0] < 0:
+    if bytes_range[1] - bytes_range[0] < 1:
         return False
     return True
 
