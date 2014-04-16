@@ -36,8 +36,8 @@ environment: `export SETTINGS_FLAVOR=dev`
 The default environment is `dev`.
 
 NOTE: it's possible to load environment variables from the config file
-with a simple syntax: _env:VARIABLENAME. Check this syntax in action
-in the example below...
+with a simple syntax: `_env:VARIABLENAME[:DEFAULT]`. Check this syntax
+in action in the example below...
 
 
 #### Example config
@@ -46,6 +46,9 @@ in the example below...
 
 common:
     loglevel: info
+    search_backend: "_env:SEARCH_BACKEND:"
+    sqlalchemy_index_database:
+        "_env:SQLALCHEMY_INDEX_DATABASE:sqlite:////tmp/docker-registry.db"
 
 prod:
     loglevel: warn
@@ -207,6 +210,36 @@ dev:
   gs_secret_key: bGoa+V7g/yqDXvKRqq+JTFn4uQZbPiQJo4pf9RzJ
   gs_secure: false
 ```
+
+### Search-engine options
+
+The Docker Registry can optionally index repository information in a
+database for the `GET /v1/search` [endpoint][search-endpoint].  You
+can configure the backend with a configuration like:
+
+```yaml
+search_backend: "_env:SEARCH_BACKEND:"
+```
+
+The `search_backend` setting selects the search backend to use.  If
+`search_backend` is empty, no index is built, and the search endpoint
+always returns empty results.  Currently supported backends and their
+backend-specific configuration options are:
+
+* `sqlalchemy': Use [SQLAlchemy][].
+    * The backing database is selected with
+      `sqlalchemy_index_database`, which is passed through to
+      [create_engine][].
+
+If `search_backend` is neither empty nor one of the above backends, it
+should point to a module:
+
+```yaml
+search_backend: foo.registry.index.xapian
+```
+
+In this case, the module is imported, and an instance of it's `Index`
+class is used as the search backend.
 
 ### Email options
 
@@ -408,3 +441,9 @@ pip install tox
 cd docker-registry/
 tox
 ```
+
+[search-endpoint]:
+  http://docs.docker.io/en/latest/reference/api/index_api/#get--v1-search
+[SQLAlchemy]: http://docs.sqlalchemy.org/
+[create_engine]:
+  http://docs.sqlalchemy.org/en/latest/core/engines.html#sqlalchemy.create_engine

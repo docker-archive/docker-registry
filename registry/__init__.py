@@ -4,6 +4,7 @@
 from .app import app
 from .tags import *
 from .images import *
+from . import search as search
 from .status import *
 
 import config
