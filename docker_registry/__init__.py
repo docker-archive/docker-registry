@@ -36,9 +36,10 @@ GUNiCORN_SILENT_TIMEOUT: timeout in seconds for restarting silent workers
 
 def run_gunicorn():
     """
-    Exec gunicorn with our wsgi app, taking settings from environment
-    variables as listed in the help text. This is intended to be called as a
-    console_script entry point.
+    Exec gunicorn with our wsgi app.
+
+    Settings are taken from environment variables as listed in the help text.
+    This is intended to be called as a console_script entry point.
     """
 
     # this only exists to provide help/usage text

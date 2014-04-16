@@ -12,7 +12,7 @@ req_path = os.path.join(_abs_dir, 'requirements.txt')
 requirements = open(req_path).read()
 
 setuptools.setup(
-    name='docker_registry',
+    name='docker-registry',
     # TODO: Load the version programatically, which is currently available in
     #       docker_registry.app. This is not possible yet because importing
     #       causes config files to be loaded
