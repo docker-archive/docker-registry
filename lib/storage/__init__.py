@@ -94,6 +94,17 @@ class Storage(object):
     def stream_read(self, path, bytes_range=None):
         raise NotImplementedError
 
+    def content_redirect_url(self, path):
+        """Get a URL for content at path
+
+        Get a URL to which client can be redirected to get the content from
+        the path. Return None if not supported by this engine.
+
+        Note, this feature will only be used if the `storage_redirect`
+        configuration key is set to `True`.
+        """
+        return None
+
     def stream_write(self, path, fp):
         raise NotImplementedError
 

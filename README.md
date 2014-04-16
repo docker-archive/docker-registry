@@ -104,6 +104,9 @@ Available configuration options
    *non*-Amazon S3-compliant object store, in one of the boto config files'
    `[Credentials]` section, set `boto_host`, `boto_port` as appropriate for the
    service you are using.
+1. `storage_redirect`: Redirect resource requested if storage engine supports
+   this, e.g. S3 will redirect signed URLs, this can be used to offload the
+   server.
 
 ### Authentication options
 
@@ -127,6 +130,7 @@ to `s3`.
 1. `s3_access_key`: string, S3 access key
 1. `s3_secret_key`: string, S3 secret key
 1. `s3_bucket`: string, S3 bucket name
+1. `s3_region`: S3 region where the bucket is located
 1. `s3_encrypt`: boolean, if true, the container will be encrypted on the
       server-side by S3 and will be stored in an encrypted form while at rest
       in S3.
@@ -305,7 +309,7 @@ is already taken, find out which container is already using it by running "docke
 Install the system requirements for building a Python library:
 
 ```
-sudo apt-get install build-essential python-dev libevent-dev python-pip libssl-dev liblzma-dev
+sudo apt-get install build-essential python-dev libevent-dev python-pip libssl-dev liblzma-dev libffi-dev
 ```
 
 Then install the Registry app:

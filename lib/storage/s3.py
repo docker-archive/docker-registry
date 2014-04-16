@@ -5,6 +5,7 @@ gevent.monkey.patch_all()
 import cStringIO as StringIO
 import logging
 
+import boto.s3
 import boto.s3.connection
 import boto.s3.key
 
@@ -29,6 +30,14 @@ class S3Storage(BotoStorage):
 
     def makeConnection(self):
         kwargs = self._build_connection_params()
+        if self._config.s3_region is not None:
+            return boto.s3.connect_to_region(
+                region_name=self._config.s3_region,
+                aws_access_key_id=self._config.s3_access_key,
+                aws_secret_access_key=self._config.s3_secret_key,
+                **kwargs)
+        logger.warn("No S3 region specified, using boto default region, " +
+                    "this may affect performance and stability.")
         return boto.s3.connection.S3Connection(
             self._config.s3_access_key,
             self._config.s3_secret_key,
@@ -66,3 +75,13 @@ class S3Storage(BotoStorage):
         except IOError:
             pass
         mp.complete_upload()
+
+    def content_redirect_url(self, path):
+        path = self._init_path(path)
+        key = self.makeKey(path)
+        if not key.exists():
+            raise IOError('No such key: \'{0}\''.format(path))
+        return key.generate_url(
+            expires_in=1200,
+            method='GET',
+            query_auth=True)
