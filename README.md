@@ -155,6 +155,7 @@ to `elliptics`.
 1. `elliptics_groups`: Elliptics groups registry should use
 1. `elliptics_verbosity`: Elliptics logger verbosity (0...4)
 1. `elliptics_logfile`: path to Elliptics logfile (default: `dev/stderr`)
+1. `elliptics_addr_family`: address family to use when adding Elliptics remotes (default: `2` (for ipv4)). Use 10 for ipv6 remotes on Linux.
 
 Example:
 ```yaml

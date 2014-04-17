@@ -55,7 +55,7 @@ class EllipticsStorage(Storage):
         at_least_one = False
         for host, port in config.get('elliptics_nodes').iteritems():
             try:
-                self._elliptics_node.add_remote(host, port)
+                self._elliptics_node.add_remote(host, port, config.get('elliptics_addr_family', 2))
                 at_least_one = True
             except Exception as err:
                 logger.error("Failed to add remote %s:%d %s", host, port, err)
