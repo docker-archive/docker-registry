@@ -1,7 +1,7 @@
 import flask
 
-import config
-import lib.index as index
+from .lib import config
+from .lib import index
 
 from . import toolkit
 from .app import app

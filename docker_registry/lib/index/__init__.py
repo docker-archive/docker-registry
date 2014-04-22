@@ -2,9 +2,9 @@
 """
 
 import importlib
-import signals
 
-import config
+from .. import config
+from .. import signals
 
 
 __all__ = ['load']

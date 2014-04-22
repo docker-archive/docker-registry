@@ -18,6 +18,7 @@ from .tags import *
 from .images import *
 from .lib import config
 from .status import *
+from .search import *
 
 cfg = config.load()
 if cfg.standalone is not False:

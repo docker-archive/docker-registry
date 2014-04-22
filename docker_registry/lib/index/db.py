@@ -7,9 +7,8 @@ import sqlalchemy.ext.declarative
 import sqlalchemy.orm
 import sqlalchemy.sql.functions
 
-import config
-import storage
-
+from ... import storage
+from .. import config
 from . import Index
 
 
@@ -97,9 +96,11 @@ class SQLAlchemyIndex (Index):
         description = ''  # TODO(wking): store descriptions
         session = self._session()
         session.query(Repository).filter(
-            Repository.name == name).update(
-                values={'description': description},
-                synchronize_session=False)
+            Repository.name == name
+        ).update(
+            values={'description': description},
+            synchronize_session=False
+        )
         session.commit()
         session.close()
 
