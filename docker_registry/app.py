@@ -9,8 +9,8 @@ except ImportError as e:
     bugsnag = None
 import flask
 
-import config
-import toolkit
+from . import toolkit
+from .lib import config
 
 
 VERSION = '0.6.8'

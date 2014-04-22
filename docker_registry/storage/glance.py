@@ -5,8 +5,7 @@ import flask
 import glanceclient
 from keystoneclient.v2_0 import client as keystoneclient
 
-import signals
-
+from ..lib import signals
 from . import Storage
 from .local import LocalStorage
 from .s3 import S3Storage

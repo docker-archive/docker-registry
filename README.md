@@ -349,7 +349,7 @@ sudo apt-get install build-essential python-dev libevent-dev python-pip libssl-d
 Then install the Registry app:
 
 ```
-sudo pip install -r requirements.txt
+sudo pip install .
 ```
 
 #### On Red Hat-based systems:
@@ -365,13 +365,13 @@ should not require the additional repositories.
 Then install the Registry app:
 
 ```
-sudo python-pip install -r requirements.txt
+sudo python-pip install .
 ```
 
 #### Run it
 
 ```
-gunicorn --access-logfile - --debug -k gevent -b 0.0.0.0:5000 -w 1 wsgi:application
+gunicorn --access-logfile - --debug -k gevent -b 0.0.0.0:5000 -w 1 docker_registry.wsgi:application
 ```
 
 ### How do I setup user accounts?
@@ -388,7 +388,7 @@ You could use for instance supervisord to spawn the registry with 8 workers
 using this command:
 
 ```
-gunicorn -k gevent --max-requests 100 --graceful-timeout 3600 -t 3600 -b localhost:5000 -w 8 wsgi:application
+gunicorn -k gevent --max-requests 100 --graceful-timeout 3600 -t 3600 -b localhost:5000 -w 8 docker_registry.wsgi:application
 ```
 
 Note that when using multiple workers, the secret_key for the Flask session

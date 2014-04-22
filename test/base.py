@@ -3,17 +3,18 @@ import cStringIO as StringIO
 import hashlib
 import json
 import random
-import registry
 import string
 import unittest
+
+import docker_registry
 
 
 class TestCase(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         unittest.TestCase.__init__(self, *args, **kwargs)
-        registry.app.testing = True
-        self.http_client = registry.app.test_client()
+        docker_registry.app.testing = True
+        self.http_client = docker_registry.app.test_client()
         # Override the method so we can set headers for every single call
         orig_open = self.http_client.open
 

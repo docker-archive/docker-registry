@@ -3,10 +3,10 @@ import functools
 import logging
 import requests
 
-import cache
-import config
-import registry.toolkit as toolkit
-import storage
+from .. import storage
+from .. import toolkit
+from . import cache
+from . import config
 
 
 DEFAULT_CACHE_TAGS_TTL = 48 * 3600

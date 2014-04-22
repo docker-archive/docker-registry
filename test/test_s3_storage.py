@@ -1,7 +1,8 @@
-
-import storage
 import StringIO
 import sys
+
+from docker_registry import storage
+
 import test_local_storage
 
 # noqa is issued to allow imports do their monkeypatching as side effect

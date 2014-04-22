@@ -54,7 +54,7 @@ def load():
     data = None
     config_path = os.environ.get('DOCKER_REGISTRY_CONFIG', 'config.yml')
     if not os.path.isabs(config_path):
-        config_path = os.path.join(os.path.dirname(__file__), '..',
+        config_path = os.path.join(os.path.dirname(__file__), '../../',
                                    'config', config_path)
     with open(config_path) as f:
         data = yaml.load(f)

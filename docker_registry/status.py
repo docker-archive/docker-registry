@@ -1,17 +1,16 @@
 __all__ = ['registry_status']
 
+import socket
+import sys
+
 import gevent.monkey
 gevent.monkey.patch_all()
 
-import cache
-import config
-import gevent
-import socket
-import storage
-import sys
-import toolkit
-
+from . import storage
+from . import toolkit
 from .app import app
+from .lib import cache
+from .lib import config
 
 _config = config.load()
 

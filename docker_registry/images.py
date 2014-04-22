@@ -7,17 +7,18 @@ import time
 import flask
 import simplejson as json
 
-import cache
-import checksums
-import mirroring
-import storage
-import toolkit
 
+from . import storage
+from . import toolkit
 from .app import app
 from .app import cfg
-import layers
+from .lib import cache
+from .lib import checksums
+from .lib import layers
+from .lib import mirroring
+from .storage import local
 
-import storage.local
+
 store = storage.load()
 logger = logging.getLogger(__name__)
 
@@ -62,7 +63,7 @@ def _get_image_layer(image_id, headers=None, bytes_range=None):
     accel_uri_prefix = cfg.nginx_x_accel_redirect
     path = store.image_layer_path(image_id)
     if accel_uri_prefix:
-        if isinstance(store, storage.local.LocalStorage):
+        if isinstance(store, local.LocalStorage):
             accel_uri = '/'.join([accel_uri_prefix, path])
             headers['X-Accel-Redirect'] = accel_uri
             logger.debug('send accelerated {0} ({1})'.format(

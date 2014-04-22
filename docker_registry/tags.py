@@ -7,12 +7,11 @@ import time
 import flask
 import simplejson as json
 
-import mirroring
-import signals
-import storage
-import toolkit
-
+from . import storage
+from . import toolkit
 from .app import app
+from .lib import mirroring
+from .lib import signals
 
 
 store = storage.load()

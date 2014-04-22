@@ -2,8 +2,9 @@
 import cStringIO as StringIO
 import random
 
+from docker_registry import storage
+
 import base
-import storage
 
 
 class TestLocalStorage(base.TestCase):

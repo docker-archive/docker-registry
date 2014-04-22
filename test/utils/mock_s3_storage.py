@@ -2,12 +2,13 @@
 '''Monkeypatch S3Storage preventing parallel key stream read in unittesting.
    It is called from lib/storage/s3'''
 
-import storage.s3
-import utils
+from docker_registry.storage import s3
+
+from . import monkeypatch_class
 
 
-class S3Storage(storage.s3.S3Storage):
-    __metaclass__ = utils.monkeypatch_class
+class S3Storage(s3.S3Storage):
+    __metaclass__ = monkeypatch_class
 
     def stream_read(self, path, bytes_range=None):
         path = self._init_path(path)

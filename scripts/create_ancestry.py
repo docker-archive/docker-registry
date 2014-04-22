@@ -1,15 +1,11 @@
 #!/usr/bin/env python
 
 import hashlib
-import os
 import sys
 
 import simplejson as json
 
-root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(os.path.join(root_path, 'lib'))
-
-import storage
+from docker_registry import storage
 
 
 store = storage.load()

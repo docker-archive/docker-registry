@@ -3,18 +3,13 @@
 import argparse
 import logging
 import os
-import sys
 
 import redis
 
-root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(root_path)
-sys.path.append(os.path.join(root_path, 'lib'))
-
-import layers
-import rlock
-import rqueue
-import storage
+from docker_registry.lib import layers
+from docker_registry.lib import rlock
+from docker_registry.lib import rqueue
+from docker_registry import storage
 
 store = storage.load()
 

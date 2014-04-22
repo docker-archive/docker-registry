@@ -1,7 +1,7 @@
 
 import tempfile
 
-import config
+from ..lib import config
 
 
 __all__ = ['load']

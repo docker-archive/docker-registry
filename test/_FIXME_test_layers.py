@@ -7,8 +7,8 @@ import string
 import tarfile
 
 import base
-import layers
-import storage.local
+from docker_registry.lib import layers
+from docker_registry import storage
 
 # from mock import patch
 # from mockredis import mock_strict_redis_client

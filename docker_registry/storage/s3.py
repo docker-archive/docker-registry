@@ -9,9 +9,8 @@ import boto.s3
 import boto.s3.connection
 import boto.s3.key
 
-import cache_lru
-
-from boto_base import BotoStorage
+from ..lib import cache_lru
+from .boto_base import BotoStorage
 
 
 logger = logging.getLogger(__name__)

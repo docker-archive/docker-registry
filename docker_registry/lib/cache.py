@@ -2,7 +2,7 @@ import logging
 
 import redis
 
-import config
+from . import config
 
 
 # Default options

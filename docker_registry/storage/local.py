@@ -2,8 +2,7 @@
 import os
 import shutil
 
-import cache_lru
-
+from ..lib import cache_lru
 from . import Storage
 
 

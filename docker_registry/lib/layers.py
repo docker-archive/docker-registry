@@ -4,9 +4,10 @@ import tempfile
 import backports.lzma as lzma
 import simplejson as json
 
-import cache
-import rqueue
-import storage.local
+from .. import storage
+from . import cache
+from . import rqueue
+
 store = storage.load()
 
 FILE_TYPES = {

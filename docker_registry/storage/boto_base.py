@@ -8,8 +8,7 @@ import math
 import os
 import tempfile
 
-import cache_lru
-
+from ..lib import cache_lru
 from . import Storage
 
 logger = logging.getLogger(__name__)

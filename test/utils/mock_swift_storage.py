@@ -2,12 +2,13 @@
 '''Monkeypatch Openstack Swift Client for testing'''
 
 import swiftclient
-import utils
+
+from . import monkeypatch_class
 
 
 class Connection(swiftclient.client.Connection):
 
-    __metaclass__ = utils.monkeypatch_class
+    __metaclass__ = monkeypatch_class
 
     def __init__(self, authurl=None, user=None, key=None, retries=5,
                  preauthurl=None, preauthtoken=None, snet=False,

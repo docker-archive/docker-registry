@@ -12,8 +12,8 @@ import requests
 import rsa
 import simplejson as json
 
-import config
-import storage
+from . import storage
+from .lib import config
 
 
 logger = logging.getLogger(__name__)

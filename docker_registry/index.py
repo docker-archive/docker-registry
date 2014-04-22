@@ -3,11 +3,11 @@ import logging
 import flask
 import simplejson as json
 
-import config
-import mirroring
-import signals
-import storage
-import toolkit
+from . import storage
+from . import toolkit
+from .lib import config
+from .lib import mirroring
+from .lib import signals
 
 from .app import app
 
