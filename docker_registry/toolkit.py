@@ -105,6 +105,39 @@ def check_session():
     return session.get('auth') is True
 
 
+def validate_parent_access(parent_id):
+    cfg = config.load()
+    if cfg.standalone:
+        return True
+    auth = _parse_auth_header()
+    if not auth:
+        return False
+    full_repos_name = auth.get('repository', '').split('/')
+    if len(full_repos_name) != 2:
+        logger.debug('validate_token: Invalid repository field')
+        return False
+    index_endpoint = cfg.index_endpoint
+    if index_endpoint is None:
+        index_endpoint = 'https://index.docker.io'
+    index_endpoint = index_endpoint.strip('/')
+    url = '{0}/v1/images/{1}/{2}/{3}'.format(
+        index_endpoint, full_repos_name[0], full_repos_name[1], parent_id
+    )
+    headers = {'Authorization': flask.request.headers.get('authorization')}
+    resp = requests.get(url, verify=True, headers=headers)
+    if resp.status_code != 200:
+        logger.debug('validate_parent_access: index returned status {0}'.format(
+            resp.status_code
+        ))
+        return False
+    try:
+        return json.loads(resp.text).get('authorized', False)
+
+    except json.JSONDecodeError:
+        logger.debug('validate_parent_access: Wrong response format')
+        return False
+
+
 def validate_token(auth):
     full_repos_name = auth.get('repository', '').split('/')
     if len(full_repos_name) != 2:
@@ -150,18 +183,23 @@ def is_ssl():
     return False
 
 
+def _parse_auth_header():
+    auth = flask.request.headers.get('authorization', '')
+    if auth.split(' ')[0].lower() != 'token':
+        logger.debug('check_token: Invalid token format')
+        return None
+    logger.debug('Auth Token = {0}'.format(auth))
+    auth = dict(_re_authorization.findall(auth))
+    logger.debug('auth = {0}'.format(auth))
+    return auth
+
+
 def check_token(args):
     cfg = config.load()
     if cfg.disable_token_auth is True or cfg.standalone is not False:
         return True
-    auth = flask.request.headers.get('authorization', '')
-    if auth.split(' ')[0].lower() != 'token':
-        logger.debug('check_token: Invalid token format')
-        return False
     logger.debug('args = {0}'.format(args))
-    logger.debug('Auth Token = {0}'.format(auth))
-    auth = dict(_re_authorization.findall(auth))
-    logger.debug('auth = {0}'.format(auth))
+    auth = _parse_auth_header()
     if not auth:
         return False
     if 'namespace' in args and 'repository' in args:
