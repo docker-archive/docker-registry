@@ -92,19 +92,6 @@ def response(data=None, code=200, headers=None, raw=False):
     return flask.current_app.make_response((data, code, h))
 
 
-def check_session():
-    session = flask.session
-    if not session:
-        logger.debug('check_session: Session is empty')
-        return False
-    if 'from' in session and get_remote_ip() != session['from']:
-        logger.debug('check_session: Wrong source ip address')
-        session.clear()
-        return False
-    # Session is valid
-    return session.get('auth') is True
-
-
 def validate_parent_access(parent_id):
     cfg = config.load()
     if cfg.standalone:
@@ -120,7 +107,7 @@ def validate_parent_access(parent_id):
     if index_endpoint is None:
         index_endpoint = 'https://index.docker.io'
     index_endpoint = index_endpoint.strip('/')
-    url = '{0}/v1/images/{1}/{2}/{3}'.format(
+    url = '{0}/v1/images/{1}/{2}/layer/{3}/access'.format(
         index_endpoint, full_repos_name[0], full_repos_name[1], parent_id
     )
     headers = {'Authorization': flask.request.headers.get('authorization')}
@@ -228,7 +215,6 @@ def check_token(args):
     # Token is valid, we create a session
     session = flask.session
     session['repository'] = auth.get('repository')
-    session['auth'] = True
     if is_ssl() is False:
         # We enforce the IP check only when not using SSL
         session['from'] = get_remote_ip()
@@ -270,9 +256,12 @@ def parse_content_signature(s):
 def requires_auth(f):
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
-        if check_signature() is True or check_session() is True \
-                or check_token(kwargs) is True:
-            return f(*args, **kwargs)
+        session = flask.session
+        if check_signature() is True or check_token(kwargs) is True:
+            if 'from' not in session or session['from'] == get_remote_ip():
+                return f(*args, **kwargs)
+            else:
+                session.clear()
         headers = {'WWW-Authenticate': 'Token'}
         return api_error('Requires authorization', 401, headers)
     return wrapper
