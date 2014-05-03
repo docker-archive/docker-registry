@@ -94,7 +94,7 @@ def response(data=None, code=200, headers=None, raw=False):
 
 def validate_parent_access(parent_id):
     cfg = config.load()
-    if cfg.standalone:
+    if cfg.standalone is not False:
         return True
     auth = _parse_auth_header()
     if not auth:
