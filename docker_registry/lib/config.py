@@ -3,6 +3,9 @@ import os
 import rsa
 import yaml
 
+from .core.exceptions import ConfigError
+from .core.exceptions import FileNotFoundError
+
 
 class Config(object):
 
@@ -56,15 +59,35 @@ def load():
     if not os.path.isabs(config_path):
         config_path = os.path.join(os.path.dirname(__file__), '../../',
                                    'config', config_path)
-    with open(config_path) as f:
+    try:
+        f = open(config_path)
+    except Exception:
+        raise FileNotFoundError(
+            'Heads-up! File is missing: %s' % config_path)
+
+    try:
         data = yaml.load(f)
+    except Exception:
+        raise ConfigError(
+            'Config file (%s) is not valid yaml' % config_path)
+
     config = data.get('common', {})
     flavor = os.environ.get('SETTINGS_FLAVOR', 'dev')
     config.update(data.get(flavor, {}))
     config['flavor'] = flavor
     config = convert_env_vars(config)
     if 'privileged_key' in config:
-        with open(config['privileged_key']) as f:
+        try:
+            f = open(config['privileged_key'])
+        except Exception:
+            raise FileNotFoundError(
+                'Heads-up! File is missing: %s' % config['privileged_key'])
+
+        try:
             config['privileged_key'] = rsa.PublicKey.load_pkcs1(f.read())
+        except Exception:
+            raise ConfigError(
+                'Key at %s is not a valid RSA key' % config['privileged_key'])
+
     _config = Config(config)
     return _config
