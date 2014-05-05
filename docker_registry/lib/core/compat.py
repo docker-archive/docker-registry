@@ -80,7 +80,7 @@ if is_py2:
 
 elif is_py3:
     logger.debug("This is python3")
-    from urllib.parse import quote_plus # noqa
+    from urllib.parse import quote_plus  # noqa
 
     builtin_str = str
     str = str
