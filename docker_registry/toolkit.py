@@ -113,7 +113,7 @@ def validate_parent_access(parent_id):
     headers = {'Authorization': flask.request.headers.get('authorization')}
     resp = requests.get(url, verify=True, headers=headers)
     if resp.status_code != 200:
-        logger.debug('validate_parent_access: index returned status {0}'.format(
+        logger.debug('validate_parent_access: index returns status {0}'.format(
             resp.status_code
         ))
         return False
