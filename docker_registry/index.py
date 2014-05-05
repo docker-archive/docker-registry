@@ -1,6 +1,7 @@
 import logging
 
 import flask
+import flask_cors
 import simplejson as json
 
 from . import storage
@@ -106,6 +107,7 @@ def put_repository(namespace, repository, images=False):
 
 
 @app.route('/v1/repositories/<path:repository>/images', methods=['GET'])
+@flask_cors.cross_origin(methods=['GET'])  # allow all origins (*)
 @toolkit.parse_repository_name
 @toolkit.requires_auth
 @mirroring.source_lookup(index_route=True)
