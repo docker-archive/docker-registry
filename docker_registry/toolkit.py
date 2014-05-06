@@ -260,8 +260,7 @@ def requires_auth(f):
         if check_signature() is True or check_token(kwargs) is True:
             if 'from' not in session or session['from'] == get_remote_ip():
                 return f(*args, **kwargs)
-            else:
-                session.clear()
+        session.clear()
         headers = {'WWW-Authenticate': 'Token'}
         return api_error('Requires authorization', 401, headers)
     return wrapper
