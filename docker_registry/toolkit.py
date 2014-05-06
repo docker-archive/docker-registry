@@ -118,7 +118,7 @@ def validate_parent_access(parent_id):
         ))
         return False
     try:
-        return json.loads(resp.text).get('authorized', False)
+        return json.loads(resp.text).get('access', False)
 
     except json.JSONDecodeError:
         logger.debug('validate_parent_access: Wrong response format')
