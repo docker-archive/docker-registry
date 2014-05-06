@@ -92,17 +92,37 @@ def response(data=None, code=200, headers=None, raw=False):
     return flask.current_app.make_response((data, code, h))
 
 
-def check_session():
-    session = flask.session
-    if not session:
-        logger.debug('check_session: Session is empty')
+def validate_parent_access(parent_id):
+    cfg = config.load()
+    if cfg.standalone is not False:
+        return True
+    auth = _parse_auth_header()
+    if not auth:
         return False
-    if 'from' in session and get_remote_ip() != session['from']:
-        logger.debug('check_session: Wrong source ip address')
-        session.clear()
+    full_repos_name = auth.get('repository', '').split('/')
+    if len(full_repos_name) != 2:
+        logger.debug('validate_token: Invalid repository field')
         return False
-    # Session is valid
-    return session.get('auth') is True
+    index_endpoint = cfg.index_endpoint
+    if index_endpoint is None:
+        index_endpoint = 'https://index.docker.io'
+    index_endpoint = index_endpoint.strip('/')
+    url = '{0}/v1/images/{1}/{2}/layer/{3}/access'.format(
+        index_endpoint, full_repos_name[0], full_repos_name[1], parent_id
+    )
+    headers = {'Authorization': flask.request.headers.get('authorization')}
+    resp = requests.get(url, verify=True, headers=headers)
+    if resp.status_code != 200:
+        logger.debug('validate_parent_access: index returns status {0}'.format(
+            resp.status_code
+        ))
+        return False
+    try:
+        return json.loads(resp.text).get('authorized', False)
+
+    except json.JSONDecodeError:
+        logger.debug('validate_parent_access: Wrong response format')
+        return False
 
 
 def validate_token(auth):
@@ -150,18 +170,23 @@ def is_ssl():
     return False
 
 
+def _parse_auth_header():
+    auth = flask.request.headers.get('authorization', '')
+    if auth.split(' ')[0].lower() != 'token':
+        logger.debug('check_token: Invalid token format')
+        return None
+    logger.debug('Auth Token = {0}'.format(auth))
+    auth = dict(_re_authorization.findall(auth))
+    logger.debug('auth = {0}'.format(auth))
+    return auth
+
+
 def check_token(args):
     cfg = config.load()
     if cfg.disable_token_auth is True or cfg.standalone is not False:
         return True
-    auth = flask.request.headers.get('authorization', '')
-    if auth.split(' ')[0].lower() != 'token':
-        logger.debug('check_token: Invalid token format')
-        return False
     logger.debug('args = {0}'.format(args))
-    logger.debug('Auth Token = {0}'.format(auth))
-    auth = dict(_re_authorization.findall(auth))
-    logger.debug('auth = {0}'.format(auth))
+    auth = _parse_auth_header()
     if not auth:
         return False
     if 'namespace' in args and 'repository' in args:
@@ -190,7 +215,6 @@ def check_token(args):
     # Token is valid, we create a session
     session = flask.session
     session['repository'] = auth.get('repository')
-    session['auth'] = True
     if is_ssl() is False:
         # We enforce the IP check only when not using SSL
         session['from'] = get_remote_ip()
@@ -232,9 +256,11 @@ def parse_content_signature(s):
 def requires_auth(f):
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
-        if check_signature() is True or check_session() is True \
-                or check_token(kwargs) is True:
-            return f(*args, **kwargs)
+        session = flask.session
+        if check_signature() is True or check_token(kwargs) is True:
+            if 'from' not in session or session['from'] == get_remote_ip():
+                return f(*args, **kwargs)
+        session.clear()
         headers = {'WWW-Authenticate': 'Token'}
         return api_error('Requires authorization', 401, headers)
     return wrapper
