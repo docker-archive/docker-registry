@@ -101,27 +101,27 @@ def validate_parent_access(parent_id):
         return False
     full_repos_name = auth.get('repository', '').split('/')
     if len(full_repos_name) != 2:
-        logger.debug('validate_token: Invalid repository field')
+        logger.debug('validate_parent: Invalid repository field')
         return False
     index_endpoint = cfg.index_endpoint
     if index_endpoint is None:
         index_endpoint = 'https://index.docker.io'
     index_endpoint = index_endpoint.strip('/')
-    url = '{0}/v1/images/{1}/{2}/layer/{3}/access'.format(
+    url = '{0}/v1/repositories/{1}/{2}/layer/{3}/access'.format(
         index_endpoint, full_repos_name[0], full_repos_name[1], parent_id
     )
     headers = {'Authorization': flask.request.headers.get('authorization')}
     resp = requests.get(url, verify=True, headers=headers)
     if resp.status_code != 200:
-        logger.debug('validate_parent_access: index returns status {0}'.format(
+        logger.debug('validate_parent: index returns status {0}'.format(
             resp.status_code
         ))
         return False
     try:
+        logger.debug('validate_parent: Content: {0}'.format(resp.text))
         return json.loads(resp.text).get('access', False)
-
     except json.JSONDecodeError:
-        logger.debug('validate_parent_access: Wrong response format')
+        logger.debug('validate_parent: Wrong response format')
         return False
 
 
