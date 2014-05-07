@@ -354,8 +354,9 @@ sudo pip install .
 
 #### On Red Hat-based systems:
 
+Install the required dependencies:
 ```
-sudo yum install python-devel libevent-devel python-pip openssl-devel
+sudo yum install python-devel libevent-devel python-pip openssl-devel libffi-devel gcc xz-devel
 ```
 
 NOTE: On RHEL and CentOS you will need the
@@ -430,9 +431,15 @@ dotcloud create myregistry
 dotcloud push
 ```
 
-
 Run tests
 ---------
+Make sure you have git installed. If not:
+
+Fedora/RHEL/CentOS :
+
+```
+sudo yum install git
+```
 
 If you want to submit a pull request, please run the unit tests using tox
 before submitting anything to the repos:
