@@ -403,7 +403,7 @@ def put_image_json(image_id):
     parent_id = data.get('parent')
     if parent_id and not store.exists(store.image_json_path(data['parent'])):
         return toolkit.api_error('Image depends on a non existing parent')
-    elif not toolkit.validate_parent_access(parent_id):
+    elif parent_id and not toolkit.validate_parent_access(parent_id):
         return toolkit.api_error('Image depends on an unauthorized parent')
     json_path = store.image_json_path(image_id)
     mark_path = store.image_mark_path(image_id)
