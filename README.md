@@ -327,7 +327,12 @@ Associated public key :
 Run the Registry
 ----------------
 
-### The fast way:
+### Option 1 (Recommended) - Run the registry docker container
+
+Install docker according to the following instructions:
+http://docs.docker.io/installation/#installation
+
+Run registry:
 
 ```
 docker run -p 5000:5000 registry
@@ -336,7 +341,7 @@ docker run -p 5000:5000 registry
 NOTE: The container will try to allocate the port 5000. If the port
 is already taken, find out which container is already using it by running "docker ps"
 
-### The old way:
+### Option 2 (Advanced) - Install the registry on an existing server
 
 #### On Ubuntu
 
