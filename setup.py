@@ -16,7 +16,7 @@ setuptools.setup(
     # TODO: Load the version programatically, which is currently available in
     #       docker_registry.app. This is not possible yet because importing
     #       causes config files to be loaded
-    version='0.6.8',
+    version='0.6.9',
     description='Registry server for Docker',
     long_description=long_desc,
     packages=setuptools.find_packages(),

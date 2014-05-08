@@ -16,7 +16,7 @@ from .lib import config
 from .lib.core.exceptions import ConfigError
 
 
-VERSION = '0.6.8'
+VERSION = '0.6.9'
 app = flask.Flask('docker-registry')
 cfg = config.load()
 loglevel = getattr(logging, cfg.get('loglevel', 'INFO').upper())
