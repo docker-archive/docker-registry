@@ -21,7 +21,10 @@ ADD ./config/boto.cfg /etc/boto.cfg
 RUN pip install /docker-registry/
 
 ENV DOCKER_REGISTRY_CONFIG /docker-registry/config/config_sample.yml
+ENV SETTINGS_FLAVOR dev
 
 EXPOSE 5000
 
-CMD cd /docker-registry && ./setup-configs.sh && exec docker-registry
+WORKDIR /docker-registry
+
+CMD exec docker-registry

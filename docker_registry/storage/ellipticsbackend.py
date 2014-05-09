@@ -52,7 +52,12 @@ class EllipticsStorage(Storage):
         logger.info("Using namespace %s", self.namespace)
 
         at_least_one = False
-        for host, port in config.get('elliptics_nodes').iteritems():
+        nodes = config.get('elliptics_nodes')
+        if isinstance(nodes, basestring):
+            nodes = nodes.split()
+        if isinstance(nodes, list) or isinstance(nodes, tuple):
+            nodes = dict(node.split(':') for node in nodes)
+        for host, port in nodes.iteritems():
             try:
                 self._elliptics_node.add_remote(host, port,
                                                 config.get(

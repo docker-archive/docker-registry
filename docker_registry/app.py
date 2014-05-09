@@ -46,7 +46,7 @@ def after_request(response):
 def init():
     # Configure the email exceptions
     info = cfg.email_exceptions
-    if info:
+    if info and 'smtp_host' in info:
         mailhost = info['smtp_host']
         mailport = info.get('smtp_port')
         if mailport:

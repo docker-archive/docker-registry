@@ -1,49 +1,21 @@
 # The `common' part is automatically included (and possibly overriden by all
 # other flavors)
 common:
-    # Bucket for storage
-    boto_bucket: REPLACEME
+    loglevel: _env:LOGLEVEL:debug
+    storage_redirect: _env:STORAGE_REDIRECT
+    standalone: _env:STANDALONE
+    index_endpoint: _env:INDEX_ENDPOINT
+    disable_token_auth: _env:DISABLE_TOKEN_AUTH
+    privileged_key: _env:PRIVILEGED_KEY
 
-    # Amazon S3 Storage Configuration
-    s3_access_key: REPLACEME
-    s3_secret_key: REPLACEME
-    s3_bucket: REPLACEME
-    s3_encrypt: REPLACEME
-    s3_secure: REPLACEME
+    search_backend: _env:SEARCH_BACKEND
+    sqlalchemy_index_database: _env:SQLALCHEMY_INDEX_DATABASE:sqlite:////tmp/docker-registry.db
 
-    # Google Cloud Storage Configuration
-    # See:
-    # https://developers.google.com/storage/docs/reference/v1/getting-startedv1#keys
-    # for details on access and secret keys.
-    gs_access_key: REPLACEME
-    gs_secret_key: REPLACEME
-    gs_secure: REPLACEME
+    mirroring:
+        source: _env:MIRROR_SOURCE # https://registry-1.docker.io
+        source_index: _env:MIRROR_SOURCE_INDEX # https://index.docker.io
+        tags_cache_ttl: _env:MIRROR_TAGS_CACHE_TTL # 864000 # seconds
 
-    # OAuth 2.0 authentication with the storage.
-    # Supported for Google Cloud Storage only.
-    # oauth2 can be set to true or false. If it is set to true, gs_access_key,
-    # gs_secret_key and gs_secure are not needed.
-    # Client ID and Client Secret must be set into OAUTH2_CLIENT_ID and
-    # OAUTH2_CLIENT_SECRET environment variables.
-    # See: https://developers.google.com/accounts/docs/OAuth2.
-    oauth2: REPLACEME
-
-    search_backend: "_env:SEARCH_BACKEND:"
-    sqlalchemy_index_database:
-        "_env:SQLALCHEMY_INDEX_DATABASE:sqlite:////tmp/docker-registry.db"
-
-
-# This is the default configuration when no flavor is specified
-dev:
-    storage: local
-    storage_path: /tmp/registry
-    loglevel: debug
-
-# To specify another flavor, set the environment variable SETTINGS_FLAVOR
-# $ export SETTINGS_FLAVOR=prod
-prod:
-    storage: s3
-    storage_path: "_env:STORAGE_PATH:/prod"
     # Enabling LRU cache for small files. This speeds up read/write on small files
     # when using a remote storage backend (like S3).
     cache:
@@ -54,27 +26,62 @@ prod:
         host: _env:CACHE_LRU_REDIS_HOST
         port: _env:CACHE_LRU_REDIS_PORT
         password: _env:CACHE_LRU_REDIS_PASSWORD
+
     # Enabling these options makes the Registry send an email on each code Exception
     email_exceptions:
-        smtp_host: REPLACEME
-        smtp_port: 25
-        smtp_login: REPLACEME
-        smtp_password: REPLACEME
-        smtp_secure: false
-        from_addr: docker-registry@localdomain.local
-        to_addr: noise+dockerregistry@localdomain.local
-    # Enable bugsnag (set the API key)
-    bugsnag: REPLACEME
+        smtp_host: _env:SMTP_HOST
+        smtp_port: _env:SMTP_PORT:25
+        smtp_login: _env:SMTP_LOGIN
+        smtp_password: _env:SMTP_PASSWORD
+        smtp_secure: _env:SMTP_SECURE:false
+        from_addr: _env:SMTP_FROM_ADDR:docker-registry@localdomain.local
+        to_addr: _env:SMTP_TO_ADDR:noise+dockerregistry@localdomain.local
 
-# This flavor is automatically used by unit tests
-test:
+    # Enable bugsnag (set the API key)
+    bugsnag: _env:BUGSNAG
+
+
+
+local: &local
     storage: local
-    storage_path: /tmp/test
+    storage_path: _env:STORAGE_PATH:/tmp/registry
+
+
+s3: &s3
+    storage: s3
+    s3_region: _env:AWS_REGION
+    s3_bucket: _env:AWS_BUCKET
+    boto_bucket: _env:AWS_BUCKET
+    storage_path: _env:STORAGE_PATH:/registry
+    s3_encrypt: _env:AWS_ENCRYPT:true
+    s3_secure: _env:AWS_SECURE:true
+    s3_access_key: _env:AWS_KEY
+    s3_secret_key: _env:AWS_SECRET
+
+# Google Cloud Storage Configuration
+# See:
+# https://developers.google.com/storage/docs/reference/v1/getting-startedv1#keys
+# for details on access and secret keys.
+gcs:
+    storage: gcs
+    boto_bucket: _env:GCS_BUCKET
+    storage_path: _env:STORAGE_PATH:/registry
+    gs_secure: _env:GCS_SECURE:true
+    gs_access_key: _env:GCS_KEY
+    gs_secret_key: _env:GCS_SECRET
+    # OAuth 2.0 authentication with the storage.
+    # oauth2 can be set to true or false. If it is set to true, gs_access_key,
+    # gs_secret_key and gs_secure are not needed.
+    # Client ID and Client Secret must be set into OAUTH2_CLIENT_ID and
+    # OAUTH2_CLIENT_SECRET environment variables.
+    # See: https://developers.google.com/accounts/docs/OAuth2.
+    oauth2: _env:GCS_OAUTH2:false
 
 # This flavor is for storing images in Openstack Swift
-swift:
+swift: &swift
     storage: swift
-    storage_path: /registry
+    storage_path: _env:STORAGE_PATH:/registry
+    # keystone authorization
     swift_authurl: _env:OS_AUTH_URL
     swift_container: _env:OS_CONTAINER
     swift_user: _env:OS_USERNAME
@@ -84,22 +91,54 @@ swift:
 
 # This flavor stores the images in Glance (to integrate with openstack)
 # See also: https://github.com/dotcloud/openstack-docker
-openstack:
+glance: &glance
     storage: glance
-    storage_alternate: local
-    storage_path: /tmp/registry
-    loglevel: debug
+    storage_alternate: _env:GLANCE_STORAGE_ALTERNATE:local
+    storage_path: _env:STORAGE_PATH:/tmp/registry
+
+openstack:
+    <<: *glance
 
 # This flavor stores the images in Glance (to integrate with openstack)
 # and tags in Swift. 
-openstack-swift:
+glance-swift: &glance-swift
+    <<: *swift
     storage: glance
-    storage_path: /registry
     storage_alternate: swift
-    # keystone authorization
-    swift_authurl: REPLACEME
-    swift_container: REPLACEME
-    swift_user: REPLACEME
-    swift_password: REPLACEME
-    swift_tenant_name: REPLACEME
-    swift_region_name: REPLACEME
+
+openstack-swift:
+    <<: *glance-swift
+
+elliptics:
+    storage: elliptics
+    elliptics_nodes: _env:ELLIPTICS_NODES
+    elliptics_wait_timeout: _env:ELLIPTICS_WAIT_TIMEOUT:60
+    elliptics_check_timeout: _env:ELLIPTICS_CHECK_TIMEOUT:60
+    elliptics_io_thread_num: _env:ELLIPTICS_IO_THREAD_NUM:2
+    elliptics_net_thread_num: _env:ELLIPTICS_NET_THREAD_NUM:2
+    elliptics_nonblocking_io_thread_num: _env:ELLIPTICS_NONBLOCKING_IO_THREAD_NUM:2
+    elliptics_groups: _env:ELLIPTICS_GROUPS
+    elliptics_verbosity: _env:ELLIPTICS_VERBOSITY:4
+    elliptics_logfile: _env:ELLIPTICS_LOGFILE:/dev/stderr
+    elliptics_addr_family: _env:ELLIPTICS_ADDR_FAMILY:2
+
+
+
+# This is the default configuration when no flavor is specified
+dev: &dev
+    <<: *local
+    search_backend: _env:SEARCH_BACKEND:sqlalchemy
+    # gunicorn will set this automatically if unset in dev mode
+    secret_key: _env:SECRET_KEY:secret
+
+# This flavor is automatically used by unit tests
+test:
+    <<: *dev
+    storage_path: _env:STORAGE_PATH:/tmp/test
+
+# To specify another flavor, set the environment variable SETTINGS_FLAVOR
+# $ export SETTINGS_FLAVOR=prod
+prod:
+    <<: *s3
+    storage_path: _env:STORAGE_PATH:/prod
+
