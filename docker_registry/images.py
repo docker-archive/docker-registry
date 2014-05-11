@@ -50,7 +50,6 @@ def set_cache_headers(f):
             return flask.Response(status=304, headers=headers)
         kwargs['headers'] = headers
         # Prevent the Cookie to be sent when the object is cacheable
-        flask.session.modified = False
         return f(*args, **kwargs)
     return wrapper
 
@@ -117,9 +116,11 @@ def _get_image_json(image_id, headers=None):
         headers['X-Docker-Size'] = str(size)
     except OSError:
         pass
-    checksum_path = store.image_checksum_path(image_id)
-    if store.exists(checksum_path):
-        headers['X-Docker-Checksum'] = store.get_content(checksum_path)
+    try:
+        csums = load_checksums(image_id)
+        headers['X-Docker-Payload-Checksum'] = csums
+    except IOError:
+        pass
     return toolkit.response(data, headers=headers, raw=True)
 
 
@@ -254,20 +255,8 @@ def put_image_layer(image_id):
             csums.append(tarsum.compute())
             tmp.close()
 
-    try:
-        checksum = store.get_content(store.image_checksum_path(image_id))
-    except IOError:
-        # We don't have a checksum stored yet, that's fine skipping the check.
-        # Not removing the mark though, image is not downloadable yet.
-        flask.session['checksum'] = csums
-        return toolkit.response()
-    # We check if the checksums provided matches one the one we computed
-    if checksum not in csums:
-        logger.debug('put_image_layer: Wrong checksum')
-        return toolkit.api_error('Checksum mismatch, ignoring the layer')
-
-    # Checksum is ok, we remove the marker
-    store.remove(mark_path)
+    # We store the computed checksums for a later check
+    save_checksums(image_id, csums)
     return toolkit.response()
 
 
@@ -280,20 +269,16 @@ def put_image_checksum(image_id):
         checksum = flask.request.headers.get('X-Docker-Checksum-Payload')
     if not checksum:
         return toolkit.api_error('Missing Image\'s checksum')
-    if not flask.session.get('checksum'):
-        return toolkit.api_error('Checksum not found in Cookie')
     if not store.exists(store.image_json_path(image_id)):
         return toolkit.api_error('Image not found', 404)
     mark_path = store.image_mark_path(image_id)
     if not store.exists(mark_path):
         return toolkit.api_error('Cannot set this image checksum', 409)
-    err = store_checksum(image_id, checksum)
-    if err:
-        return toolkit.api_error(err)
-    if checksum not in flask.session.get('checksum', []):
+    checksums = load_checksums(image_id)
+    if checksum not in checksums:
         logger.debug('put_image_checksum: Wrong checksum. '
                      'Provided: {0}; Expected: {1}'.format(
-                         checksum, flask.session.get('checksum')))
+                         checksum, checksums))
         return toolkit.api_error('Checksum mismatch')
     # Checksum is ok, we remove the marker
     store.remove(mark_path)
@@ -352,26 +337,37 @@ def get_image_ancestry(image_id, headers):
 
 
 def check_images_list(image_id):
-    full_repos_name = flask.session.get('repository')
-    if not full_repos_name:
-        # We only enforce this check when there is a repos name in the session
-        # otherwise it means that the auth is disabled.
+    if cfg.disable_token_auth is True or cfg.standalone is not False:
+        # We enforce the check only when auth is enabled so we have a token.
         return True
+    repository = toolkit.get_repository()
     try:
-        path = store.images_list_path(*full_repos_name.split('/'))
+        path = store.images_list_path(*repository)
         images_list = json.loads(store.get_content(path))
     except IOError:
         return False
     return (image_id in images_list)
 
 
-def store_checksum(image_id, checksum):
-    checksum_parts = checksum.split(':')
-    if len(checksum_parts) != 2:
-        return 'Invalid checksum format'
+def save_checksums(image_id, checksums):
+    for checksum in checksums:
+        checksum_parts = checksum.split(':')
+        if len(checksum_parts) != 2:
+            return 'Invalid checksum format'
     # We store the checksum
     checksum_path = store.image_checksum_path(image_id)
-    store.put_content(checksum_path, checksum)
+    store.put_content(checksum_path, json.dumps(checksums))
+
+
+def load_checksums(image_id):
+    checksum_path = store.image_checksum_path(image_id)
+    data = store.get_content(checksum_path)
+    try:
+        return json.loads(data)
+    except ValueError:
+        # NOTE(sam): For backward compatibility only, existing data may not be
+        # a valid json but a simple string.
+        return [data]
 
 
 @app.route('/v1/images/<image_id>/json', methods=['PUT'])
@@ -385,16 +381,6 @@ def put_image_json(image_id):
         return toolkit.api_error('Invalid JSON')
     if 'id' not in data:
         return toolkit.api_error('Missing key `id\' in JSON')
-    # Read the checksum
-    checksum = flask.request.headers.get('X-Docker-Checksum')
-    if checksum:
-        # Storing the checksum is optional at this stage
-        err = store_checksum(image_id, checksum)
-        if err:
-            return toolkit.api_error(err)
-    else:
-        # We cleanup any old checksum in case it's a retry after a fail
-        store.remove(store.image_checksum_path(image_id))
     if image_id != data['id']:
         return toolkit.api_error('JSON data contains invalid id')
     if check_images_list(image_id) is False:
@@ -412,6 +398,8 @@ def put_image_json(image_id):
     # If we reach that point, it means that this is a new image or a retry
     # on a failed push
     store.put_content(mark_path, 'true')
+    # We cleanup any old checksum in case it's a retry after a fail
+    store.remove(store.image_checksum_path(image_id))
     store.put_content(json_path, flask.request.data)
     layers.generate_ancestry(image_id, parent_id)
     return toolkit.response()
