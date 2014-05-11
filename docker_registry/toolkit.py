@@ -212,12 +212,7 @@ def check_token(args):
         return False
     if validate_token(auth) is False:
         return False
-    # Token is valid, we create a session
-    session = flask.session
-    session['repository'] = auth.get('repository')
-    if is_ssl() is False:
-        # We enforce the IP check only when not using SSL
-        session['from'] = get_remote_ip()
+    # Token is valid
     return True
 
 
@@ -256,11 +251,8 @@ def parse_content_signature(s):
 def requires_auth(f):
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
-        session = flask.session
         if check_signature() is True or check_token(kwargs) is True:
-            if 'from' not in session or session['from'] == get_remote_ip():
-                return f(*args, **kwargs)
-        session.clear()
+            return f(*args, **kwargs)
         headers = {'WWW-Authenticate': 'Token'}
         return api_error('Requires authorization', 401, headers)
     return wrapper
