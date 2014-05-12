@@ -64,27 +64,6 @@ class TestImages(base.TestCase):
             self.gen_random_string()))
         self.assertEqual(resp.status_code, 404, resp.data)
 
-    def test_set_checksum_after(self):
-        def set_checksum_callback(image_id, checksum):
-            headers = {'X-Docker-Checksum': checksum}
-            url = '/v1/images/{0}/checksum'.format(image_id)
-            resp = self.http_client.put(url, headers=headers)
-            self.assertEqual(resp.status_code, 200, resp.data)
-            # Once the checksum test passed, the image is "locked"
-            resp = self.http_client.put(url, headers=headers)
-            self.assertEqual(resp.status_code, 409, resp.data)
-            # Cannot set the checksum on an non-existing image
-            url = '/v1/images/{0}/checksum'.format(self.gen_random_string())
-            resp = self.http_client.put(url, headers=headers)
-            self.assertEqual(resp.status_code, 404, resp.data)
-
-        image_id = self.gen_random_string()
-        layer_data = self.gen_random_string(1024)
-        self.upload_image(image_id,
-                          parent_id=None,
-                          layer=layer_data,
-                          set_checksum_callback=set_checksum_callback)
-
     def test_bytes_range(self):
         image_id = self.gen_random_string()
         layer_data = self.gen_random_string(1024)

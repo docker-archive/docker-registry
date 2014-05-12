@@ -28,9 +28,6 @@ common:
     # See: https://developers.google.com/accounts/docs/OAuth2.
     oauth2: REPLACEME
 
-    # Let gunicorn set this environment variable or set a random string here
-    secret_key: _env:SECRET_KEY
-
     search_backend: "_env:SEARCH_BACKEND:"
     sqlalchemy_index_database:
         "_env:SQLALCHEMY_INDEX_DATABASE:sqlite:////tmp/docker-registry.db"

@@ -12,7 +12,6 @@ prod:
     s3_bucket: _env:AWS_BUCKET
     s3_encrypt: true
     s3_secure: true
-    secret_key: REPLACEME
     s3_encrypt: true
     s3_secure: true
     storage_path: /images

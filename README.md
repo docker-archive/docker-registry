@@ -95,9 +95,6 @@ Available configuration options
 
 ### General options
 
-1. `secret_key`: 64 character string, this key should be unique and secret. It
-    is used by the Registry to sign secret things. If you leave this blank, the
-    Registry will generate a random string.
 1. `loglevel`: string, level of debugging. Any of python's
     [logging](http://docs.python.org/2/library/logging.html) module levels:
     `debug`, `info`, `warn`, `error` or `critical`
@@ -396,11 +393,6 @@ using this command:
 ```
 gunicorn -k gevent --max-requests 100 --graceful-timeout 3600 -t 3600 -b localhost:5000 -w 8 docker_registry.wsgi:application
 ```
-
-Note that when using multiple workers, the secret_key for the Flask session
-must be set explicitly in config.yml. Otherwise each worker will use its own
-random secret key, leading to unpredictable behavior.
-
 
 #### nginx
 

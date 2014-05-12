@@ -13,8 +13,6 @@ import flask
 from . import toolkit
 from .lib import config
 
-from .lib.core.exceptions import ConfigError
-
 
 VERSION = '0.6.9'
 app = flask.Flask('docker-registry')
@@ -46,10 +44,6 @@ def after_request(response):
 
 
 def init():
-    # Configure the secret key
-    if not cfg.secret_key:
-        raise ConfigError('`secret_key\' is not set')
-    app.secret_key = cfg.secret_key
     # Configure the email exceptions
     info = cfg.email_exceptions
     if info:
