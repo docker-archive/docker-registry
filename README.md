@@ -394,11 +394,6 @@ using this command:
 gunicorn -k gevent --max-requests 100 --graceful-timeout 3600 -t 3600 -b localhost:5000 -w 8 docker_registry.wsgi:application
 ```
 
-Note that when using multiple workers, the secret_key for the Flask session
-must be set explicitly in config.yml. Otherwise each worker will use its own
-random secret key, leading to unpredictable behavior.
-
-
 #### nginx
 
 [Here is an nginx configuration file example.](https://github.com/dotcloud/docker-registry/blob/master/contrib/nginx.conf), which applies to versions < 1.3.9 which are compiled with the [HttpChunkinModule](http://wiki.nginx.org/HttpChunkinModule). 
