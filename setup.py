@@ -32,7 +32,7 @@ setuptools.setup(
     ),
     entry_points={
         'console_scripts': [
-            'docker-registry = docker_registry:run_gunicorn'
+            'docker-registry = docker_registry.run:run_gunicorn'
         ]
     }
 )
