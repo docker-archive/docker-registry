@@ -215,6 +215,7 @@ def delete_tag(namespace, repository, tag):
 @toolkit.parse_repository_name
 @toolkit.requires_auth
 def _delete_tag(namespace, repository, tag):
+    # XXX backends are inconsistent on this - some will throw, but not all
     try:
         delete_tag(namespace=namespace, repository=repository, tag=tag)
     except exceptions.FileNotFoundError:
