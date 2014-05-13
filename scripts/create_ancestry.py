@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import hashlib
 import sys
 
@@ -15,7 +17,7 @@ dry_run = True
 
 
 def warning(msg):
-    print >>sys.stderr, '# Warning: ' + msg
+    print('# Warning: ' + msg, file=sys.stderr)
 
 
 def get_image_parent(image_id):
@@ -52,8 +54,8 @@ def create_image_ancestry(image_id):
         if not store.exists(ancestry_path):
             store.put_content(ancestry_path, json.dumps(ancestry))
     ancestry_cache[image_id] = True
-    print ('Generated ancestry (size: {0}) '
-           'for image_id: {1}'.format(len(ancestry), image_id))
+    print('Generated ancestry (size: {0}) '
+          'for image_id: {1}'.format(len(ancestry), image_id))
 
 
 def resolve_all_tags():
@@ -74,7 +76,7 @@ def compute_image_checksum(image_id, json_data):
     if not store.exists(layer_path):
         warning('{0} is broken (no layer)'.format(image_id))
         return
-    print 'Writing checksum for {0}'.format(image_id)
+    print('Writing checksum for {0}'.format(image_id))
     if dry_run:
         return
     h = hashlib.sha256(json_data + '\n')
@@ -120,9 +122,9 @@ if __name__ == '__main__':
         create_image_ancestry(image_id)
     compute_missing_checksums()
     if dry_run:
-        print '-------'
-        print '/!\ No modification has been made (dry-run)'
-        print '/!\ In order to apply the changes, re-run with:'
-        print '$ {0} --seriously'.format(sys.argv[0])
+        print('-------')
+        print('/!\ No modification has been made (dry-run)')
+        print('/!\ In order to apply the changes, re-run with:')
+        print('$ {0} --seriously'.format(sys.argv[0]))
     else:
-        print '# Changes applied.'
+        print('# Changes applied.')
