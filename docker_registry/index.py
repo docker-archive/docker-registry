@@ -4,7 +4,9 @@ import logging
 
 import flask
 import flask_cors
+
 from docker_registry.core import compat
+from docker_registry.core import exceptions
 json = compat.json
 
 from . import storage
@@ -82,7 +84,7 @@ def update_index_images(namespace, repository, data):
         store.put_content(path, json.dumps(data))
         signals.repository_updated.send(
             sender, namespace=namespace, repository=repository, value=data)
-    except IOError:
+    except exceptions.FileNotFoundError:
         signals.repository_created.send(
             sender, namespace=namespace, repository=repository,
             value=json.loads(data))
@@ -119,7 +121,7 @@ def get_repository_images(namespace, repository):
     try:
         path = store.index_images_path(namespace, repository)
         data = store.get_content(path)
-    except IOError:
+    except exceptions.FileNotFoundError:
         return toolkit.api_error('images not found', 404)
     headers = generate_headers(namespace, repository, 'read')
     return toolkit.response(data, 200, headers, True)
