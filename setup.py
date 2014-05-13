@@ -2,21 +2,27 @@
 
 import os
 import setuptools
+import sys
 
 _abs_dir = os.path.dirname(os.path.abspath(__file__))
 
 desc_path = os.path.join(_abs_dir, 'README.md')
 long_desc = open(desc_path).read()
 
-req_path = os.path.join(_abs_dir, 'requirements.txt')
-requirements = open(req_path).read()
+requirements_txt = open('./requirements.txt')
+requirements = [line for line in requirements_txt]
+
+ver = sys.version_info
+
+if ver[0] == 2:
+    requirements.insert(0, 'backports.lzma>=0.0.2')
 
 setuptools.setup(
     name='docker-registry',
     # TODO: Load the version programatically, which is currently available in
     #       docker_registry.app. This is not possible yet because importing
     #       causes config files to be loaded
-    version='0.6.9',
+    version='0.7.0',
     description='Registry server for Docker',
     long_description=long_desc,
     namespace_packages=['docker_registry', 'docker_registry.drivers'],

@@ -12,7 +12,7 @@ from ..core import exceptions
 
 class Driver(object):
 
-    def __init__(self, scheme, path=None, config=None):
+    def __init__(self, scheme=None, path=None, config=None):
         self.scheme = scheme
         self.path = path
         self.config = config
