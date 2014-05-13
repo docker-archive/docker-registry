@@ -1,13 +1,15 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+try:
+    import setuptools
+except ImportError:
+    import distutils.core as setuptools
 
 import os
-import setuptools
 import sys
 
 _abs_dir = os.path.dirname(os.path.abspath(__file__))
-
-desc_path = os.path.join(_abs_dir, 'README.md')
-long_desc = open(desc_path).read()
 
 requirements_txt = open('./requirements.txt')
 requirements = [line for line in requirements_txt]
@@ -24,10 +26,10 @@ setuptools.setup(
     #       causes config files to be loaded
     version='0.7.0',
     description='Registry server for Docker',
-    long_description=long_desc,
+    long_description=open('README.md').read(),
     namespace_packages=['docker_registry', 'docker_registry.drivers'],
     packages=setuptools.find_packages(),
-    license='Apache',
+    license=open('LICENSE').read(),
     author='Docker Registry Contributors',
     author_email='docker-dev@googlegroups.com',
     url='https://github.com/dotcloud/docker-registry',
@@ -37,9 +39,14 @@ setuptools.setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
     ),
+    platforms=['Independent'],
+    package_data={'docker_registry': ['../config/*']},
     entry_points={
         'console_scripts': [
             'docker-registry = docker_registry.run:run_gunicorn'
         ]
-    }
+    },
+    zip_safe=False,
+    tests_require=open('./tests/requirements.txt').read(),
+    test_suite='nose.collector'
 )
