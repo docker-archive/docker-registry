@@ -11,6 +11,7 @@ __all__ = [
     "UnspecifiedError",
     "UsageError",
     "NotImplementedError", "FileNotFoundError", "WrongArgumentsError",
+    "ConfigError",
     "ConnectionError",
     "UnreachableError", "MissingError", "BrokenError"
 ]
@@ -46,6 +47,11 @@ class FileNotFoundError(UsageError):
 class WrongArgumentsError(UsageError):
 
     """Expected arguments type not satisfied."""
+
+
+class ConfigError(UsageError):
+
+    """The provided configuration has problems."""
 
 
 class ConnectionError(UnspecifiedError):
