@@ -2,11 +2,15 @@
 
 __all__ = ['registry_status']
 
-import socket
-import sys
-
+# http://blog.codepainters.com/2012/11/20/gevent-monkey-patching-versus-
+# sniffer-nose/
+# if 'threading' in sys.modules:
+#     raise Exception('threading module loaded before patching!')
 import gevent.monkey
 gevent.monkey.patch_all()
+
+import socket
+import sys
 
 from . import storage
 from . import toolkit

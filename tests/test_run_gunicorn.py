@@ -2,9 +2,9 @@
 
 import unittest
 
-import mock
+import docker_registry.run as run
 
-from docker_registry import run
+import mock
 
 
 class TestRunGunicorn(unittest.TestCase):

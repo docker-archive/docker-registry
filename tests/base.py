@@ -1,20 +1,21 @@
 # -*- coding: utf-8 -*-
 
+import docker_registry.run as run
+
 import hashlib
 import random
 import string
 import unittest
 
 from docker_registry.core import compat
-import docker_registry.run
 
 
 class TestCase(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         unittest.TestCase.__init__(self, *args, **kwargs)
-        docker_registry.run.app.testing = True
-        self.http_client = docker_registry.run.app.test_client()
+        run.app.testing = True
+        self.http_client = run.app.test_client()
         # Override the method so we can set headers for every single call
         orig_open = self.http_client.open
 
