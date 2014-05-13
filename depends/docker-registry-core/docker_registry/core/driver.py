@@ -38,8 +38,8 @@ class Base(object):
 
     # Useful if we want to change those locations later without rewriting
     # the code which uses Storage
-    REPOSITORIES = 'repositories'
-    IMAGES = 'images'
+    repositories = 'repositories'
+    images = 'images'
 
     # Set the IO buffer to 128kB
     buffer_size = 128 * 1024
@@ -53,29 +53,29 @@ class Base(object):
         return '{0}/_images_list'.format(repository_path)
 
     def image_json_path(self, image_id):
-        return '{0}/{1}/json'.format(self.IMAGES, image_id)
+        return '{0}/{1}/json'.format(self.images, image_id)
 
     def image_mark_path(self, image_id):
-        return '{0}/{1}/_inprogress'.format(self.IMAGES, image_id)
+        return '{0}/{1}/_inprogress'.format(self.images, image_id)
 
     def image_checksum_path(self, image_id):
-        return '{0}/{1}/_checksum'.format(self.IMAGES, image_id)
+        return '{0}/{1}/_checksum'.format(self.images, image_id)
 
     def image_layer_path(self, image_id):
-        return '{0}/{1}/layer'.format(self.IMAGES, image_id)
+        return '{0}/{1}/layer'.format(self.images, image_id)
 
     def image_ancestry_path(self, image_id):
-        return '{0}/{1}/ancestry'.format(self.IMAGES, image_id)
+        return '{0}/{1}/ancestry'.format(self.images, image_id)
 
     def image_files_path(self, image_id):
-        return '{0}/{1}/_files'.format(self.IMAGES, image_id)
+        return '{0}/{1}/_files'.format(self.images, image_id)
 
     def image_diff_path(self, image_id):
-        return '{0}/{1}/_diff'.format(self.IMAGES, image_id)
+        return '{0}/{1}/_diff'.format(self.images, image_id)
 
     def repository_path(self, namespace, repository):
         return '{0}/{1}/{2}'.format(
-            self.REPOSITORIES, namespace, repository)
+            self.repositories, namespace, repository)
 
     def tag_path(self, namespace, repository, tagname=None):
         repository_path = self.repository_path(
