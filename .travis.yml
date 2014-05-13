@@ -3,7 +3,6 @@ python:
   - "2.7"
 install:
   - pip install tox
-  - pip install .
 script: tox
 before_install:
   - sudo apt-get update
