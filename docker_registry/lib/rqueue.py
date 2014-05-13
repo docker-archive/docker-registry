@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # this module is a slight modification of Ted Nyman's QR
 # https://raw.github.com/tnm/qr/master/qr.py
 

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # https://gist.github.com/adewes/6103220
 
 import redis

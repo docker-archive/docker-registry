@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import logging
 import logging.handlers
 import os
@@ -12,7 +14,6 @@ import flask
 
 from . import toolkit
 from .lib import config
-
 
 VERSION = '0.6.9'
 app = flask.Flask('docker-registry')

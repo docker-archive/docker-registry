@@ -60,8 +60,8 @@ class TestMirrorDecorator(base.TestCase):
         resp_2 = self.http_client.get('/v1/images/cafebabe0145/json')
         self.assertEqual(resp_2.status_code, 200)
         json_data = json.loads(resp_2.data)
-        self.assertIn('id', json_data)
-        self.assertIn('created', json_data)
+        assert 'id' in json_data
+        assert 'created' in json_data
         self.assertEqual(json_data['id'], 'cafebabe0145')
 
         resp_3 = self.http_client.get('/v1/images/cafebabe0145/ancestry')

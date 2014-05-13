@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# flake8: noqa
 
 from __future__ import print_function
 
@@ -7,26 +6,27 @@ from __future__ import print_function
 import gevent.monkey
 gevent.monkey.patch_all()
 
-from argparse import ArgumentParser
-from argparse import RawTextHelpFormatter
+from argparse import ArgumentParser  # noqa
+from argparse import RawTextHelpFormatter  # noqa
 import distutils.spawn
 import os
 import sys
 
-from .app import app
-from .tags import *
-from .images import *
+from .app import app  # noqa
+from .tags import *  # noqa
+from .images import *  # noqa
 from .lib import config
-from .status import *
-from .search import *
+from .status import *  # noqa
+from .search import *  # noqa
 
 cfg = config.load()
 if cfg.standalone is not False:
     # If standalone mode is enabled (default), load the fake Index routes
-    from .index import *
+    from .index import *  # noqa
 
 
-DESCRIPTION = """run the docker-registry with gunicorn, honoring the following environment variables:
+DESCRIPTION = """run the docker-registry with gunicorn, honoring the following
+environment variables:
 
 GUNICORN_WORKERS: number of worker processes gunicorn should start
 REGISTRY_PORT: TCP port to bind to on all ipv4 addresses; default is 5000
@@ -36,8 +36,7 @@ GUNiCORN_SILENT_TIMEOUT: timeout in seconds for restarting silent workers
 
 
 def run_gunicorn():
-    """
-    Exec gunicorn with our wsgi app.
+    """Exec gunicorn with our wsgi app.
 
     Settings are taken from environment variables as listed in the help text.
     This is intended to be called as a console_script entry point.
@@ -62,5 +61,5 @@ def run_gunicorn():
 
     os.execl(gunicorn_path, 'gunicorn', '--access-logfile', '-', '--debug',
              '--max-requests', '100', '--graceful-timeout', graceful_timeout,
-             '-t', silent_timeout, '-k', 'gevent', '-b', address, '-w', workers,
-             'docker_registry.wsgi:application')
+             '-t', silent_timeout, '-k', 'gevent', '-b', address,
+             '-w', workers, 'docker_registry.wsgi:application')

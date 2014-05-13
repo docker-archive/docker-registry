@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """An SQLAlchemy backend for the search endpoint
 """
 
