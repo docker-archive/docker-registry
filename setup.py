@@ -19,7 +19,7 @@ setuptools.setup(
     version='0.6.9',
     description='Registry server for Docker',
     long_description=long_desc,
-    namespace_packages=['docker_registry'],
+    namespace_packages=['docker_registry', 'docker_registry.drivers'],
     packages=setuptools.find_packages(),
     license='Apache',
     author='Docker Registry Contributors',
