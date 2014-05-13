@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import base64
 import distutils.version
 import functools
@@ -10,6 +12,7 @@ import urllib
 import flask
 import requests
 import rsa
+
 from docker_registry.core import compat
 json = compat.json
 
