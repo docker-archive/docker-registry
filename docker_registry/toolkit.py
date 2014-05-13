@@ -10,7 +10,8 @@ import urllib
 import flask
 import requests
 import rsa
-import simplejson as json
+from docker_registry.core import compat
+json = compat.json
 
 from . import storage
 from .lib import config

@@ -3,10 +3,8 @@
 
 import logging
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+from docker_registry.core import compat
+json = compat.json
 
 
 class NullHandler(logging.Handler):

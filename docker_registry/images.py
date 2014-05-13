@@ -5,7 +5,8 @@ import tarfile
 import time
 
 import flask
-import simplejson as json
+from docker_registry.core import compat
+json = compat.json
 
 
 from . import storage

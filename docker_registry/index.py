@@ -2,7 +2,8 @@ import logging
 
 import flask
 import flask_cors
-import simplejson as json
+from docker_registry.core import compat
+json = compat.json
 
 from . import storage
 from . import toolkit
