@@ -18,6 +18,9 @@ ver = sys.version_info
 
 if ver[0] == 2:
     requirements.insert(0, 'backports.lzma>=0.0.2')
+    if ver[1] <= 6:
+        requirements.insert(0, 'argparse>=1.2.1')
+        requirements.insert(0, 'importlib>=1.0.3')
 
 setuptools.setup(
     name='docker-registry',
