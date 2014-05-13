@@ -22,7 +22,7 @@ ver = sys.version_info
 if ver[0] == 2 and ver[1] <= 6:
     requirements.insert(0, 'simplejson>=2.0.9')
 
-d = 'https://github.com/dmp42/docker-registry-core/archive/master.zip'
+# d = 'https://github.com/dotcloud/docker-registry-core/archive/master.zip'
 
 setuptools.setup(
     name=core.__title__,
@@ -31,10 +31,10 @@ setuptools.setup(
     author_email=core.__email__,
     maintainer=core.__maintainer__,
     maintainer_email=core.__email__,
-    url='https://github.com/dmp42/docker-registry-core',
-    description="Backend drivers for the docker registry",
+    url='https://github.com/dotclout/docker-registry',
+    description="Docker registry core package",
     long_description=open('./README').read(),
-    download_url=d,
+    # download_url=d,
     classifiers=['Development Status :: 4 - Beta',
                  'Intended Audience :: Developers',
                  'Programming Language :: Python',

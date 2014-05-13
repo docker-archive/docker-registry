@@ -1,1 +1,18 @@
-Docker registry core
+# docker-registry-core
+
+> core package for docker-registry (drivers) developers
+
+## TL;DR
+
+If you hack on the registry itself, read the doc there.
+
+If you want to write your own storage driver, this here is for you, but you
+do need to read!
+
+
+## API
+
+
+
+## License
+
