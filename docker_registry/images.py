@@ -65,7 +65,7 @@ def _get_image_layer(image_id, headers=None, bytes_range=None):
     accel_uri_prefix = cfg.nginx_x_accel_redirect
     path = store.image_layer_path(image_id)
     if accel_uri_prefix:
-        if isinstance(store, local.LocalStorage):
+        if store.scheme == 'file':
             accel_uri = '/'.join([accel_uri_prefix, path])
             headers['X-Accel-Redirect'] = accel_uri
             logger.debug('send accelerated {0} ({1})'.format(

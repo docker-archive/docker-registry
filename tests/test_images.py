@@ -25,9 +25,7 @@ class TestImages(base.TestCase):
         from docker_registry import images
 
         # ensure the storage mechanism is LocalStorage or this test is bad
-        from docker_registry.storage import local
-        self.assertTrue(isinstance(images.store,
-                        local.LocalStorage),
+        self.assertTrue(images.store.scheme == 'file',
                         'Store must be LocalStorage')
 
         # set the nginx accel config
