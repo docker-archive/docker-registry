@@ -1,4 +1,4 @@
-import json
+# -*- coding: utf-8 -*-
 
 import mock
 import requests
@@ -7,6 +7,9 @@ from docker_registry.lib import config
 from docker_registry.lib import mirroring
 
 import base
+
+from docker_registry.core import compat
+json = compat.json
 
 
 def mock_lookup_source(path, stream=False, source=None):

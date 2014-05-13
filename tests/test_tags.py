@@ -1,7 +1,9 @@
-
-import json
+# -*- coding: utf-8 -*-
 
 import base
+
+from docker_registry.core import compat
+json = compat.json
 
 
 class TestTags(base.TestCase):

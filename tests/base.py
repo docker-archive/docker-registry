@@ -1,20 +1,20 @@
+# -*- coding: utf-8 -*-
 
-import cStringIO as StringIO
 import hashlib
-import json
 import random
 import string
 import unittest
 
-import docker_registry
+from docker_registry.core import compat
+import docker_registry.run
 
 
 class TestCase(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         unittest.TestCase.__init__(self, *args, **kwargs)
-        docker_registry.app.testing = True
-        self.http_client = docker_registry.app.test_client()
+        docker_registry.run.app.testing = True
+        self.http_client = docker_registry.run.app.test_client()
         # Override the method so we can set headers for every single call
         orig_open = self.http_client.open
 
@@ -51,7 +51,7 @@ class TestCase(unittest.TestCase):
         }
         if parent_id:
             json_obj['parent'] = parent_id
-        json_data = json.dumps(json_obj)
+        json_data = compat.json.dumps(json_obj)
         h = hashlib.sha256(json_data + '\n')
         h.update(layer)
         layer_checksum = 'sha256:{0}'.format(h.hexdigest())
@@ -63,7 +63,7 @@ class TestCase(unittest.TestCase):
         # Make sure I cannot download the image before push is complete
         resp = self.http_client.get('/v1/images/{0}/json'.format(image_id))
         self.assertEqual(resp.status_code, 400, resp.data)
-        layer_file = StringIO.StringIO(layer)
+        layer_file = compat.StringIO(layer)
         resp = self.http_client.put('/v1/images/{0}/layer'.format(image_id),
                                     input_stream=layer_file)
         layer_file.close()

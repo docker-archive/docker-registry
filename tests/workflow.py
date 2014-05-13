@@ -1,6 +1,4 @@
-import cStringIO as StringIO
 import hashlib
-import json
 import os
 
 import requests
@@ -11,6 +9,9 @@ from docker_registry import storage
 
 import base
 
+from docker_registry.core import compat
+json = compat.json
+StringIO = compat.StringIO
 
 cfg = config.load()
 

@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
 
-import json
 import random
 
 import base
+
+from docker_registry.core import compat
+json = compat.json
 
 
 class TestImages(base.TestCase):
