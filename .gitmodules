@@ -1,6 +1,3 @@
-[submodule "depends/docker-registry-core"]
-	path = depends/docker-registry-core
-	url = https://github.com/dmp42/docker-registry-core
 [submodule "depends/docker-registry-driver-file"]
 	path = depends/docker-registry-driver-file
 	url = https://github.com/dmp42/docker-registry-driver-file
