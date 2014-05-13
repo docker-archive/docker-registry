@@ -205,6 +205,7 @@ or check your configuration. The following are currently
 available on your system: %s"""
             % (name, name, available())
         )
+    module.Storage.scheme = name
     return module.Storage
 
 

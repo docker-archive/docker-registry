@@ -23,6 +23,7 @@ class Query(object):
 
         assert resultdriver == storage.Storage
         assert driver.Base in resultdriver.__bases__
+        assert resultdriver.scheme == self.scheme
 
     @raises(exceptions.NotImplementedError)
     def testFetchingNonExistentDriver(self):
