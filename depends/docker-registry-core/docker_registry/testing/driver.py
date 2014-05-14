@@ -176,7 +176,9 @@ class Driver(object):
         iterator = self._storage.list_directory(notexist)
         iterator.next()
 
-    @raises(exceptions.FileNotFoundError)
+    # XXX only elliptics return StopIteration for now - though we should
+    # return probably that for all
+    @raises(exceptions.FileNotFoundError, StopIteration)
     def test_empty_list_directory(self):
         path = self.gen_random_string()
         content = self.gen_random_string().encode('utf8')
