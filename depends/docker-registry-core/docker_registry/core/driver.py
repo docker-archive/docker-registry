@@ -197,7 +197,7 @@ def fetch(name):
         module = __import__('docker_registry.drivers.%s' % name, globals(),
                             locals(), ['Storage'], 0)  # noqa
         logger.debug("Will return docker_registry.drivers.%s.Storage" % name)
-    except Exception:
+    except ImportError:
         raise NotImplementedError(
             """You requested storage driver docker_registry.drivers.%s
 which is not installed. Try `pip install docker_registry-drivers-%s`
