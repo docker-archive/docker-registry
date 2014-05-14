@@ -67,7 +67,8 @@ def get(f):
             return content
         # Refresh cache
         content = f(*args)
-        redis_conn.set(key, content)
+        if content is not None:
+            redis_conn.set(key, content)
         return content
     if redis_conn is None:
         return f
