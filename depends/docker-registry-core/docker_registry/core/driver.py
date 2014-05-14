@@ -196,7 +196,7 @@ def fetch(name):
         # XXX The noqa below is because of hacking being non-sensical on this
         module = __import__('docker_registry.drivers.%s' % name, globals(),
                             locals(), ['Storage'], 0)  # noqa
-        logger.debug("Will return docker_registry.drivers.%s.Storage" % name)
+        logger.debug("Will return docker-registry.drivers.%s.Storage" % name)
     except ImportError:
         raise NotImplementedError(
             """You requested storage driver docker_registry.drivers.%s
