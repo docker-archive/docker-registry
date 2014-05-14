@@ -20,7 +20,7 @@ class Storage(driver.Base):
     supports_bytes_range = True
 
     def __init__(self, path=None, config=None):
-        self._root_path = path or '/tmp'
+        self._root_path = path or './tmp'
 
     def _init_path(self, path=None, create=False):
         path = os.path.join(self._root_path, path) if path else self._root_path
