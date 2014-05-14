@@ -6,6 +6,13 @@ from mockredis import mock_strict_redis_client
 from docker_registry.core import lru
 
 
+@patch('docker_registry.core.lru.redis.StrictRedis', mock_strict_redis_client)
+def boot():
+    lru.init()
+
+boot()
+
+
 class Dumb(object):
 
     value = {}
@@ -29,10 +36,7 @@ class Dumb(object):
 
 class TestLru(object):
 
-    @patch('docker_registry.core.lru.redis.StrictRedis',
-           mock_strict_redis_client)
     def setUp(self):
-        lru.init()
         self._dumb = Dumb()
 
     def testNonExistentGet(self):
@@ -47,17 +51,25 @@ class TestLru(object):
         assert self._dumb.get('foo') == 'bar'
         assert self._dumb.get('foo') == 'bar'
 
-    def testSetComplex(self):
+    def testSetEncodedUtf8(self):
         content = u"∫".encode('utf8')
         self._dumb.set('foo', content)
         assert self._dumb.get('foo') == content
         assert self._dumb.get('foo') == content
 
+    def testSetEncodedUnicode(self):
+        content = u"∫"
+        self._dumb.set('foo', content)
+        assert self._dumb.get('foo') == content
+        assert self._dumb.get('foo') == content
+
+    def testSetEncodedUniproblems(self):
         content = "∫"
         self._dumb.set('foo', content)
         assert self._dumb.get('foo') == content
         assert self._dumb.get('foo') == content
 
+    def testSetBytes(self):
         content = b"a"
         self._dumb.set('foo', content)
         assert self._dumb.get('foo') == content
