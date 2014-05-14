@@ -9,6 +9,7 @@ api:
     buildscript: ./build.sh
     systempackages:
         - liblzma-dev
+        - libffi-dev
     ports:
         www: http
 
