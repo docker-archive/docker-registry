@@ -2,6 +2,7 @@
 
 from mock import patch
 from mockredis import mock_strict_redis_client
+from nose.tools import raises
 
 from docker_registry.core import lru
 
@@ -57,13 +58,14 @@ class TestLru(object):
         assert self._dumb.get('foo') == content
         assert self._dumb.get('foo') == content
 
-    def testSetEncodedUnicode(self):
+    @raises(Exception)
+    def testSetUnicode(self):
         content = u"∫"
         self._dumb.set('foo', content)
         assert self._dumb.get('foo') == content
         assert self._dumb.get('foo') == content
 
-    def testSetEncodedUniproblems(self):
+    def testSetUniproblems(self):
         content = "∫"
         self._dumb.set('foo', content)
         assert self._dumb.get('foo') == content
