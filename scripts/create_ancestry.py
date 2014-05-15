@@ -7,6 +7,7 @@ import sys
 
 import simplejson as json
 
+from docker_registry.core import exceptions
 from docker_registry import storage
 
 
@@ -30,7 +31,7 @@ def get_image_parent(image_id):
         if info['id'] != image_id:
             warning('image_id != json image_id for image_id: ' + image_id)
         parent_id = info.get('parent')
-    except IOError:
+    except exceptions.FileNotFoundError:
         warning('graph is broken for image_id: {0}'.format(image_id))
     images_cache[image_id] = parent_id
     return parent_id
@@ -67,7 +68,7 @@ def resolve_all_tags():
                     if not fname.startswith('tag_'):
                         continue
                     yield store.get_content(tag)
-            except OSError:
+            except exceptions.FileNotFoundError:
                 pass
 
 
@@ -96,7 +97,7 @@ def load_image_json(image_id):
             warning('{0} is broken (json\'s id mismatch)'.format(image_id))
             return
         return json_data
-    except (IOError, json.JSONDecodeError):
+    except (IOError, exceptions.FileNotFoundError, json.JSONDecodeError):
         warning('{0} is broken (invalid json)'.format(image_id))
 
 

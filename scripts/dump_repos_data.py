@@ -4,6 +4,7 @@ import sys
 
 import simplejson as json
 
+from docker_registry.core import exceptions
 from docker_registry import storage
 
 store = storage.load()
@@ -28,7 +29,7 @@ def walk_ancestry(image_id):
         ancestry_data = store.get_content(store.image_ancestry_path(image_id))
         ancestry = json.loads(ancestry_data)
         return iter(ancestry)
-    except IOError:
+    except exceptions.FileNotFoundError:
         print('Ancestry file for {0} is missing'.format(image_id))
     return []
 

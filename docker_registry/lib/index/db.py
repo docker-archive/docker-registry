@@ -115,7 +115,7 @@ class SQLAlchemyIndex (Index):
 
     def results(self, search_term):
         session = self._session()
-        like_term = '%{}%'.format(search_term)
+        like_term = '%%%s%%' % search_term
         repositories = session.query(Repository).filter(
             sqlalchemy.sql.or_(
                 Repository.name.like(like_term),

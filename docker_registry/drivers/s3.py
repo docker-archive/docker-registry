@@ -9,8 +9,8 @@ This is a s3 based driver.
 
 import docker_registry.core.boto as coreboto
 # from docker_registry.core import exceptions
-from docker_registry.core import lru
 from docker_registry.core import compat
+from docker_registry.core import lru
 
 # import gevent.monkey
 # gevent.monkey.patch_all()
