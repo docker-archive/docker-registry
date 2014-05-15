@@ -52,6 +52,8 @@ class TestLru(object):
         self._dumb.set('foo', 'bar')
         assert self._dumb.get('foo') == 'bar'
         assert self._dumb.get('foo') == 'bar'
+        self._dumb.set('foo', 'baz')
+        assert self._dumb.get('foo') == 'baz'
 
     def testSetEncodedUtf8(self):
         content = u"∫".encode('utf8')
