@@ -187,6 +187,45 @@ class Driver(object):
         iterator = self._storage.list_directory(path)
         iterator.next()
 
+    def test_list_directory(self):
+        base = self.gen_random_string()
+        filename1 = self.gen_random_string()
+        filename2 = self.gen_random_string()
+        fb1 = '%s/%s' % (base, filename1)
+        fb2 = '%s/%s' % (base, filename2)
+        content = self.gen_random_string()
+        self._storage.put_content(fb1, content)
+        self._storage.put_content(fb2, content)
+        assert sorted([fb1, fb2]
+                      ) == sorted(list(self._storage.list_directory(base)))
+
+    # def test_root_list_directory(self):
+    #     fb1 = self.gen_random_string()
+    #     fb2 = self.gen_random_string()
+    #     content = self.gen_random_string()
+    #     self._storage.put_content(fb1, content)
+    #     self._storage.put_content(fb2, content)
+    #     print(list(self._storage.list_directory()))
+    #     assert sorted([fb1, fb2]
+    #                   ) == sorted(list(self._storage.list_directory()))
+
+    @raises(exceptions.FileNotFoundError, StopIteration)
+    def test_empty_after_remove_list_directory(self):
+        base = self.gen_random_string()
+        filename1 = self.gen_random_string()
+        filename2 = self.gen_random_string()
+        fb1 = '%s/%s' % (base, filename1)
+        fb2 = '%s/%s' % (base, filename2)
+        content = self.gen_random_string()
+        self._storage.put_content(fb1, content)
+        self._storage.put_content(fb2, content)
+
+        self._storage.remove(fb1)
+        self._storage.remove(fb2)
+
+        iterator = self._storage.list_directory(base)
+        iterator.next()
+
     def test_paths(self):
         namespace = 'namespace'
         repository = 'repository'

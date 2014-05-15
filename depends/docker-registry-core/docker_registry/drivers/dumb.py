@@ -90,12 +90,12 @@ class Storage(driver.Base):
             pass
 
     def list_directory(self, path=None):
-        if path not in self._storage:
-            raise exceptions.FileNotFoundError('%s is not there' % path)
+        # if path not in self._storage:
+        #     raise exceptions.FileNotFoundError('%s is not there' % path)
 
         ls = []
         for k in self._storage.keys():
-            if (not k == path) and k.startswith(path):
+            if (not k == path) and k.startswith(path or ''):
                 ls.append(k)
 
         if not len(ls):
