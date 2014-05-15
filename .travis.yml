@@ -1,9 +1,18 @@
 language: python
+
 python:
+  - "2.6"
   - "2.7"
+
 install:
-  - pip install tox
-script: tox
+  - pip install depends/docker-registry-core/
+  - pip install -rtests/requirements.txt
+  - pip install .
+
+script: SETTINGS_FLAVOR=test DOCKER_REGISTRY_CONFIG=config_test.yml python setup.py nosetests
+
 before_install:
   - sudo apt-get update
-  - sudo apt-get install build-essential python-dev libevent-dev python-pip liblzma-dev
+  - sudo apt-get install libevent-dev liblzma-dev
+
+# build-essential python-dev
