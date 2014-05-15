@@ -5,13 +5,14 @@ python:
   - "3.2"
   - "3.3"
   - "3.4"
-  - "pypy"
 
 install:
-  - pip install -M tox
+  - pip install -rtests/requirements.txt
+  - pip install .
 
-script: tox
+script: python setup.py nosetests
 
 # before_install:
 #   - sudo apt-get update
 #   - sudo apt-get install build-essential python-dev libevent-dev python-pip liblzma-dev
+

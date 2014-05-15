@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import random
 import string
 
@@ -8,6 +9,8 @@ from nose.tools import raises
 from ..core import compat
 from ..core import driver
 from ..core import exceptions
+
+logger = logging.getLogger(__name__)
 
 
 class Driver(object):
@@ -133,20 +136,23 @@ class Driver(object):
     def test_stream(self):
         filename = self.gen_random_string()
         # test 7MB
-        content = self.gen_random_string(7 * 1024 * 1024).encode('utf8')
+        content = self.gen_random_string(7).encode('utf8')  # * 1024 * 1024
         # test exists
         io = compat.StringIO(content)
+        logger.debug("%s should NOT exists still" % filename)
         assert not self._storage.exists(filename)
 
         self._storage.stream_write(filename, io)
         io.close()
 
+        logger.debug("%s should exist now" % filename)
         assert self._storage.exists(filename)
 
         # test read / write
         data = compat.bytes()
         for buf in self._storage.stream_read(filename):
             data += buf
+
         assert content == data
 
         # test bytes_range only if the storage backend suppports it
@@ -158,6 +164,12 @@ class Driver(object):
                 data += buf
             expected_content = content[bytes_range[0]:bytes_range[1] + 1]
             assert data == expected_content
+
+        # logger.debug("Content length is %s" % len(content))
+        # logger.debug("And retrieved content length should equal it: %s" %
+        #              len(data))
+        # logger.debug("got content %s" % content)
+        # logger.debug("got data %s" % data)
 
         # test remove
         self._storage.remove(filename)

@@ -1,3 +1,15 @@
+# -*- coding: utf-8 -*-
+"""
+docker_registry.core.boto
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Might be useful for
+ * Amazon Simple Storage Service (S3)
+ * Google Cloud Storage
+ * Amazon Glacier
+ * Amazon Elastic Block Store (EBS)
+
+"""
 
 import gevent.monkey
 gevent.monkey.patch_all()
@@ -8,8 +20,10 @@ import math
 import os
 import tempfile
 
-from ..lib import cache_lru
-from . import Storage
+from . import driver
+from . import lru
+
+from .exceptions import FileNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -94,13 +108,14 @@ class ParallelKey(object):
         return buf
 
 
-class BotoStorage(Storage):
+class Base(driver.Base):
 
     supports_bytes_range = True
 
-    def __init__(self, config):
+    def __init__(self, path=None, config=None):
         self._config = config
-        self._root_path = self._config.storage_path
+        self._root_path = config.get('storage_path', '/test')
+        # logger.info("WHATDFUCK %s" % self._root_path)
         self._boto_conn = self.makeConnection()
         self._boto_bucket = self._boto_conn.get_bucket(
             self._config.boto_bucket)
@@ -144,7 +159,7 @@ class BotoStorage(Storage):
             headers = {'Range': 'bytes={0}-{1}'.format(*bytes_range)}
         key = self._boto_bucket.lookup(path, headers=headers)
         if not key:
-            raise IOError('No such key: \'{0}\''.format(path))
+            raise FileNotFoundError('%s is not there' % path)
         if not bytes_range and key.size > 1024 * 1024:
             # Use the parallel key only if the key size is > 1MB
             # And if bytes_range is not enabled (since ParallelKey is already
@@ -165,31 +180,31 @@ class BotoStorage(Storage):
             ln = len(self._root_path)
         exists = False
         for key in self._boto_bucket.list(prefix=path, delimiter='/'):
+            if '%s/' % key.name == path:
+                continue
             exists = True
             name = key.name
             if name.endswith('/'):
                 yield name[ln:-1]
             else:
                 yield name[ln:]
-        if exists is False:
-            # In order to be compliant with the LocalStorage API. Even though
-            # GS does not have a concept of folders.
-            raise OSError('No such directory: \'{0}\''.format(path))
+        if not exists:
+            raise FileNotFoundError('%s is not there' % path)
 
     def get_size(self, path):
         path = self._init_path(path)
         # Lookup does a HEAD HTTP Request on the object
         key = self._boto_bucket.lookup(path)
         if not key:
-            raise OSError('No such key: \'{0}\''.format(path))
+            raise FileNotFoundError('%s is not there' % path)
         return key.size
 
-    @cache_lru.get
+    @lru.get
     def get_content(self, path):
         path = self._init_path(path)
         key = self.makeKey(path)
         if not key.exists():
-            raise IOError('No such key: \'{0}\''.format(path))
+            raise FileNotFoundError('%s is not there' % path)
         return key.get_contents_as_string()
 
     def exists(self, path):
@@ -197,7 +212,7 @@ class BotoStorage(Storage):
         key = self.makeKey(path)
         return key.exists()
 
-    @cache_lru.remove
+    @lru.remove
     def remove(self, path):
         path = self._init_path(path)
         key = self.makeKey(path)
@@ -208,5 +223,11 @@ class BotoStorage(Storage):
         # We assume it's a directory
         if not path.endswith('/'):
             path += '/'
+        exists = False
         for key in self._boto_bucket.list(prefix=path, delimiter='/'):
+            if '%s/' % key.name == path:
+                continue
+            exists = True
             key.delete()
+        if not exists:
+            raise FileNotFoundError('%s is not there' % path)

@@ -1,28 +1,33 @@
+# -*- coding: utf-8 -*-
+"""
+docker_registry.drivers.s3
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-import gevent.monkey
-gevent.monkey.patch_all()
+This is a s3 based driver.
 
-import cStringIO as StringIO
+"""
+
+import docker_registry.core.boto as coreboto
+# from docker_registry.core import exceptions
+from docker_registry.core import lru
+from docker_registry.core import compat
+
+# import gevent.monkey
+# gevent.monkey.patch_all()
+
 import logging
 
 import boto.s3
 import boto.s3.connection
 import boto.s3.key
 
-from ..lib import cache_lru
-from .boto_base import BotoStorage
-
-
 logger = logging.getLogger(__name__)
 
 
-class S3Storage(BotoStorage):
-
-    def __init__(self, config):
-        BotoStorage.__init__(self, config)
+class Storage(coreboto.Base):
 
     def _build_connection_params(self):
-        kwargs = BotoStorage._build_connection_params(self)
+        kwargs = super(Storage, self)._build_connection_params()
         if self._config.s3_secure is not None:
             kwargs['is_secure'] = (self._config.s3_secure is True)
         return kwargs
@@ -45,7 +50,7 @@ class S3Storage(BotoStorage):
     def makeKey(self, path):
         return boto.s3.key.Key(self._boto_bucket, path)
 
-    @cache_lru.put
+    @lru.set
     def put_content(self, path, content):
         path = self._init_path(path)
         key = self.makeKey(path)
@@ -67,7 +72,7 @@ class S3Storage(BotoStorage):
                 buf = fp.read(buffer_size)
                 if not buf:
                     break
-                io = StringIO.StringIO(buf)
+                io = compat.StringIO(buf)
                 mp.upload_part_from_file(io, num_part)
                 num_part += 1
                 io.close()

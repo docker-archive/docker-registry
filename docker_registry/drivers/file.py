@@ -93,7 +93,9 @@ class Storage(driver.Base):
                 pass
 
     def list_directory(self, path=None):
-        prefix = path + '/'
+        prefix = ''
+        if path:
+            prefix = '%s/' % path
         path = self._init_path(path)
         exists = False
         try:

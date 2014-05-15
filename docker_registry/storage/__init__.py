@@ -33,26 +33,6 @@ def load(kind=None):
     if kind in _storage:
         return _storage[kind]
 
-    store = engine.fetch(kind)(None, config=cfg)
+    _storage[kind] = engine.fetch(kind)(None, config=cfg)
 
-    # if kind == 'swift':
-    #     store = engine.fetch(kind)(None, config=cfg)
-    # elif kind == 'file':
-    #     store = engine.fetch(kind)(None, config=cfg)
-
-    # if kind == 's3':
-    #     import s3
-    #     store = s3.S3Storage(cfg)
-    # elif kind == 'glance':
-    #     import glance
-    #     store = glance.GlanceStorage(cfg)
-    # elif kind == 'elliptics':
-    #     import ellipticsbackend
-    #     store = ellipticsbackend.EllipticsStorage(cfg)
-    # elif kind == 'gcs':
-    #     import gcs
-    #     store = gcs.GSStorage(cfg)
-    # else:
-    #     raise ValueError('Not supported storage \'{0}\''.format(kind))
-    _storage[kind] = store
-    return store
+    return _storage[kind]
