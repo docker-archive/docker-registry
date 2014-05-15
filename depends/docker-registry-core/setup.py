@@ -33,7 +33,7 @@ setuptools.setup(
     maintainer_email=core.__email__,
     url='https://github.com/dotclout/docker-registry',
     description="Docker registry core package",
-    long_description=open('./README').read(),
+    long_description=open('./README.md').read(),
     # download_url=d,
     classifiers=['Development Status :: 4 - Beta',
                  'Intended Audience :: Developers',
