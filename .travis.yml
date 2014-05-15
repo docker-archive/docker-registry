@@ -13,6 +13,7 @@ install:
 
 # Install our tests requirements, and ourselves
   - pip install -rtests/requirements.txt
+  - pip install hacking==0.8.1
   - pip install .
 
 script: flake8 . && SETTINGS_FLAVOR=test DOCKER_REGISTRY_CONFIG=config_test.yml python setup.py nosetests

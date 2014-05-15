@@ -8,6 +8,7 @@ python:
 
 install:
   - pip install -rtests/requirements.txt
+  - pip install hacking==0.8.1
   - pip install .
 
 script: flake8 . && python setup.py nosetests
