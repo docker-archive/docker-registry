@@ -4,7 +4,12 @@ from docker_registry.core import driver as driveengine
 
 from docker_registry.testing import Config
 from docker_registry.testing import Driver
+# Mock any boto
+from docker_registry.testing import mock_boto  # noqa
 from docker_registry.testing import Query
+
+# Mock our s3 - xxx this smells like byte-range support is questionnable...
+from . import mock_s3   # noqa
 
 
 def getinit(name):

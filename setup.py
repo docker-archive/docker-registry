@@ -6,10 +6,7 @@ try:
 except ImportError:
     import distutils.core as setuptools
 
-import os
 import sys
-
-_abs_dir = os.path.dirname(os.path.abspath(__file__))
 
 requirements_txt = open('./requirements.txt')
 requirements = [line for line in requirements_txt]
