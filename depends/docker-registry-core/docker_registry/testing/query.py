@@ -22,7 +22,7 @@ class Query(object):
                              globals(), locals(), ['Storage'], 0)  # noqa
 
         assert resultdriver == storage.Storage
-        assert driver.Base in resultdriver.__bases__
+        assert issubclass(resultdriver, driver.Base)
         assert resultdriver.scheme == self.scheme
 
     @raises(exceptions.NotImplementedError)
