@@ -16,7 +16,7 @@ install:
   - pip install hacking==0.8.1
   - pip install .
 
-script: flake8 . && SETTINGS_FLAVOR=test DOCKER_REGISTRY_CONFIG=config_test.yml python setup.py nosetests
+script: SETTINGS_FLAVOR=test DOCKER_REGISTRY_CONFIG=config_test.yml flake8 . && SETTINGS_FLAVOR=test DOCKER_REGISTRY_CONFIG=config_test.yml python setup.py nosetests
 
 before_install:
   - sudo apt-get update
