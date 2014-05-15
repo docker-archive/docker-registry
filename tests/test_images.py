@@ -37,10 +37,10 @@ class TestImages(base.TestCase):
         layer_path = 'images/{0}/layer'.format(image_id)
 
         try:
-            resp = self.http_client.get('/v1/{}'.format(layer_path))
+            resp = self.http_client.get('/v1/%s' % layer_path)
             self.assertTrue(accel_header in resp.headers)
 
-            expected = '{}/{}'.format(accel_prefix, layer_path)
+            expected = '%s/%s' % (accel_prefix, layer_path)
             self.assertEqual(expected, resp.headers[accel_header])
 
             self.assertEqual('', resp.data)
