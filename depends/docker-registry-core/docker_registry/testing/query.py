@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from nose.tools import raises
+from nose import tools
 
 from ..core import driver
 from ..core import exceptions
@@ -25,6 +25,6 @@ class Query(object):
         assert issubclass(resultdriver, driver.Base)
         assert resultdriver.scheme == self.scheme
 
-    @raises(exceptions.NotImplementedError)
+    @tools.raises(exceptions.NotImplementedError)
     def testFetchingNonExistentDriver(self):
         driver.fetch("nonexistentstupidlynameddriver")

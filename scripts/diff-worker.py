@@ -9,7 +9,7 @@ import redis
 from docker_registry.lib import layers
 from docker_registry.lib import rlock
 from docker_registry.lib import rqueue
-from docker_registry import storage
+import docker_registry.storage as storage
 
 store = storage.load()
 

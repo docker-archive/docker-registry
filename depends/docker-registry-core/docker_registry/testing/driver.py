@@ -4,7 +4,7 @@ import logging
 import random
 import string
 
-from nose.tools import raises
+from nose import tools
 
 from ..core import compat
 from ..core import driver
@@ -118,17 +118,17 @@ class Driver(object):
         self._storage.remove(filename)
         assert not self._storage.exists(filename)
 
-    @raises(exceptions.FileNotFoundError)
+    @tools.raises(exceptions.FileNotFoundError)
     def test_read_inexistent(self):
         filename = self.gen_random_string()
         self._storage.get_content(filename)
 
-    @raises(exceptions.FileNotFoundError)
+    @tools.raises(exceptions.FileNotFoundError)
     def test_remove_inexistent(self):
         filename = self.gen_random_string()
         self._storage.remove(filename)
 
-    @raises(exceptions.FileNotFoundError)
+    @tools.raises(exceptions.FileNotFoundError)
     def test_get_size_inexistent(self):
         filename = self.gen_random_string()
         self._storage.get_size(filename)
@@ -175,14 +175,14 @@ class Driver(object):
         self._storage.remove(filename)
         assert not self._storage.exists(filename)
 
-    @raises(exceptions.FileNotFoundError)
+    @tools.raises(exceptions.FileNotFoundError)
     def test_stream_read_inexistent(self):
         filename = self.gen_random_string()
         data = compat.bytes()
         for buf in self._storage.stream_read(filename):
             data += buf
 
-    @raises(exceptions.FileNotFoundError)
+    @tools.raises(exceptions.FileNotFoundError)
     def test_inexistent_list_directory(self):
         notexist = self.gen_random_string()
         iterator = self._storage.list_directory(notexist)
@@ -190,7 +190,7 @@ class Driver(object):
 
     # XXX only elliptics return StopIteration for now - though we should
     # return probably that for all
-    @raises(exceptions.FileNotFoundError, StopIteration)
+    @tools.raises(exceptions.FileNotFoundError, StopIteration)
     def test_empty_list_directory(self):
         path = self.gen_random_string()
         content = self.gen_random_string().encode('utf8')
@@ -221,7 +221,7 @@ class Driver(object):
     #     assert sorted([fb1, fb2]
     #                   ) == sorted(list(self._storage.list_directory()))
 
-    @raises(exceptions.FileNotFoundError, StopIteration)
+    @tools.raises(exceptions.FileNotFoundError, StopIteration)
     def test_empty_after_remove_list_directory(self):
         base = self.gen_random_string()
         filename1 = self.gen_random_string()

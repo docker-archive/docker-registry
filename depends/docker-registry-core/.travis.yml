@@ -2,15 +2,15 @@ language: python
 python:
   - "2.6"
   - "2.7"
-  - "3.2"
-  - "3.3"
-  - "3.4"
+  # - "3.2"
+  # - "3.3"
+  # - "3.4"
 
 install:
   - pip install -rtests/requirements.txt
   - pip install .
 
-script: python setup.py nosetests
+script: flake8 . && python setup.py nosetests
 
 # before_install:
 #   - sudo apt-get update

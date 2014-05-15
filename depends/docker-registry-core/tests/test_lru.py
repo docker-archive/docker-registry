@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from mock import patch
-from mockredis import mock_strict_redis_client
-from nose.tools import raises
+import mock
+import mockredis
+from nose import tools
 
 from docker_registry.core import lru
 
 
-@patch('docker_registry.core.lru.redis.StrictRedis', mock_strict_redis_client)
+@mock.patch('docker_registry.core.lru.redis.StrictRedis',
+            mockredis.mock_strict_redis_client)
 def boot():
     lru.init()
 
@@ -58,7 +59,7 @@ class TestLru(object):
         assert self._dumb.get('foo') == content
         assert self._dumb.get('foo') == content
 
-    @raises(Exception)
+    @tools.raises(Exception)
     def testSetUnicode(self):
         content = u"∫"
         self._dumb.set('foo', content)

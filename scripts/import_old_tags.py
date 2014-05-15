@@ -2,7 +2,7 @@
 
 import sys
 
-from docker_registry import storage
+import docker_registry.storage as storage
 
 
 # Copy/Pasted from old models

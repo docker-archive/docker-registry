@@ -8,7 +8,7 @@ import sys
 import simplejson as json
 
 from docker_registry.core import exceptions
-from docker_registry import storage
+import docker_registry.storage as storage
 
 
 store = storage.load()

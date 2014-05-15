@@ -22,7 +22,7 @@ class TestImages(base.TestCase):
         layer_data = self.gen_random_string(1024)
         self.upload_image(image_id, parent_id=None, layer=layer_data)
 
-        from docker_registry import images
+        import docker_registry.images as images
 
         # ensure the storage mechanism is LocalStorage or this test is bad
         self.assertTrue(images.store.scheme == 'file',

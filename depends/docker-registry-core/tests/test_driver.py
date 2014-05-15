@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from docker_registry.testing import Driver
-from docker_registry.testing import Query
+from docker_registry import testing
 
 
-class TestQuery(Query):
+class TestQuery(testing.Query):
     def __init__(self):
         self.scheme = 'dumb'
 
 
-class TestDriver(Driver):
+class TestDriver(testing.Driver):
     def __init__(self):
         self.scheme = 'dumb'
         self.path = ''

@@ -4,7 +4,7 @@
    It is called from lib/storage/s3'''
 
 from docker_registry.core import exceptions
-from docker_registry.drivers import s3
+import docker_registry.drivers.s3 as s3
 from docker_registry.testing import utils
 
 

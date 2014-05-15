@@ -5,7 +5,7 @@ import requests
 
 from docker_registry.lib import checksums
 from docker_registry.lib import config
-from docker_registry import storage
+import docker_registry.storage as storage
 
 import base
 
