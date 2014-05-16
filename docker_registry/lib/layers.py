@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import tarfile
 import tempfile
 
 import backports.lzma as lzma
@@ -12,21 +11,25 @@ from .. import storage
 from . import cache
 from . import rqueue
 
+# this is our vendored 'tarfile' from python v2.7.6, with xattr support
+import xtarfile
+
+
 store = storage.load()
 
 FILE_TYPES = {
-    tarfile.REGTYPE: 'f',
-    tarfile.AREGTYPE: 'f',
-    tarfile.LNKTYPE: 'l',
-    tarfile.SYMTYPE: 's',
-    tarfile.CHRTYPE: 'c',
-    tarfile.BLKTYPE: 'b',
-    tarfile.DIRTYPE: 'd',
-    tarfile.FIFOTYPE: 'i',
-    tarfile.CONTTYPE: 't',
-    tarfile.GNUTYPE_LONGNAME: 'L',
-    tarfile.GNUTYPE_LONGLINK: 'K',
-    tarfile.GNUTYPE_SPARSE: 'S',
+    xtarfile.REGTYPE: 'f',
+    xtarfile.AREGTYPE: 'f',
+    xtarfile.LNKTYPE: 'l',
+    xtarfile.SYMTYPE: 's',
+    xtarfile.CHRTYPE: 'c',
+    xtarfile.BLKTYPE: 'b',
+    xtarfile.DIRTYPE: 'd',
+    xtarfile.FIFOTYPE: 'i',
+    xtarfile.CONTTYPE: 't',
+    xtarfile.GNUTYPE_LONGNAME: 'L',
+    xtarfile.GNUTYPE_LONGLINK: 'K',
+    xtarfile.GNUTYPE_SPARSE: 'S',
 }
 
 logger = logging.getLogger(__name__)
@@ -180,7 +183,7 @@ def get_image_files_from_fobj(layer_file):
     '''
     layer_file.seek(0)
     archive_file = Archive(layer_file)
-    tar_file = tarfile.open(fileobj=archive_file)
+    tar_file = xtarfile.open(fileobj=archive_file)
     files = read_tarfile(tar_file)
     return files
 
