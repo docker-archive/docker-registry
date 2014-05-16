@@ -6,10 +6,11 @@ import StringIO
 
 from nose import tools
 
-import docker_registry.testing as testing
 from docker_registry.core import exceptions
+import docker_registry.testing as testing
 
 from docker_registry.testing import mock_boto  # noqa
+
 from . import mock_s3   # noqa
 
 
