@@ -25,7 +25,7 @@ __copyright__ = 'Copyright 2014 Docker'
 __credits__ = []
 
 __license__ = 'Apache 2.0'
-__version__ = '1.0.3'
+__version__ = '1.0.4'
 __maintainer__ = 'Docker'
 __email__ = 'dev@docker.com'
 __status__ = 'Production'
