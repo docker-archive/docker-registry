@@ -95,8 +95,9 @@ class TestDriver(testing.Driver):
         sys.stdout = output
 
         # As key is mocked for unittest purposes, we call make_request directly
-        dummy = '{}\n{}\n{}\n{}\n'.format(
-            '#' * 16, ('d', 1), {'v': 2}, '#' * 16)
+        dummy = "################\n('d', 1)\n{'v': 2}\n################\n"
+        # '{}\n{}\n{}\n{}\n'.format(
+        #     '#' * 16, ('d', 1), {'v': 2}, '#' * 16)
         result = self._storage._boto_bucket.connection.make_request(
             'd', 1, v=2)
         assert output.getvalue() == dummy
