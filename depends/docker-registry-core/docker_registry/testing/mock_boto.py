@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
-'''Monkeypatch s3 boto library for unittesting.'''
+'''Monkeypatch s3 boto library for unittesting.
+XXX this mock is crass and break gcs.
+Look into moto instead.'''
 
 import boto.s3.bucket
 import boto.s3.connection
