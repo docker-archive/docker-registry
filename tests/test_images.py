@@ -55,6 +55,7 @@ class TestImages(base.TestCase):
         self.upload_image(image_id, parent_id=parent_id, layer=layer_data)
         # test fetching the ancestry
         resp = self.http_client.get('/v1/images/{0}/ancestry'.format(image_id))
+        # Note(dmp): unicode patch XXX not applied assume requests does the job
         ancestry = json.loads(resp.data)
         self.assertEqual(len(ancestry), 2)
         self.assertEqual(ancestry[0], image_id)

@@ -334,10 +334,11 @@ def get_image_json(image_id, headers):
 def get_image_ancestry(image_id, headers):
     ancestry_path = store.image_ancestry_path(image_id)
     try:
-        data = store.get_content(ancestry_path)
+        # Note(dmp): unicode patch
+        data = store.get_json(ancestry_path)
     except exceptions.FileNotFoundError:
         return toolkit.api_error('Image not found', 404)
-    return toolkit.response(json.loads(data), headers=headers)
+    return toolkit.response(data, headers=headers)
 
 
 def check_images_list(image_id):
@@ -347,7 +348,8 @@ def check_images_list(image_id):
     repository = toolkit.get_repository()
     try:
         path = store.images_list_path(*repository)
-        images_list = json.loads(store.get_content(path))
+        # Note(dmp): unicode patch
+        images_list = store.get_json(path)
     except exceptions.FileNotFoundError:
         return False
     return (image_id in images_list)
@@ -367,6 +369,7 @@ def load_checksums(image_id):
     checksum_path = store.image_checksum_path(image_id)
     data = store.get_content(checksum_path)
     try:
+        # Note(dmp): unicode patch NOT applied here
         return json.loads(data)
     except ValueError:
         # NOTE(sam): For backward compatibility only, existing data may not be
@@ -378,7 +381,8 @@ def load_checksums(image_id):
 @toolkit.requires_auth
 def put_image_json(image_id):
     try:
-        data = json.loads(flask.request.data)
+        # Note(dmp): unicode patch
+        data = json.loads(flask.request.data.decode('utf8'))
     except json.JSONDecodeError:
         pass
     if not data or not isinstance(data, dict):

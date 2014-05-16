@@ -32,12 +32,14 @@ class TestTags(base.TestCase):
         url = '/v1/repositories/foo/{0}/tags/latest'.format(repos_name)
         resp = self.http_client.get(url)
         self.assertEqual(resp.status_code, 200, resp.data)
+        # Note(dmp): unicode patch XXX not applied assume requests does the job
         self.assertEqual(json.loads(resp.data), image_id, resp.data)
 
         # test repository json
         url = '/v1/repositories/foo/{0}/json'.format(repos_name)
         resp = self.http_client.get(url)
         self.assertEqual(resp.status_code, 200, resp.data)
+        # Note(dmp): unicode patch XXX not applied assume requests does the job
         props = json.loads(resp.data)
         self.assertEqual(props['docker_version'], '0.7.2-dev')
         self.assertEqual(props['docker_go_version'], 'go1.2')
@@ -48,6 +50,7 @@ class TestTags(base.TestCase):
         url = '/v1/repositories/foo/{0}/tags/latest/json'.format(repos_name)
         resp = self.http_client.get(url)
         self.assertEqual(resp.status_code, 200, resp.data)
+        # Note(dmp): unicode patch XXX not applied assume requests does the job
         props = json.loads(resp.data)
         self.assertEqual(props['docker_version'], '0.7.2-dev')
         self.assertEqual(props['docker_go_version'], 'go1.2')
@@ -72,6 +75,7 @@ class TestTags(base.TestCase):
         url = '/v1/repositories/foo/{0}/tags/latest/json'.format(repos_name)
         resp = self.http_client.get(url)
         self.assertEqual(resp.status_code, 200, resp.data)
+        # Note(dmp): unicode patch XXX not applied assume requests does the job
         props = json.loads(resp.data)
         self.assertEqual(props['docker_version'], '0.7.2-dev')
         self.assertEqual(props['docker_go_version'], 'go1.2')
@@ -82,6 +86,7 @@ class TestTags(base.TestCase):
         url = '/v1/repositories/foo/{0}/tags/test/json'.format(repos_name)
         resp = self.http_client.get(url)
         self.assertEqual(resp.status_code, 200, resp.data)
+        # Note(dmp): unicode patch XXX not applied assume requests does the job
         props = json.loads(resp.data)
         self.assertEqual(props['docker_version'], '0.7.2-dev')
         self.assertEqual(props['docker_go_version'], 'go1.2')
@@ -92,6 +97,7 @@ class TestTags(base.TestCase):
         url = '/v1/repositories/foo/{0}/tags'.format(repos_name)
         resp = self.http_client.get(url)
         self.assertEqual(resp.status_code, 200, resp.data)
+        # Note(dmp): unicode patch XXX not applied assume requests does the job
         self.assertEqual(len(json.loads(resp.data)), 2, resp.data)
 
         # test tag delete

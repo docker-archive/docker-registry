@@ -31,7 +31,8 @@ def set_properties(namespace, repo):
                  repo))
     data = None
     try:
-        data = json.loads(flask.request.data)
+        # Note(dmp): unicode patch
+        data = json.loads(flask.request.data.decode('utf8'))
     except json.JSONDecodeError:
         pass
     if not data or not isinstance(data, dict):
@@ -119,7 +120,8 @@ def get_repository_json(namespace, repository):
             'os': 'linux',
             'kernel': None}
     try:
-        data = json.loads(store.get_content(json_path))
+        # Note(dmp): unicode patch
+        data = store.get_json(json_path)
     except exceptions.FileNotFoundError:
         if mirroring.is_mirror():
             # use code 404 to trigger the source_lookup decorator.
@@ -144,7 +146,8 @@ def get_repository_tag_json(namespace, repository, tag):
             'os': 'linux',
             'kernel': None}
     try:
-        data = json.loads(store.get_content(json_path))
+        # Note(dmp): unicode patch
+        data = store.get_json(json_path)
     except exceptions.FileNotFoundError:
         # We ignore the error, we'll serve the default json declared above
         pass
@@ -175,7 +178,8 @@ def put_tag(namespace, repository, tag):
                  namespace, repository, tag))
     data = None
     try:
-        data = json.loads(flask.request.data)
+        # Note(dmp): unicode patch
+        data = json.loads(flask.request.data.decode('utf8'))
     except json.JSONDecodeError:
         pass
     if not data or not isinstance(data, basestring):

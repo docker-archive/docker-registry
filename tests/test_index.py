@@ -39,6 +39,7 @@ class TestIndex(base.TestCase):
         # GET
         resp = self.http_client.get('/v1/repositories/{0}/images'.format(repo))
         self.assertEqual(resp.status_code, 200, resp.data)
+        # Note(dmp): unicode patch XXX not applied assume requests does the job
         data = json.loads(resp.data)
         self.assertEqual(len(data), 2)
         self.assertTrue('id' in data[0])

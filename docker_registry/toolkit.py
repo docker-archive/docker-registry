@@ -122,6 +122,7 @@ def validate_parent_access(parent_id):
         ))
         return False
     try:
+        # Note(dmp): unicode patch XXX not applied! Assuming requests does it
         logger.debug('validate_parent: Content: {0}'.format(resp.text))
         return json.loads(resp.text).get('access', False)
     except json.JSONDecodeError:
@@ -149,6 +150,7 @@ def validate_token(auth):
         return False
     store = storage.load()
     try:
+        # Note(dmp): unicode patch XXX not applied (requests)
         images_list = [i['id'] for i in json.loads(resp.text)]
         store.put_content(store.images_list_path(*full_repos_name),
                           json.dumps(images_list))

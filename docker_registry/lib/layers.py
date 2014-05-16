@@ -37,10 +37,11 @@ def generate_ancestry(image_id, parent_id=None):
         store.put_content(store.image_ancestry_path(image_id),
                           json.dumps([image_id]))
         return
-    data = store.get_content(store.image_ancestry_path(parent_id))
-    data = json.loads(data)
+    # Note(dmp): unicode patch
+    data = store.get_json(store.image_ancestry_path(parent_id))
     data.insert(0, image_id)
-    store.put_content(store.image_ancestry_path(image_id), json.dumps(data))
+    # Note(dmp): unicode patch
+    store.put_json(store.image_ancestry_path(image_id), data)
 
 
 class Archive(lzma.LZMAFile):
@@ -236,8 +237,10 @@ def get_image_diff_json(image_id):
 
     # we need all ancestral layers to calculate the diff
     ancestry_path = store.image_ancestry_path(image_id)
-    ancestry = json.loads(store.get_content(ancestry_path))[1:]
+    # Note(dmp): unicode patch
+    ancestry = store.get_json(ancestry_path)[1:]
     # grab the files from the layer
+    # Note(dmp): unicode patch NOT applied - implications not clear
     files = json.loads(get_image_files_json(image_id))
     # convert to a dictionary by filename
     info_map = get_file_info_map(files)
@@ -249,6 +252,7 @@ def get_image_diff_json(image_id):
     # walk backwards in time by iterating the ancestry
     for id in ancestry:
         # get the files from the current ancestor
+        # Note(dmp): unicode patch NOT applied - implications not clear
         ancestor_files = json.loads(get_image_files_json(id))
         # convert to a dictionary of the files mapped by filename
         ancestor_map = get_file_info_map(ancestor_files)

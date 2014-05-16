@@ -26,8 +26,8 @@ def walk_all_tags():
 
 def walk_ancestry(image_id):
     try:
-        ancestry_data = store.get_content(store.image_ancestry_path(image_id))
-        ancestry = json.loads(ancestry_data)
+        # Note(dmp): unicode patch
+        ancestry = store.get_json(store.image_ancestry_path(image_id))
         return iter(ancestry)
     except exceptions.FileNotFoundError:
         print('Ancestry file for {0} is missing'.format(image_id))

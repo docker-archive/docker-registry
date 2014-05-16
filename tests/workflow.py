@@ -146,12 +146,14 @@ class TestWorkflow(base.TestCase):
         self.assertEqual(resp.status_code, 200, resp.text)
         self.cookies = resp.cookies
         # Docker -> Registry
+        # Note(dmp): unicode patch XXX not applied assume requests does the job
         image_id = json.loads(resp.text)
         resp = requests.get('{0}/v1/images/{1}/ancestry'.format(
             self.registry_endpoint, image_id),
             cookies=self.cookies)
         self.update_cookies(resp)
         self.assertEqual(resp.status_code, 200, resp.text)
+        # Note(dmp): unicode patch XXX not applied assume requests does the job
         ancestry = json.loads(resp.text)
         # We got the ancestry, let's fetch all the images there
         for image_id in ancestry:

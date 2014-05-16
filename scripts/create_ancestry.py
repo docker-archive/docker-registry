@@ -27,7 +27,8 @@ def get_image_parent(image_id):
     image_json = store.image_json_path(image_id)
     parent_id = None
     try:
-        info = json.loads(store.get_content(image_json))
+        # Note(dmp): unicode patch
+        info = store.get_json(image_json)
         if info['id'] != image_id:
             warning('image_id != json image_id for image_id: ' + image_id)
         parent_id = info.get('parent')
@@ -92,7 +93,8 @@ def load_image_json(image_id):
     try:
         json_path = store.image_json_path(image_id)
         json_data = store.get_content(json_path)
-        info = json.loads(json_data)
+        # Note(dmp): unicode patch
+        info = json.loads(json_data.decode('utf8'))
         if image_id != info['id']:
             warning('{0} is broken (json\'s id mismatch)'.format(image_id))
             return

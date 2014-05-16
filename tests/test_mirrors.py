@@ -59,6 +59,7 @@ class TestMirrorDecorator(base.TestCase):
 
         resp_2 = self.http_client.get('/v1/images/cafebabe0145/json')
         self.assertEqual(resp_2.status_code, 200)
+        # Note(dmp): unicode patch XXX not applied assume requests does the job
         json_data = json.loads(resp_2.data)
         assert 'id' in json_data
         assert 'created' in json_data
@@ -66,6 +67,7 @@ class TestMirrorDecorator(base.TestCase):
 
         resp_3 = self.http_client.get('/v1/images/cafebabe0145/ancestry')
         self.assertEqual(resp_3.status_code, 200)
+        # Note(dmp): unicode patch XXX not applied assume requests does the job
         json_data_2 = json.loads(resp_3.data)
         self.assertEqual(len(json_data_2), 1)
         self.assertEqual(json_data_2[0], 'cafebabe0145')
