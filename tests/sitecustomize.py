@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
 
-'''Setup testing entry point for the following:
-    * Add gevent exception workaround'''
+'''This is a dirty hack in order to have gevent monkeying kick in before
+nose and avoid the dreaded key error'''
 
 # Prevent gevent monkeypatching used on lib/storage/s3 to throw KeyError
 # exception. Should be loaded as early as posible:
