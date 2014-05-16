@@ -1,3 +1,8 @@
+<!><!><!><!>
+This is the README for the development version of the registry.
+If you are looking for documentation about the stable, released version, [check the tag](https://github.com/dotcloud/docker-registry/tree/0.6.9)
+<!><!><!><!>
+
 Docker-Registry
 ===============
 
