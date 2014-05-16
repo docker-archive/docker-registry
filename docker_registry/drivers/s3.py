@@ -7,6 +7,9 @@ This is a s3 based driver.
 
 """
 
+import gevent.monkey
+gevent.monkey.patch_all()
+
 import docker_registry.core.boto as coreboto
 # from docker_registry.core import exceptions
 from docker_registry.core import compat
@@ -25,6 +28,9 @@ logger = logging.getLogger(__name__)
 
 
 class Storage(coreboto.Base):
+
+    def __init__(self, path, config):
+        super(Storage, self).__init__(path, config)
 
     def _build_connection_params(self):
         kwargs = super(Storage, self)._build_connection_params()
