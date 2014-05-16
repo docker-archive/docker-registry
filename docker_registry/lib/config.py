@@ -26,13 +26,18 @@ class Config(object):
 def _walk_object(obj, callback):
     if not hasattr(obj, '__iter__'):
         return callback(obj)
+    obj_new = {}
     if isinstance(obj, dict):
         for i, value in obj.iteritems():
-            obj[i] = _walk_object(value, callback)
-        return obj
+            value = _walk_object(value, callback)
+            if value or value == '':
+                obj_new[i] = value
+        return obj_new
     for i, value in enumerate(obj):
-        obj[i] = _walk_object(value, callback)
-    return obj
+        value = _walk_object(value, callback)
+        if value or value == '':
+            obj_new[i] = value
+    return obj_new
 
 
 def convert_env_vars(config):
@@ -40,7 +45,7 @@ def convert_env_vars(config):
         if isinstance(s, basestring) and s.startswith('_env:'):
             parts = s.split(':', 2)
             varname = parts[1]
-            vardefault = '!ENV_NOT_FOUND' if len(parts) < 3 else parts[2]
+            vardefault = None if len(parts) < 3 else parts[2]
             return os.environ.get(varname, vardefault)
         return s
 
