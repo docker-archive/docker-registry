@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import math
 import random
 import string
 
@@ -32,101 +33,135 @@ class Driver(object):
         return ''.join([random.choice(string.ascii_uppercase + string.digits)
                         for x in range(length)]).lower()
 
-    def test_exists_non_existent_path(self):
+    def simplehelp(self, path, content, expected, size=0):
+        self._storage.put_content(path, content)
+        assert self._storage.get_content(path) == expected
+        assert self._storage.get_content(path) == expected
+        if size:
+            assert self._storage.get_size(path) == size
+
+    def unicodehelp(self, path, content, expected):
+        self._storage.put_unicode(path, content)
+        assert self._storage.get_unicode(path) == expected
+        assert self._storage.get_unicode(path) == expected
+
+    def jsonhelp(self, path, content, expected):
+        self._storage.put_json(path, content)
+        assert self._storage.get_json(path) == expected
+        assert self._storage.get_json(path) == expected
+
+    def test_exists_non_existent(self):
         filename = self.gen_random_string()
         assert not self._storage.exists(filename)
 
-    def test_exists_existent_path(self):
+    def test_exists_existent(self):
         filename = self.gen_random_string()
-        content = self.gen_random_string().encode('utf8')
-        self._storage.put_content(filename, content)
+        self._storage.put_content(filename, '')
         assert self._storage.exists(filename)
 
-    def test_write_read(self):
+    # get / put
+    def test_write_read_1(self):
         filename = self.gen_random_string()
-        content = self.gen_random_string().encode('utf8')
-        self._storage.put_content(filename, content)
+        content = b'a'
+        expected = b'a'
+        self.simplehelp(filename, content, expected, len(expected))
 
-        ret = self._storage.get_content(filename)
-        assert ret == content
-
-    def test_size(self):
+    def test_write_read_2(self):
         filename = self.gen_random_string()
-        content = self.gen_random_string().encode('utf8')
-        self._storage.put_content(filename, content)
+        content = b'\xc3\x9f'
+        expected = b'\xc3\x9f'
+        self.simplehelp(filename, content, expected, len(expected))
 
-        ret = self._storage.get_size(filename)
-        assert ret == len(content)
-
-    def test_write_read_unicode(self):
+    def test_write_read_3(self):
         filename = self.gen_random_string()
+        content = u'ß'.encode('utf8')
+        expected = b'\xc3\x9f'
+        self.simplehelp(filename, content, expected, len(expected))
 
-        content = u"∫".encode('utf8')
-        self._storage.put_content(filename, content)
-
-        ret = self._storage.get_content(filename)
-        assert ret == content
-        ret = self._storage.get_size(filename)
-        assert ret == len(content)
-
-    def test_write_read_unicode_str(self):
+    def test_write_read_4(self):
         filename = self.gen_random_string()
-
-        content = "∫"
+        content = 'ß'
         if compat.is_py2:
             content = content.decode('utf8')
         content = content.encode('utf8')
-        self._storage.put_content(filename, content)
+        expected = b'\xc3\x9f'
+        self.simplehelp(filename, content, expected, len(expected))
 
-        ret = self._storage.get_content(filename)
-        assert ret == content
-        ret = self._storage.get_size(filename)
-        assert ret == len(content)
-
-    def test_write_read_bytes(self):
-        filename = self.gen_random_string()
-
-        content = b"a"
-        self._storage.put_content(filename, content)
-
-        ret = self._storage.get_content(filename)
-        assert ret == content
-        ret = self._storage.get_size(filename)
-        assert ret == len(content)
-
-    def test_write_read_twice(self):
+    def test_write_read_5(self):
         filename = self.gen_random_string()
         content = self.gen_random_string().encode('utf8')
-        self._storage.put_content(filename, content)
-        ret = self._storage.get_content(filename)
-        l = self._storage.get_size(filename)
+        expected = content
+        self.simplehelp(filename, content, expected, len(expected))
 
-        content2 = self.gen_random_string().encode('utf8')
-        self._storage.put_content(filename, content2)
-        ret2 = self._storage.get_content(filename)
-        l2 = self._storage.get_size(filename)
+    def test_write_read_6(self):
+        filename = self.gen_random_string()
+        content = self.gen_random_string(1024 * 1024).encode('utf8')
+        expected = content
+        self.simplehelp(filename, content, expected, len(expected))
 
-        assert ret == content
-        assert l == len(content)
-        assert ret2 == content2
-        assert l2 == len(content2)
+    # get / put unicode
+    def test_unicode_1(self):
+        filename = self.gen_random_string()
+        content = 'a'
+        expected = u'a'
+        self.unicodehelp(filename, content, expected)
 
+    def test_unicode_2(self):
+        filename = self.gen_random_string()
+        content = b'\xc3\x9f'.decode('utf8')
+        expected = u'ß'
+        self.unicodehelp(filename, content, expected)
+
+    def test_unicode_3(self):
+        filename = self.gen_random_string()
+        content = u'ß'
+        expected = u'ß'
+        self.unicodehelp(filename, content, expected)
+
+    def test_unicode_4(self):
+        filename = self.gen_random_string()
+        content = 'ß'
+        if compat.is_py2:
+            content = content.decode('utf8')
+        expected = u'ß'
+        self.unicodehelp(filename, content, expected)
+
+    def test_unicode_5(self):
+        filename = self.gen_random_string()
+        content = self.gen_random_string()
+        expected = content
+        self.unicodehelp(filename, content, expected)
+
+    def test_unicode_6(self):
+        filename = self.gen_random_string()
+        content = self.gen_random_string(1024 * 1024)
+        expected = content
+        self.unicodehelp(filename, content, expected)
+
+    # JSON
+    def test_json(self):
+        filename = self.gen_random_string()
+        content = {u"ß": u"ß"}
+        expected = {u"ß": u"ß"}
+        self.jsonhelp(filename, content, expected)
+
+    # Removes
     def test_remove_existent(self):
         filename = self.gen_random_string()
-        content = self.gen_random_string().encode('utf8')
+        content = self.gen_random_string()
         self._storage.put_content(filename, content)
         self._storage.remove(filename)
         assert not self._storage.exists(filename)
-
-    @tools.raises(exceptions.FileNotFoundError)
-    def test_read_inexistent(self):
-        filename = self.gen_random_string()
-        self._storage.get_content(filename)
 
     @tools.raises(exceptions.FileNotFoundError)
     def test_remove_inexistent(self):
         filename = self.gen_random_string()
         self._storage.remove(filename)
+
+    @tools.raises(exceptions.FileNotFoundError)
+    def test_read_inexistent(self):
+        filename = self.gen_random_string()
+        self._storage.get_content(filename)
 
     @tools.raises(exceptions.FileNotFoundError)
     def test_get_size_inexistent(self):
@@ -136,7 +171,7 @@ class Driver(object):
     def test_stream(self):
         filename = self.gen_random_string()
         # test 7MB
-        content = self.gen_random_string(7 * 1024 * 1024).encode('utf8')
+        content = self.gen_random_string(7).encode('utf8')  # * 1024 * 1024
         # test exists
         io = compat.StringIO(content)
         logger.debug("%s should NOT exists still" % filename)
@@ -157,7 +192,7 @@ class Driver(object):
 
         # test bytes_range only if the storage backend suppports it
         if self._storage.supports_bytes_range:
-            b = random.randint(0, len(content) / 2)
+            b = random.randint(0, math.floor(len(content) / 2))
             bytes_range = (b, random.randint(b + 1, len(content) - 1))
             data = compat.bytes()
             for buf in self._storage.stream_read(filename, bytes_range):

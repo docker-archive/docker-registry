@@ -13,10 +13,12 @@ implementation, for a given scheme.
 
 __all__ = ["fetch", "available", "Base"]
 
-import docker_registry.drivers
 import logging
 import pkgutil
 
+import docker_registry.drivers
+
+from .compat import json
 from .exceptions import NotImplementedError
 
 logger = logging.getLogger(__name__)
@@ -117,6 +119,24 @@ class Base(object):
         configuration key is set to `True`.
         """
         return None
+
+    def get_json(self, path):
+        return json.loads(self.get_unicode(path))
+
+    def put_json(self, path, content):
+        return self.put_unicode(path, json.dumps(content))
+
+    def get_unicode(self, path):
+        return self.get_bytes(path).decode('utf8')
+
+    def put_unicode(self, path, content):
+        return self.put_bytes(path, content.encode('utf8'))
+
+    def get_bytes(self, path):
+        return self.get_content(path)
+
+    def put_bytes(self, path, content):
+        return self.put_content(path, content)
 
     def get_content(self, path):
         """Method to get content

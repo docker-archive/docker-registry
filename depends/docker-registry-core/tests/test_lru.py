@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 
-import mock
-import mockredis
-from nose import tools
-
+from docker_registry.core import compat
 from docker_registry.core import lru
 
+# In case you want to mock (and that doesn't work well)
+# import mock
+# import mockredis
+# @mock.patch('docker_registry.core.lru.redis.StrictRedis',
+#             mockredis.mock_strict_redis_client)
+# def boot():
+#     lru.init()
 
-@mock.patch('docker_registry.core.lru.redis.StrictRedis',
-            mockredis.mock_strict_redis_client)
-def boot():
-    lru.init()
+# boot()
 
-boot()
+lru.init()
 
 
 class Dumb(object):
@@ -43,45 +44,57 @@ class TestLru(object):
 
     def testNonExistentGet(self):
         assert not self._dumb.get('nonexistent')
-
-    def testNonExistentGetTwice(self):
-        assert not self._dumb.get('nonexistent')
         assert not self._dumb.get('nonexistent')
 
-    def testSetSimple(self):
-        self._dumb.set('foo', 'bar')
-        assert self._dumb.get('foo') == 'bar'
-        assert self._dumb.get('foo') == 'bar'
-        self._dumb.set('foo', 'baz')
-        assert self._dumb.get('foo') == 'baz'
-
-    def testSetEncodedUtf8(self):
-        content = u"∫".encode('utf8')
+    def testSetSimple1(self):
+        content = 'bar'
+        result = b'bar'
         self._dumb.set('foo', content)
-        assert self._dumb.get('foo') == content
-        assert self._dumb.get('foo') == content
+        assert self._dumb.get('foo') == result
+        assert self._dumb.get('foo') == result
 
-    @tools.raises(Exception)
-    def testSetUnicode(self):
-        content = u"∫"
+    def testSetBytes1(self):
+        content = b'foo'
+        result = b'foo'
         self._dumb.set('foo', content)
-        assert self._dumb.get('foo') == content
-        assert self._dumb.get('foo') == content
+        assert self._dumb.get('foo') == result
 
-    def testSetUniproblems(self):
-        content = "∫"
+    def testSetBytes2(self):
+        content = b'\xc3\x9f'
+        result = b'\xc3\x9f'
         self._dumb.set('foo', content)
-        assert self._dumb.get('foo') == content
-        assert self._dumb.get('foo') == content
+        assert self._dumb.get('foo') == result
 
-    def testSetBytes(self):
-        content = b"a"
+    def testSetUnicode1(self):
+        content = u'foo'
+        result = b'foo'
         self._dumb.set('foo', content)
-        assert self._dumb.get('foo') == content
-        assert self._dumb.get('foo') == content
+        assert self._dumb.get('foo') == result
+
+    def testSetUnicode2(self):
+        content = u'ß'
+        result = b'\xc3\x9f'
+        self._dumb.set('foo', content)
+        assert self._dumb.get('foo') == result
+
+    def testSetUnicode3(self):
+        content = u'ß'.encode('utf8')
+        result = b'\xc3\x9f'
+        self._dumb.set('foo', content)
+        assert self._dumb.get('foo') == result
+
+    def testSetUnicode4(self):
+        content = 'ß'
+        if compat.is_py2:
+            content = content.decode('utf8')
+        content = content.encode('utf8')
+        result = b'\xc3\x9f'
+        self._dumb.set('foo', content)
+        assert self._dumb.get('foo') == result
 
     def testRemove(self):
         self._dumb.set('foo', 'bar')
         assert self._dumb.get('foo')
         self._dumb.remove('foo')
+        assert not self._dumb.get('foo')
         assert not self._dumb.get('foo')
