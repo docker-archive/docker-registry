@@ -136,7 +136,7 @@ class Driver(object):
     def test_stream(self):
         filename = self.gen_random_string()
         # test 7MB
-        content = self.gen_random_string(7).encode('utf8')  # * 1024 * 1024
+        content = self.gen_random_string(7 * 1024 * 1024).encode('utf8')
         # test exists
         io = compat.StringIO(content)
         logger.debug("%s should NOT exists still" % filename)
