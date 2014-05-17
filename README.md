@@ -1,12 +1,18 @@
-<!><!><!><!>
-This is the README for the development version of the registry.
-If you are looking for documentation about the stable, released version, [check the tag](https://github.com/dotcloud/docker-registry/tree/0.6.9)
-<!><!><!><!>
-
 Docker-Registry
 ===============
 
 [![Build Status](https://travis-ci.org/dotcloud/docker-registry.png)](https://travis-ci.org/dotcloud/docker-registry)
+
+About this document
+===================
+
+As the documentation evolves with different registry versions, be sure that before reading any further you do:
+
+ * check which version of the registry you are running
+ * switch to the corresponding tag to access the README that matches your product version
+
+The stable, released version is currently the [0.6.9 tag](https://github.com/dotcloud/docker-registry/tree/0.6.9).
+
 
 Quick start
 ===========
