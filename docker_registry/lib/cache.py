@@ -4,6 +4,8 @@ import logging
 
 import redis
 
+from docker_registry.core import lru
+
 from . import config
 
 
@@ -25,6 +27,7 @@ def init():
     cache = cfg.cache
     if not cache:
         return
+
     logging.info('Enabling storage cache on Redis')
     if not isinstance(cache, dict):
         cache = {}
@@ -36,5 +39,14 @@ def init():
                                    db=int(redis_opts['db']),
                                    password=redis_opts['password'])
     cache_prefix = 'cache_path:{0}'.format(cfg.get('storage_path', '/'))
+
+    # Enable the LRU as well
+    lru.init(
+        host=redis_opts['host'],
+        port=int(redis_opts['port']),
+        db=int(redis_opts['db']),
+        password=redis_opts['password'],
+        path=cfg.get('storage_path', '/')
+    )
 
 init()
