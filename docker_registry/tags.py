@@ -33,7 +33,7 @@ def set_properties(namespace, repo):
     try:
         # Note(dmp): unicode patch
         data = json.loads(flask.request.data.decode('utf8'))
-    except json.JSONDecodeError:
+    except ValueError:
         pass
     if not data or not isinstance(data, dict):
         return toolkit.api_error('Invalid data')
@@ -180,7 +180,7 @@ def put_tag(namespace, repository, tag):
     try:
         # Note(dmp): unicode patch
         data = json.loads(flask.request.data.decode('utf8'))
-    except json.JSONDecodeError:
+    except ValueError:
         pass
     if not data or not isinstance(data, basestring):
         return toolkit.api_error('Invalid data')

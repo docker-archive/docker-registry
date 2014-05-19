@@ -56,7 +56,7 @@ def get_post_users():
     try:
         # Note(dmp): unicode patch
         json.loads(flask.request.data.decode('utf8'))
-    except json.JSONDecodeError:
+    except ValueError:
         return toolkit.api_error('Error Decoding JSON', 400)
     return toolkit.response('User Created', 201)
 
@@ -106,7 +106,7 @@ def put_repository(namespace, repository, images=False):
     try:
         # Note(dmp): unicode patch
         data = json.loads(flask.request.data.decode('utf8'))
-    except json.JSONDecodeError:
+    except ValueError:
         return toolkit.api_error('Error Decoding JSON', 400)
     if not isinstance(data, list):
         return toolkit.api_error('Invalid data')

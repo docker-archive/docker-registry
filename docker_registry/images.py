@@ -383,7 +383,7 @@ def put_image_json(image_id):
     try:
         # Note(dmp): unicode patch
         data = json.loads(flask.request.data.decode('utf8'))
-    except json.JSONDecodeError:
+    except ValueError:
         pass
     if not data or not isinstance(data, dict):
         return toolkit.api_error('Invalid JSON')
