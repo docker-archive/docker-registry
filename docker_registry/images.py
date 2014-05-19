@@ -92,7 +92,7 @@ def _get_image_layer(image_id, headers=None, bytes_range=None):
         bytes_range = (bytes_range[0], layer_size)
 
     if bytes_range:
-        content_length = bytes_range[1] - bytes_range[0]
+        content_length = bytes_range[1] - bytes_range[0] + 1
         if not _valid_bytes_range(bytes_range):
             return flask.Response(status=416, headers=headers)
         status = 206
@@ -151,11 +151,10 @@ def _parse_bytes_range():
 
 
 def _valid_bytes_range(bytes_range):
-    if bytes_range[1] < bytes_range[0]:
-        return False
+    length = bytes_range[1] - bytes_range[0] + 1
     if bytes_range[0] < 0 or bytes_range[1] < 1:
         return False
-    if bytes_range[1] - bytes_range[0] < 1:
+    if length < 2:
         return False
     return True
 
