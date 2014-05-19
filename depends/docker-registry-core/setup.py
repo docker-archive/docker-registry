@@ -58,6 +58,8 @@ setuptools.setup(
               'docker_registry.drivers', 'docker_registry.testing'],
     install_requires=requirements,
     zip_safe=True,
-    tests_require=open('./tests/requirements.txt').read(),
+    tests_require="%s\n%s" % (
+        open('./tests/requirements-tests.txt').read(),
+        open('./tests/requirements-style.txt').read()),
     test_suite='nose.collector'
 )
