@@ -7,17 +7,17 @@ python:
 install:
 ## This below should be separated when core lives elsewhere
 # Install core tests reqs
-  - pip install -rdepends/docker-registry-core/tests/requirements.txt
+  - pip install -rdepends/docker-registry-core/tests/requirements-tests.txt
+  - pip install -rdepends/docker-registry-core/tests/requirements-style.txt
 # Install core itself
   - pip install depends/docker-registry-core/
 
 # Install our tests requirements, and ourselves
   - pip install -rtests/requirements.txt
-  - pip install hacking==0.8.1
   - pip install .
 
 # XXX should run the core tests as well
-script: SETTINGS_FLAVOR=test DOCKER_REGISTRY_CONFIG=config_test.yml flake8 . && SETTINGS_FLAVOR=test DOCKER_REGISTRY_CONFIG=config_test.yml python setup.py nosetests
+script: SETTINGS_FLAVOR=test DOCKER_REGISTRY_CONFIG=config_sample.yml flake8 . && SETTINGS_FLAVOR=test DOCKER_REGISTRY_CONFIG=config_sample.yml python setup.py nosetests
 
 before_install:
   - sudo apt-get update
