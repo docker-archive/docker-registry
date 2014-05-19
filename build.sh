@@ -6,12 +6,11 @@ cd $SERVICE_APPROOT
     virtualenv --python=python2.7 ~/env || exit 1
 . ~/env/bin/activate
 
-[ -f requirements.txt ] &&
-    pip install --download-cache=~/.pip-cache . || exit 1
+pip install --download-cache=~/.pip-cache ./depends/docker-registry-core || exit 1
+pip install --download-cache=~/.pip-cache . || exit 1
 
 cp -R * ~/
 
 cat > ~/profile << ENDPROFILE
 . ~/env/bin/activate
-export PYTHONPATH=~/
 ENDPROFILE
