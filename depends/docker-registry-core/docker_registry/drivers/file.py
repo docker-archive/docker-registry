@@ -10,9 +10,9 @@ This is a simple filesystem based driver.
 import os
 import shutil
 
-from docker_registry.core import driver
-from docker_registry.core import exceptions
-from docker_registry.core import lru
+from ..core import driver
+from ..core import exceptions
+from ..core import lru
 
 
 class Storage(driver.Base):
