@@ -70,7 +70,7 @@ class Driver(object):
 
     def test_exists_existent(self):
         filename = self.gen_random_string()
-        self._storage.put_content(filename, '')
+        self._storage.put_content(filename, b'')
         assert self._storage.exists(filename)
 
     # get / put
@@ -162,7 +162,7 @@ class Driver(object):
     # Removes
     def test_remove_existent(self):
         filename = self.gen_random_string()
-        content = self.gen_random_string()
+        content = self.gen_random_string().encode('utf8')
         self._storage.put_content(filename, content)
         self._storage.remove(filename)
         assert not self._storage.exists(filename)
@@ -235,7 +235,7 @@ class Driver(object):
     def test_inexistent_list_directory(self):
         notexist = self.gen_random_string()
         iterator = self._storage.list_directory(notexist)
-        iterator.next()
+        next(iterator)
 
     # XXX only elliptics return StopIteration for now - though we should
     # return probably that for all
@@ -246,7 +246,7 @@ class Driver(object):
         self._storage.put_content(path, content)
 
         iterator = self._storage.list_directory(path)
-        iterator.next()
+        next(iterator)
 
     def test_list_directory(self):
         base = self.gen_random_string()
@@ -254,7 +254,7 @@ class Driver(object):
         filename2 = self.gen_random_string()
         fb1 = '%s/%s' % (base, filename1)
         fb2 = '%s/%s' % (base, filename2)
-        content = self.gen_random_string()
+        content = self.gen_random_string().encode('utf8')
         self._storage.put_content(fb1, content)
         self._storage.put_content(fb2, content)
         assert sorted([fb1, fb2]
@@ -277,7 +277,7 @@ class Driver(object):
         filename2 = self.gen_random_string()
         fb1 = '%s/%s' % (base, filename1)
         fb2 = '%s/%s' % (base, filename2)
-        content = self.gen_random_string()
+        content = self.gen_random_string().encode('utf8')
         self._storage.put_content(fb1, content)
         self._storage.put_content(fb2, content)
 
@@ -285,7 +285,7 @@ class Driver(object):
         self._storage.remove(fb2)
 
         iterator = self._storage.list_directory(base)
-        iterator.next()
+        next(iterator)
 
     def test_paths(self):
         namespace = 'namespace'
