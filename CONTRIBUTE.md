@@ -99,7 +99,10 @@ Pretty much:
  * you have to use the provided test suite
  * all the tests must pass
 
+### Word of warning
 
+Drivers are expected to receive bytes and to return bytes.
+Don't try to decode or encode content.
 
 ## API documentation
 
