@@ -135,6 +135,10 @@ def source_lookup(cache=False, stream=False, index_route=False):
 
             store = storage.load()
 
+            headers = source_resp.headers
+            if 'Content-Encoding' in headers:
+                del headers['Content-Encoding']
+
             if not stream:
                 logger.debug('JSON data found on source, writing response')
                 resp_data = source_resp.content
@@ -145,19 +149,20 @@ def source_lookup(cache=False, stream=False, index_route=False):
                     )
                 return toolkit.response(
                     data=resp_data,
-                    headers=source_resp.headers,
+                    headers=headers,
                     raw=True
                 )
             logger.debug('Layer data found on source, preparing to '
                          'stream response...')
             layer_path = store.image_layer_path(kwargs['image_id'])
-            return _handle_mirrored_layer(source_resp, layer_path, store)
+            return _handle_mirrored_layer(source_resp, layer_path, store,
+                                          headers)
 
         return wrapper
     return decorator
 
 
-def _handle_mirrored_layer(source_resp, layer_path, store):
+def _handle_mirrored_layer(source_resp, layer_path, store, headers):
     sr = toolkit.SocketReader(source_resp)
     tmp, hndlr = storage.temp_store_handler()
     sr.add_handler(hndlr)
@@ -169,7 +174,7 @@ def _handle_mirrored_layer(source_resp, layer_path, store):
         tmp.seek(0)
         store.stream_write(layer_path, tmp)
         tmp.close()
-    return flask.Response(generate(), headers=source_resp.headers)
+    return flask.Response(generate(), headers=headers)
 
 
 def store_mirrored_data(data, endpoint, args, store):
