@@ -19,6 +19,12 @@ if ver[0] == 2:
         requirements.insert(0, 'argparse>=1.2.1')
         requirements.insert(0, 'importlib>=1.0.3')
 
+packages = ['docker_registry',
+            'docker_registry.drivers',
+            'docker_registry.lib',
+            'docker_registry.storage',
+            'docker_registry.lib.index']
+
 setuptools.setup(
     name='docker-registry',
     # TODO: Load the version programatically, which is currently available in
@@ -28,7 +34,7 @@ setuptools.setup(
     description='Registry server for Docker',
     long_description=open('README.md').read(),
     namespace_packages=['docker_registry', 'docker_registry.drivers'],
-    packages=setuptools.find_packages(),
+    packages=packages,
     license=open('LICENSE').read(),
     author='Docker Registry Contributors',
     author_email='docker-dev@googlegroups.com',
