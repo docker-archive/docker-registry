@@ -66,7 +66,7 @@ class TestLayers(base.TestCase):
         tar = tarfile.open(fileobj=archive)
         members = tar.getmembers()
         for tarinfo in members:
-            self.assertIn(tarinfo.name, self.filenames)
+            assert tarinfo.name in self.filenames
 
     def test_xz_archive(self):
         tfobj = _get_xzfile(self.filenames)
@@ -74,7 +74,7 @@ class TestLayers(base.TestCase):
         tar = tarfile.open(fileobj=archive)
         members = tar.getmembers()
         for tarinfo in members:
-            self.assertIn(tarinfo.name, self.filenames)
+            assert tarinfo.name in self.filenames
 
     def test_info_serialization(self):
         tfobj = _get_tarfile(self.filenames)
@@ -83,8 +83,8 @@ class TestLayers(base.TestCase):
         members = tar.getmembers()
         for tarinfo in members:
             sinfo = layers.serialize_tar_info(tarinfo)
-            self.assertTrue(sinfo[0] in self.filenames)
-            self.assertTrue(sinfo[1:] == ('f', False, 512, 0, 420, 0, 0))
+            assert sinfo[0] in self.filenames
+            assert sinfo[1:] == ('f', False, 512, 0, 420, 0, 0)
 
     def test_tar_serialization(self):
         tfobj = _get_tarfile(self.filenames)
@@ -92,27 +92,27 @@ class TestLayers(base.TestCase):
         tar = tarfile.open(fileobj=archive)
         infos = layers.read_tarfile(tar)
         for tarinfo in infos:
-            self.assertIn(tarinfo[0], self.filenames)
-            self.assertTrue(tarinfo[1:] == ('f', False, 512, 0, 420, 0, 0))
+            assert tarinfo[0] in self.filenames
+            assert tarinfo[1:] == ('f', False, 512, 0, 420, 0, 0)
 
     def test_layer_cache(self):
         layer_id = rndstr(16)
         layers.set_image_files_cache(layer_id, "{}")
         fetched_json = layers.get_image_files_cache(layer_id)
-        self.assertTrue(fetched_json == "{}")
+        assert fetched_json == "{}"
 
     def test_tar_from_fobj(self):
         tfobj = _get_tarfile(self.filenames)
         files = layers.get_image_files_from_fobj(tfobj)
         for file in files:
-            self.assertIn(file[0], self.filenames)
-            self.assertTrue(file[1:] == ('f', False, 512, 0, 420, 0, 0))
+            assert file[0] in self.filenames
+            assert file[1:] == ('f', False, 512, 0, 420, 0, 0)
 
     def test_get_image_files_json_cached(self):
         layer_id = rndstr(16)
         layers.set_image_files_cache(layer_id, "{}")
         files_json = layers.get_image_files_json(layer_id)
-        self.assertTrue(files_json, "{}")
+        assert files_json == "{}"
 
     def test_get_image_files_json(self):
         layer_id = rndstr(16)
@@ -130,22 +130,22 @@ class TestLayers(base.TestCase):
         files_json = layers.get_image_files_json(layer_id)
         file_infos = json.loads(files_json)
         for info in file_infos:
-            self.assertIn(info[0], self.filenames)
-            self.assertTrue(info[1:] == [u"f", False, 512, 0, 420, 0, 0])
+            assert info[0] in self.filenames
+            assert info[1:] == [u"f", False, 512, 0, 420, 0, 0]
 
     def test_get_file_info_map(self):
         files = (
             ("test", "f", False, 512, 0, 420, 0, 0),
         )
         map = layers.get_file_info_map(files)
-        self.assertIn("test", map)
-        self.assertTrue(map['test'], ("f", False, 512, 0, 420, 0, 0))
+        assert "test" in map
+        assert map['test'] == ("f", False, 512, 0, 420, 0, 0)
 
     def test_image_diff_cache(self):
         layer_id = rndstr(16)
         layers.set_image_diff_cache(layer_id, layer_id)
         diff_json = layers.get_image_diff_cache(layer_id)
-        self.assertTrue(layer_id == diff_json)
+        assert layer_id == diff_json
 
     def test_image_diff_json(self):
         layer_1 = (
@@ -175,5 +175,5 @@ class TestLayers(base.TestCase):
         diff = json.loads(diff_json)
 
         for type in ("deleted", "changed", "created"):
-            self.assertIn(type, diff)
-            self.assertIn(type, diff[type])
+            assert type in diff
+            assert type in diff[type]
