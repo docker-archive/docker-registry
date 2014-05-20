@@ -22,19 +22,8 @@ logger = logging.getLogger(__name__)
    entities. This module mimics the Index.
 """
 
-
-def get_endpoints(cfg=None):
-    if not cfg:
-        cfg = config.load()
-    registry_endpoints = cfg.registry_endpoints
-    if not registry_endpoints:
-        #registry_endpoints = socket.gethostname()
-        registry_endpoints = flask.request.environ['HTTP_HOST']
-    return registry_endpoints
-
-
 def generate_headers(namespace, repository, access):
-    registry_endpoints = get_endpoints()
+    registry_endpoints = toolkit.get_endpoints()
     # The token generated will be invalid against a real Index behind.
     token = 'Token signature={0},repository="{1}/{2}",access={3}'.format(
             toolkit.gen_random_string(), namespace, repository, access)

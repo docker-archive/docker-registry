@@ -136,6 +136,8 @@ def source_lookup(cache=False, stream=False, index_route=False):
             headers = source_resp.headers
             if 'Content-Encoding' in headers:
                 del headers['Content-Encoding']
+            if index_route and 'X-Docker-Endpoints' in headers:
+                headers['X-Docker-Endpoints'] = toolkit.get_endpoints()
 
             if not stream:
                 logger.debug('JSON data found on source, writing response')

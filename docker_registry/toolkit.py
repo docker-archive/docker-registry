@@ -302,3 +302,13 @@ def get_repository():
     if len(parts) < 2:
         return ('library', parts[0])
     return (parts[0], parts[1])
+
+
+def get_endpoints(cfg=None):
+    if not cfg:
+        cfg = config.load()
+    registry_endpoints = cfg.registry_endpoints
+    if not registry_endpoints:
+        #registry_endpoints = socket.gethostname()
+        registry_endpoints = flask.request.environ['HTTP_HOST']
+    return registry_endpoints
