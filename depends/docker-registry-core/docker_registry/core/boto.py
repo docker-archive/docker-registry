@@ -130,7 +130,6 @@ class Base(driver.Base):
     def __init__(self, path=None, config=None):
         self._config = config
         self._root_path = config.get('storage_path', '/test')
-        # logger.info("WHATDFUCK %s" % self._root_path)
         self._boto_conn = self.makeConnection()
         self._boto_bucket = self._boto_conn.get_bucket(
             self._config.boto_bucket)
