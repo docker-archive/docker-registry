@@ -1,0 +1,14 @@
+.coverage
+.tox
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+
+
+*.DS_Store
+
+*.pyc

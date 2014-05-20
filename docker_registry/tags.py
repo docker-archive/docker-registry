@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 import datetime
 import logging
@@ -5,7 +6,10 @@ import re
 import time
 
 import flask
-import simplejson as json
+
+from docker_registry.core import compat
+from docker_registry.core import exceptions
+json = compat.json
 
 from . import storage
 from . import toolkit
@@ -27,8 +31,9 @@ def set_properties(namespace, repo):
                  repo))
     data = None
     try:
-        data = json.loads(flask.request.data)
-    except json.JSONDecodeError:
+        # Note(dmp): unicode patch
+        data = json.loads(flask.request.data.decode('utf8'))
+    except ValueError:
         pass
     if not data or not isinstance(data, dict):
         return toolkit.api_error('Invalid data')
@@ -36,7 +41,11 @@ def set_properties(namespace, repo):
     if data['access'] == 'private' and not store.is_private(namespace, repo):
         store.put_content(private_flag_path, '')
     elif data['access'] == 'public' and store.is_private(namespace, repo):
-        store.remove(private_flag_path)
+        # XXX is this necessary? Or do we know for sure the file exists?
+        try:
+            store.remove(private_flag_path)
+        except Exception:
+            pass
     return toolkit.response()
 
 
@@ -74,7 +83,7 @@ def _get_tags(namespace, repository):
         data = dict((tag_name, tag_content)
                     for tag_name, tag_content
                     in get_tags(namespace=namespace, repository=repository))
-    except OSError:
+    except exceptions.FileNotFoundError:
         return toolkit.api_error('Repository not found', 404)
     return toolkit.response(data)
 
@@ -90,7 +99,7 @@ def get_tag(namespace, repository, tag):
     tag_path = store.tag_path(namespace, repository, tag)
     try:
         data = store.get_content(tag_path)
-    except IOError:
+    except exceptions.FileNotFoundError:
         return toolkit.api_error('Tag not found', 404)
     return toolkit.response(data)
 
@@ -111,8 +120,9 @@ def get_repository_json(namespace, repository):
             'os': 'linux',
             'kernel': None}
     try:
-        data = json.loads(store.get_content(json_path))
-    except IOError:
+        # Note(dmp): unicode patch
+        data = store.get_json(json_path)
+    except exceptions.FileNotFoundError:
         if mirroring.is_mirror():
             # use code 404 to trigger the source_lookup decorator.
             # TODO(joffrey): make sure this doesn't break anything or have the
@@ -136,8 +146,9 @@ def get_repository_tag_json(namespace, repository, tag):
             'os': 'linux',
             'kernel': None}
     try:
-        data = json.loads(store.get_content(json_path))
-    except IOError:
+        # Note(dmp): unicode patch
+        data = store.get_json(json_path)
+    except exceptions.FileNotFoundError:
         # We ignore the error, we'll serve the default json declared above
         pass
     return toolkit.response(data)
@@ -167,8 +178,9 @@ def put_tag(namespace, repository, tag):
                  namespace, repository, tag))
     data = None
     try:
-        data = json.loads(flask.request.data)
-    except json.JSONDecodeError:
+        # Note(dmp): unicode patch
+        data = json.loads(flask.request.data.decode('utf8'))
+    except ValueError:
         pass
     if not data or not isinstance(data, basestring):
         return toolkit.api_error('Invalid data')
@@ -193,7 +205,8 @@ def delete_tag(namespace, repository, tag):
     logger.debug("[delete_tag] namespace={0}; repository={1}; tag={2}".format(
                  namespace, repository, tag))
     store.remove(store.tag_path(namespace, repository, tag))
-    store.remove(store.repository_tag_json_path(namespace, repository, tag))
+    store.remove(store.repository_tag_json_path(namespace, repository,
+                                                tag))
     sender = flask.current_app._get_current_object()
     if tag == "latest":  # TODO(wking) : deprecate this for v2
         store.remove(store.repository_json_path(namespace, repository))
@@ -206,9 +219,10 @@ def delete_tag(namespace, repository, tag):
 @toolkit.parse_repository_name
 @toolkit.requires_auth
 def _delete_tag(namespace, repository, tag):
+    # XXX backends are inconsistent on this - some will throw, but not all
     try:
         delete_tag(namespace=namespace, repository=repository, tag=tag)
-    except OSError:
+    except exceptions.FileNotFoundError:
         return toolkit.api_error('Tag not found', 404)
     return toolkit.response()
 
@@ -240,7 +254,7 @@ def delete_repository(namespace, repository):
         # TODO(wking): remove images, but may need refcounting
         store.remove(store.repository_path(
             namespace=namespace, repository=repository))
-    except OSError:
+    except exceptions.FileNotFoundError:
         return toolkit.api_error('Repository not found', 404)
     else:
         sender = flask.current_app._get_current_object()

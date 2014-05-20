@@ -4,7 +4,8 @@ import sys
 
 import simplejson as json
 
-from docker_registry import storage
+from docker_registry.core import exceptions
+import docker_registry.storage as storage
 
 store = storage.load()
 
@@ -25,11 +26,11 @@ def walk_all_tags():
 
 def walk_ancestry(image_id):
     try:
-        ancestry_data = store.get_content(store.image_ancestry_path(image_id))
-        ancestry = json.loads(ancestry_data)
+        # Note(dmp): unicode patch
+        ancestry = store.get_json(store.image_ancestry_path(image_id))
         return iter(ancestry)
-    except IOError:
-        print 'Ancestry file for {0} is missing'.format(image_id)
+    except exceptions.FileNotFoundError:
+        print('Ancestry file for {0} is missing'.format(image_id))
     return []
 
 
@@ -58,7 +59,7 @@ def dump_json(all_repos, all_checksums, filename):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print 'Usage: {0} <output_file>'.format(sys.argv[0])
+        print('Usage: {0} <output_file>'.format(sys.argv[0]))
         sys.exit(1)
     all_repos = {}
     all_checksums = {}

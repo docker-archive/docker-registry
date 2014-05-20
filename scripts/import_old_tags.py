@@ -2,7 +2,7 @@
 
 import sys
 
-from docker_registry import storage
+import docker_registry.storage as storage
 
 
 # Copy/Pasted from old models
@@ -92,14 +92,14 @@ def import_tags(sess, store):
             if store.exists(path):
                 continue
             dest = store.put_content(path, image_id)
-            print '{0} -> {1}'.format(dest, image_id)
+            print('{0} -> {1}'.format(dest, image_id))
         except AttributeError as e:
-            print '# Warning: {0}'.format(e)
+            print('# Warning: {0}'.format(e))
 
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print 'Usage: {0} URL'.format(sys.argv[0])
+        print('Usage: {0} URL'.format(sys.argv[0]))
         sys.exit(0)
     url = sys.argv[1]
     Session = sessionmaker(bind=create_engine(url))

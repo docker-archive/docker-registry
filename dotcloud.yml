@@ -9,11 +9,10 @@ api:
     buildscript: ./build.sh
     systempackages:
         - liblzma-dev
-        - libffi-dev
     ports:
         www: http
 
-# Redis configured in LRU, used by lib/cache.py
+# Redis configured in LRU, used in core
 cache:
     type: redis
 

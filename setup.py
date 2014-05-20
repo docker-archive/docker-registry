@@ -1,26 +1,35 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-import os
-import setuptools
+try:
+    import setuptools
+except ImportError:
+    import distutils.core as setuptools
 
-_abs_dir = os.path.dirname(os.path.abspath(__file__))
+import sys
 
-desc_path = os.path.join(_abs_dir, 'README.md')
-long_desc = open(desc_path).read()
+requirements_txt = open('./requirements.txt')
+requirements = [line for line in requirements_txt]
 
-req_path = os.path.join(_abs_dir, 'requirements.txt')
-requirements = open(req_path).read()
+ver = sys.version_info
+
+if ver[0] == 2:
+    requirements.insert(0, 'backports.lzma>=0.0.2')
+    if ver[1] <= 6:
+        requirements.insert(0, 'argparse>=1.2.1')
+        requirements.insert(0, 'importlib>=1.0.3')
 
 setuptools.setup(
     name='docker-registry',
     # TODO: Load the version programatically, which is currently available in
     #       docker_registry.app. This is not possible yet because importing
     #       causes config files to be loaded
-    version='0.6.9',
+    version='0.7.0',
     description='Registry server for Docker',
-    long_description=long_desc,
+    long_description=open('README.md').read(),
+    namespace_packages=['docker_registry', 'docker_registry.drivers'],
     packages=setuptools.find_packages(),
-    license='Apache',
+    license=open('LICENSE').read(),
     author='Docker Registry Contributors',
     author_email='docker-dev@googlegroups.com',
     url='https://github.com/dotcloud/docker-registry',
@@ -30,9 +39,14 @@ setuptools.setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
     ),
+    platforms=['Independent'],
+    package_data={'docker_registry': ['../config/*']},
     entry_points={
         'console_scripts': [
-            'docker-registry = docker_registry:run_gunicorn'
+            'docker-registry = docker_registry.run:run_gunicorn'
         ]
-    }
+    },
+    zip_safe=False,
+    tests_require=open('./tests/requirements.txt').read(),
+    test_suite='nose.collector'
 )

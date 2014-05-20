@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import datetime
 import functools
 import logging
@@ -5,8 +7,10 @@ import tarfile
 import time
 
 import flask
-import simplejson as json
 
+from docker_registry.core import compat
+from docker_registry.core import exceptions
+json = compat.json
 
 from . import storage
 from . import toolkit
@@ -16,7 +20,6 @@ from .lib import cache
 from .lib import checksums
 from .lib import layers
 from .lib import mirroring
-from .storage import local
 
 
 store = storage.load()
@@ -62,7 +65,7 @@ def _get_image_layer(image_id, headers=None, bytes_range=None):
     accel_uri_prefix = cfg.nginx_x_accel_redirect
     path = store.image_layer_path(image_id)
     if accel_uri_prefix:
-        if isinstance(store, local.LocalStorage):
+        if store.scheme == 'file':
             accel_uri = '/'.join([accel_uri_prefix, path])
             headers['X-Accel-Redirect'] = accel_uri
             logger.debug('send accelerated {0} ({1})'.format(
@@ -83,10 +86,11 @@ def _get_image_layer(image_id, headers=None, bytes_range=None):
     layer_size = 0
 
     if not store.exists(path):
-        raise IOError("Image layer absent from store")
+        raise exceptions.FileNotFoundError("Image layer absent from store")
     try:
-        layer_size = store.get_size(store.image_layer_path(image_id))
-    except OSError:
+        layer_size = store.get_size(path)
+    except exceptions.FileNotFoundError:
+        # XXX why would that fail given we know the layer exists?
         pass
     if bytes_range and bytes_range[1] == -1 and not layer_size == 0:
         bytes_range = (bytes_range[0], layer_size)
@@ -114,12 +118,12 @@ def _get_image_json(image_id, headers=None):
     try:
         size = store.get_size(store.image_layer_path(image_id))
         headers['X-Docker-Size'] = str(size)
-    except OSError:
+    except exceptions.FileNotFoundError:
         pass
     try:
         csums = load_checksums(image_id)
         headers['X-Docker-Payload-Checksum'] = csums
-    except IOError:
+    except exceptions.FileNotFoundError:
         pass
     return toolkit.response(data, headers=headers, raw=True)
 
@@ -177,7 +181,7 @@ def get_private_image_layer(image_id):
         if not store.is_private(*repository):
             return toolkit.api_error('Image not found', 404)
         return _get_image_layer(image_id, headers, bytes_range)
-    except IOError:
+    except exceptions.FileNotFoundError:
         return toolkit.api_error('Image not found', 404)
 
 
@@ -198,7 +202,7 @@ def get_image_layer(image_id, headers):
         # If no auth token found, either standalone registry or privileged
         # access. In both cases, access is always "public".
         return _get_image_layer(image_id, headers, bytes_range)
-    except IOError:
+    except exceptions.FileNotFoundError:
         return toolkit.api_error('Image not found', 404)
 
 
@@ -207,7 +211,7 @@ def get_image_layer(image_id, headers):
 def put_image_layer(image_id):
     try:
         json_data = store.get_content(store.image_json_path(image_id))
-    except IOError:
+    except exceptions.FileNotFoundError:
         return toolkit.api_error('Image not found', 404)
     layer_path = store.image_layer_path(image_id)
     mark_path = store.image_mark_path(image_id)
@@ -300,7 +304,7 @@ def get_private_image_json(image_id):
         if not store.is_private(*repository):
             return toolkit.api_error('Image not found', 404)
         return _get_image_json(image_id)
-    except IOError:
+    except exceptions.FileNotFoundError:
         return toolkit.api_error('Image not found', 404)
 
 
@@ -317,7 +321,7 @@ def get_image_json(image_id, headers):
         # If no auth token found, either standalone registry or privileged
         # access. In both cases, access is always "public".
         return _get_image_json(image_id, headers)
-    except IOError:
+    except exceptions.FileNotFoundError:
         return toolkit.api_error('Image not found', 404)
 
 
@@ -329,10 +333,11 @@ def get_image_json(image_id, headers):
 def get_image_ancestry(image_id, headers):
     ancestry_path = store.image_ancestry_path(image_id)
     try:
-        data = store.get_content(ancestry_path)
-    except IOError:
+        # Note(dmp): unicode patch
+        data = store.get_json(ancestry_path)
+    except exceptions.FileNotFoundError:
         return toolkit.api_error('Image not found', 404)
-    return toolkit.response(json.loads(data), headers=headers)
+    return toolkit.response(data, headers=headers)
 
 
 def check_images_list(image_id):
@@ -342,8 +347,9 @@ def check_images_list(image_id):
     repository = toolkit.get_repository()
     try:
         path = store.images_list_path(*repository)
-        images_list = json.loads(store.get_content(path))
-    except IOError:
+        # Note(dmp): unicode patch
+        images_list = store.get_json(path)
+    except exceptions.FileNotFoundError:
         return False
     return (image_id in images_list)
 
@@ -362,6 +368,7 @@ def load_checksums(image_id):
     checksum_path = store.image_checksum_path(image_id)
     data = store.get_content(checksum_path)
     try:
+        # Note(dmp): unicode patch NOT applied here
         return json.loads(data)
     except ValueError:
         # NOTE(sam): For backward compatibility only, existing data may not be
@@ -373,8 +380,9 @@ def load_checksums(image_id):
 @toolkit.requires_auth
 def put_image_json(image_id):
     try:
-        data = json.loads(flask.request.data)
-    except json.JSONDecodeError:
+        # Note(dmp): unicode patch
+        data = json.loads(flask.request.data.decode('utf8'))
+    except ValueError:
         pass
     if not data or not isinstance(data, dict):
         return toolkit.api_error('Invalid JSON')
@@ -398,7 +406,10 @@ def put_image_json(image_id):
     # on a failed push
     store.put_content(mark_path, 'true')
     # We cleanup any old checksum in case it's a retry after a fail
-    store.remove(store.image_checksum_path(image_id))
+    try:
+        store.remove(store.image_checksum_path(image_id))
+    except Exception:
+        pass
     store.put_content(json_path, flask.request.data)
     layers.generate_ancestry(image_id, parent_id)
     return toolkit.response()
@@ -418,7 +429,7 @@ def get_private_image_files(image_id, headers):
             return toolkit.api_error('Image not found', 404)
         data = layers.get_image_files_json(image_id)
         return toolkit.response(data, headers=headers, raw=True)
-    except IOError:
+    except exceptions.FileNotFoundError:
         return toolkit.api_error('Image not found', 404)
     except tarfile.TarError:
         return toolkit.api_error('Layer format not supported', 400)
@@ -437,7 +448,7 @@ def get_image_files(image_id, headers):
         # access. In both cases, access is always "public".
         data = layers.get_image_files_json(image_id)
         return toolkit.response(data, headers=headers, raw=True)
-    except IOError:
+    except exceptions.FileNotFoundError:
         return toolkit.api_error('Image not found', 404)
     except tarfile.TarError:
         return toolkit.api_error('Layer format not supported', 400)
@@ -464,7 +475,7 @@ def get_image_diff(image_id, headers):
             diff_json = ""
 
         return toolkit.response(diff_json, headers=headers, raw=True)
-    except IOError:
+    except exceptions.FileNotFoundError:
         return toolkit.api_error('Image not found', 404)
     except tarfile.TarError:
         return toolkit.api_error('Layer format not supported', 400)

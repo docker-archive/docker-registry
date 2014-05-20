@@ -23,3 +23,9 @@ eggs
 
 Vagrantfile
 .vagrant
+
+docker-registry-core.sublime-workspace
+
+*tmp
+
+*.sublime-project

@@ -1,11 +1,14 @@
+# -*- coding: utf-8 -*-
+
 """Index backends for the search endpoint
 """
 
 import importlib
 
+from docker_registry.core import exceptions
+
 from .. import config
 from .. import signals
-
 
 __all__ = ['load']
 
@@ -33,14 +36,14 @@ class Index (object):
         try:
             namespace_paths = list(
                 store.list_directory(path=store.repositories))
-        except OSError:
+        except exceptions.FileNotFoundError:
             namespace_paths = []
         for namespace_path in namespace_paths:
             namespace = namespace_path.rsplit('/', 1)[-1]
             try:
                 repository_paths = list(
                     store.list_directory(path=namespace_path))
-            except OSError:
+            except exceptions.FileNotFoundError:
                 repository_paths = []
             for path in repository_paths:
                 repository = path.rsplit('/', 1)[-1]

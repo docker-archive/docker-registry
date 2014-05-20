@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import base64
 import distutils.version
 import functools
@@ -10,7 +12,9 @@ import urllib
 import flask
 import requests
 import rsa
-import simplejson as json
+
+from docker_registry.core import compat
+json = compat.json
 
 from . import storage
 from .lib import config
@@ -118,9 +122,10 @@ def validate_parent_access(parent_id):
         ))
         return False
     try:
+        # Note(dmp): unicode patch XXX not applied! Assuming requests does it
         logger.debug('validate_parent: Content: {0}'.format(resp.text))
         return json.loads(resp.text).get('access', False)
-    except json.JSONDecodeError:
+    except ValueError:
         logger.debug('validate_parent: Wrong response format')
         return False
 
@@ -145,10 +150,11 @@ def validate_token(auth):
         return False
     store = storage.load()
     try:
+        # Note(dmp): unicode patch XXX not applied (requests)
         images_list = [i['id'] for i in json.loads(resp.text)]
         store.put_content(store.images_list_path(*full_repos_name),
                           json.dumps(images_list))
-    except json.JSONDecodeError:
+    except ValueError:
         logger.debug('validate_token: Wrong format for images_list')
         return False
     return True

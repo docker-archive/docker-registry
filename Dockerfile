@@ -5,26 +5,31 @@
 # TO_BUILD:       docker build -rm -t registry .
 # TO_RUN:         docker run -p 5000:5000 registry
 
-FROM ubuntu:13.10
+# Latest Ubuntu LTS
+from    ubuntu:14.04
 
-RUN apt-get update; \
-    apt-get install -y git-core build-essential python-dev \
-    libevent1-dev python-openssl liblzma-dev wget; \
-    rm /var/lib/apt/lists/*_*
-RUN cd /tmp; wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
-RUN cd /tmp; python ez_setup.py; easy_install pip; \
-    rm ez_setup.py
+# Update
+run apt-get update
+run apt-get -y upgrade
 
-ADD . /docker-registry
-ADD ./config/boto.cfg /etc/boto.cfg
+# Install pip
+run apt-get -y install python-pip
 
-RUN pip install /docker-registry/
+# Install deps for backports.lzma (python2 requires it)
+run apt-get -y install python-dev liblzma-dev libevent1-dev
 
-ENV DOCKER_REGISTRY_CONFIG /docker-registry/config/config_sample.yml
-ENV SETTINGS_FLAVOR dev
+add . /docker-registry
+add ./config/boto.cfg /etc/boto.cfg
 
-EXPOSE 5000
+# Install core
+run pip install /docker-registry/depends/docker-registry-core
 
-WORKDIR /docker-registry
+# Install registry
+run pip install /docker-registry/
 
-CMD exec docker-registry
+env DOCKER_REGISTRY_CONFIG /docker-registry/config/config_sample.yml
+env SETTINGS_FLAVOR dev
+
+expose 5000
+
+cmd exec docker-registry

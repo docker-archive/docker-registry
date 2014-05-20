@@ -1,8 +1,13 @@
+# -*- coding: utf-8 -*-
+
 import logging
 
 import flask
 import flask_cors
-import simplejson as json
+
+from docker_registry.core import compat
+from docker_registry.core import exceptions
+json = compat.json
 
 from . import storage
 from . import toolkit
@@ -49,8 +54,9 @@ def get_post_users():
     if flask.request.method == 'GET':
         return toolkit.response('OK', 200)
     try:
-        json.loads(flask.request.data)
-    except json.JSONDecodeError:
+        # Note(dmp): unicode patch
+        json.loads(flask.request.data.decode('utf8'))
+    except ValueError:
         return toolkit.api_error('Error Decoding JSON', 400)
     return toolkit.response('User Created', 201)
 
@@ -65,7 +71,8 @@ def update_index_images(namespace, repository, data):
     sender = flask.current_app._get_current_object()
     try:
         images = {}
-        data = json.loads(data) + json.loads(store.get_content(path))
+        # Note(dmp): unicode patch
+        data = json.loads(data.decode('utf8')) + store.get_json(path)
         for i in data:
             iid = i['id']
             if iid in images and 'checksum' in images[iid]:
@@ -76,13 +83,15 @@ def update_index_images(namespace, repository, data):
                     i_data[key] = i[key]
             images[iid] = i_data
         data = images.values()
-        store.put_content(path, json.dumps(data))
+        # Note(dmp): unicode patch
+        store.put_json(path, data)
         signals.repository_updated.send(
             sender, namespace=namespace, repository=repository, value=data)
-    except IOError:
+    except exceptions.FileNotFoundError:
         signals.repository_created.send(
             sender, namespace=namespace, repository=repository,
-            value=json.loads(data))
+            # Note(dmp): unicode patch
+            value=json.loads(data.decode('utf8')))
         store.put_content(path, data)
 
 
@@ -95,8 +104,9 @@ def update_index_images(namespace, repository, data):
 def put_repository(namespace, repository, images=False):
     data = None
     try:
-        data = json.loads(flask.request.data)
-    except json.JSONDecodeError:
+        # Note(dmp): unicode patch
+        data = json.loads(flask.request.data.decode('utf8'))
+    except ValueError:
         return toolkit.api_error('Error Decoding JSON', 400)
     if not isinstance(data, list):
         return toolkit.api_error('Invalid data')
@@ -116,7 +126,7 @@ def get_repository_images(namespace, repository):
     try:
         path = store.index_images_path(namespace, repository)
         data = store.get_content(path)
-    except IOError:
+    except exceptions.FileNotFoundError:
         return toolkit.api_error('images not found', 404)
     headers = generate_headers(namespace, repository, 'read')
     return toolkit.response(data, 200, headers, True)

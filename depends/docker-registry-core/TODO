@@ -1,0 +1,2 @@
+- fix py34 compatibility: drop boto for botocore
+- put back on travis, and use a real redis for tests (not the mock)
