@@ -17,18 +17,15 @@ The stable, released version is currently the [0.6.9 tag](https://github.com/dot
 Quick start
 ===========
 
-The fastest way to get running is using the
-[official image from the Docker index](https://index.docker.io/_/registry/):
+The fastest way to get running:
 
-This example will launch a container on port 5000, and storing images within
-the container itself:  
-```
-docker run -p 5000:5000 registry
-```
+ * install docker according to the [following instructions](http://docs.docker.io/installation/#installation)
+ * run the registry: `docker run -p 5000:5000 registry`
 
+That will use the
+[official image from the Docker index](https://index.docker.io/_/registry/).
 
-This example will launch a container on port 5000, and storing images in an
-Amazon S3 bucket:  
+Here is another example that will launch a container on port 5000, and store images in an Amazon S3 bucket:  
 ```
 docker run \
          -e SETTINGS_FLAVOR=s3 \
@@ -65,14 +62,14 @@ In the `config_sample.yml` file, you'll see several sample flavors:
 1. `common`: used by all other flavors as base settings
 1. `local`: stores data on the local filesystem
 1. `s3`: stores data in an AWS S3 bucket
+1. `dev`: basic configuration using the `local` flavor
+1. `test`: used by unit tests
+1. `prod`: production configuration (basically a synonym for the `s3` flavor)
 1. `gcs`: stores data in Google cloud storage
 1. `swift`: stores data in OpenStack Swift
 1. `glance`: stores data in OpenStack Glance, with a fallback to local storage
 1. `glance-swift`: stores data in OpenStack Glance, with a fallback to Swift
 1. `elliptics`: stores data in Elliptics key/value storage
-1. `dev`: basic configuration using the `local` flavor
-1. `test`: used by unit tests
-1. `prod`: production configuration (basically a synonym for the `s3` flavor)
 
 You can define your own flavors by adding a new top-level yaml key.
 
@@ -300,10 +297,25 @@ test:
 
 ## Storage options
 
-1. `storage`: Selects the storage engine to use. The options for which are
-   defined below
+`storage` selects the storage engine to use. The registry ships with two storage engine by default (`file` and `s3`).
 
-### storage: local
+If you want to find other (community provided) storages: `pip search docker-registry-driver`
+
+To use and install one of these alternate storages:
+
+ * `pip install docker-registry-driver-NAME`
+ * in the configuration set `storage` to `NAME`
+ * add any other storage dependent configuraiton option to the conf file
+ * review the storage specific documentation for additional dependency or configuration instructions.
+
+ Currently, we are aware of the following storage driver:
+
+  * [elliptics](https://github.com/noxiouz/docker-registry-driver-elliptics)
+  * [swift](https://github.com/bacongobbler/docker-registry-driver-swift)
+  * [gcs](https://github.com/dmp42/docker-registry-driver-gcs)
+  * [glance](https://github.com/dmp42/docker-registry-driver-glance)
+
+### storage: file
 
 1. `storage_path`: Path on the filesystem where to store data
 
@@ -311,7 +323,7 @@ Example:
 
 ```yaml
 local:
-  storage: local
+  storage: file
   storage_path: /mnt/registry
 ```
 
@@ -351,104 +363,13 @@ prod:
   s3_secret_key: xdDowwlK7TJajV1Y7EoOZrmuPEJlHYcNP2k4j49T
 ```
 
-### storage: elliptics
-[Elliptics](http://reverbrain.com/elliptics/) key/value storage options
-
-1. `elliptics_nodes`: Elliptics remotes
-  Can be a hash of `address: port`, or a list of `address:port` strings, or a single space delimited string.
-1. `elliptics_wait_timeout`: time to wait for the operation complete
-1. `elliptics_check_timeout`: timeout for pinging node
-1. `elliptics_io_thread_num`: number of IO threads in processing pool
-1. `elliptics_net_thread_num`: number of threads in network processing pool
-1. `elliptics_nonblocking_io_thread_num`: number of IO threads in processing pool dedicated to nonblocking ops
-1. `elliptics_groups`: Elliptics groups registry should use
-1. `elliptics_verbosity`: Elliptics logger verbosity (0...4)
-1. `elliptics_logfile`: path to Elliptics logfile (default: `dev/stderr`)
-1. `elliptics_addr_family`: address family to use when adding Elliptics remotes (default: `2` (for ipv4)). Use 10 for ipv6 remotes on Linux.
-
-Example:
-```yaml
-dev:
-  storage: elliptics
-  elliptics_nodes:
-    elliptics-host1: 1025
-    elliptics-host2: 1025
-  elliptics_wait_timeout: 60
-  elliptics_check_timeout: 60
-  elliptics_io_thread_num: 2
-  elliptics_net_thread_num: 2
-  elliptics_nonblocking_io_thread_num: 2
-  elliptics_groups: [1, 2, 3]
-  elliptics_verbosity: 4
-  elliptics_logfile: "/tmp/logfile.log"
-  elliptics_loglevel: debug
-```
-
-### storage: gcs
-[Google Cloud Storage](https://cloud.google.com/products/cloud-storage/) options
-
-1. `boto_bucket`: string, the bucket name
-1. `storage_path`: string, the sub "folder" where image data will be stored.
-1. `oauth2`: boolean, true to enable [OAuth2.0](https://developers.google.com/accounts/docs/OAuth2)
-
-Example:
-```yaml
-dev:
-  boto_bucket: "_env:GCS_BUCKET"
-  storage: gcs
-  storage_path: "_env:STORAGE_PATH:/"
-  oauth2: true
-```
-
-You can also use [developer keys](https://developers.google.com/storage/docs/reference/v1/getting-startedv1#keys) for (if `oauth2` is unset or set to false) instead
-of using [OAuth2.0](https://developers.google.com/accounts/docs/OAuth2). Options to configure then:
-
-1. `gs_access_key`: string, GCS access key
-1. `gs_secret_key`: string, GCS secret key
-1. `gs_secure`: boolean, true for HTTPS to GCS
-
-Example:
-```yaml
-dev:
-  boto_bucket: "_env:GCS_BUCKET"
-  storage: gcs
-  storage_path: "_env:STORAGE_PATH:/"
-  gs_access_key: GOOGTS7C7FUP3AIRVJTE
-  gs_secret_key: bGoa+V7g/yqDXvKRqq+JTFn4uQZbPiQJo4pf9RzJ
-  gs_secure: false
-```
-
-### storage: swift
-OpenStack Swift options
-
-1. `storage_path`: The prefix of where data will be stored
-1. `swift_authurl`: Authentication url
-1. `swift_container`:
-1. `swift_user`: 
-1. `swift_password`:
-1. `swift_tenant_name`:
-1. `swift_region_name`:
-
-### storage: glance
-OpenStack Glance options
-
-1. `storage_alternate`:
-1. `storage_path`:
-
-
 Run the Registry
 ----------------
 
-### Option 1 (Recommended) - Run the registry docker container
+### Recommended: run the registry docker container
 
-Install docker according to the following instructions:
-http://docs.docker.io/installation/#installation
-
-Run registry:
-
-```
-docker run -p 5000:5000 registry
-```
+ * install docker according to the [following instructions](http://docs.docker.io/installation/#installation)
+ * run the registry: `docker run -p 5000:5000 registry`
 
 or
 
@@ -467,27 +388,29 @@ docker run \
 NOTE: The container will try to allocate the port 5000. If the port
 is already taken, find out which container is already using it by running `docker ps`
 
-### Option 2 (Advanced) - Install the registry on an existing server
+### Advanced: install the registry on an existing server
 
 #### On Ubuntu
 
 Install the system requirements for building a Python library:
 
 ```
-sudo apt-get install build-essential python-dev libevent-dev python-pip libssl-dev liblzma-dev libffi-dev
+sudo apt-get install build-essential python-dev libevent-dev python-pip liblzma-dev
 ```
 
 Then install the Registry app:
 
 ```
-sudo pip install .
+sudo pip install docker-registry
 ```
+
+(or clone the repository and `pip install .`)
 
 #### On Red Hat-based systems:
 
 Install the required dependencies:
 ```
-sudo yum install python-devel libevent-devel python-pip openssl-devel libffi-devel gcc xz-devel
+sudo yum install python-devel libevent-devel python-pip gcc xz-devel
 ```
 
 NOTE: On RHEL and CentOS you will need the
@@ -497,8 +420,10 @@ should not require the additional repositories.
 Then install the Registry app:
 
 ```
-sudo python-pip install .
+sudo python-pip install docker-registry
 ```
+
+(or clone the repository and `pip install .`)
 
 #### Run it
 
@@ -557,27 +482,7 @@ dotcloud create myregistry
 dotcloud push
 ```
 
-Run tests
----------
-Make sure you have git installed. If not:
+For developers
+--------------
 
-Fedora/RHEL/CentOS :
-
-```
-sudo yum install git
-```
-
-If you want to submit a pull request, please run the unit tests using tox
-before submitting anything to the repos:
-
-```
-pip install tox
-cd docker-registry/
-tox
-```
-
-[search-endpoint]:
-  http://docs.docker.io/en/latest/reference/api/index_api/#get--v1-search
-[SQLAlchemy]: http://docs.sqlalchemy.org/
-[create_engine]:
-  http://docs.sqlalchemy.org/en/latest/core/engines.html#sqlalchemy.create_engine
+Read CONTRIBUTE.md
