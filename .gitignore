@@ -27,3 +27,5 @@ Vagrantfile
 docker-registry-core.sublime-workspace
 
 *tmp
+
+*.sublime-project
