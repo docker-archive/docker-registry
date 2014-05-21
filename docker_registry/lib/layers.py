@@ -49,6 +49,7 @@ class Archive(lzma.LZMAFile):
     This class wraps a file-object that contains tar archive data. The data
     will be optionally decompressed with lzma/xz if found to be a compressed
     archive.
+    The file-object itself must be seekable.
     """
 
     def __init__(self, *args, **kwargs):
@@ -59,9 +60,11 @@ class Archive(lzma.LZMAFile):
         if not self.compressed:
             return getattr(self._fp, method)(*args, **kwargs)
         if self.compressed:
+            previous = self._fp.tell()
             try:
                 return getattr(super(Archive, self), method)(*args, **kwargs)
             except lzma._lzma.LZMAError:
+                self._fp.seek(previous)
                 self.compressed = False
                 return getattr(self._fp, method)(*args, **kwargs)
 
