@@ -100,7 +100,7 @@ openstack:
     <<: *glance
 
 # This flavor stores the images in Glance (to integrate with openstack)
-# and tags in Swift. 
+# and tags in Swift.
 glance-swift: &glance-swift
     <<: *swift
     storage: glance
@@ -128,8 +128,6 @@ elliptics:
 dev: &dev
     <<: *local
     search_backend: _env:SEARCH_BACKEND:sqlalchemy
-    # gunicorn will set this automatically if unset in dev mode
-    secret_key: _env:SECRET_KEY:secret
 
 # This flavor is automatically used by unit tests
 test:

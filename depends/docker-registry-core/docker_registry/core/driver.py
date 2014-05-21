@@ -235,7 +235,7 @@ def fetch(name):
     except ImportError:
         raise NotImplementedError(
             """You requested storage driver docker_registry.drivers.%s
-which is not installed. Try `pip install docker_registry-drivers-%s`
+which is not installed. Try `pip install docker-registry-driver-%s`
 or check your configuration. The following are currently
 available on your system: %s"""
             % (name, name, available())

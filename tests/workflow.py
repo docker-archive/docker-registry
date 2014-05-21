@@ -2,6 +2,10 @@ import hashlib
 import os
 
 import requests
+sess = requests.Session()
+adapter = requests.adapters.HTTPAdapter(pool_connections=100, pool_maxsize=100)
+sess.mount('https://', adapter)
+requests = sess
 
 from docker_registry.lib import checksums
 from docker_registry.lib import config
@@ -14,6 +18,8 @@ json = compat.json
 StringIO = compat.StringIO
 
 cfg = config.load()
+
+ua = 'docker/1.0.0 registry test pretending to be docker'
 
 
 class TestWorkflow(base.TestCase):
@@ -32,7 +38,7 @@ class TestWorkflow(base.TestCase):
 
     def generate_chunk(self, data):
         bufsize = 1024
-        io = StringIO.StringIO(data)
+        io = StringIO(data)
         while True:
             buf = io.read(bufsize)
             if not buf:
@@ -60,6 +66,7 @@ class TestWorkflow(base.TestCase):
             self.registry_endpoint, image_id),
             data=json_data,
             headers={'Authorization': 'Token ' + token,
+                     'User-Agent': ua,
                      'X-Docker-Checksum': layer_checksum},
             cookies=self.cookies)
         self.assertEqual(resp.status_code, 200, resp.text)
@@ -67,7 +74,8 @@ class TestWorkflow(base.TestCase):
         resp = requests.put('{0}/v1/images/{1}/layer'.format(
             self.registry_endpoint, image_id),
             data=self.generate_chunk(layer),
-            headers={'Authorization': 'Token ' + token},
+            headers={'Authorization': 'Token ' + token,
+                     'User-Agent': ua},
             cookies=self.cookies)
         self.assertEqual(resp.status_code, 200, resp.text)
         self.update_cookies(resp)
@@ -94,7 +102,8 @@ class TestWorkflow(base.TestCase):
         resp = requests.put('{0}/v1/repositories/{1}/{2}/'.format(
             self.index_endpoint, namespace, repos),
             auth=tuple(self.user_credentials),
-            headers={'X-Docker-Token': 'true'},
+            headers={'X-Docker-Token': 'true',
+                     'User-Agent': ua},
             data=images_json)
         self.assertEqual(resp.status_code, 200, resp.text)
         token = resp.headers.get('x-docker-token')
@@ -108,7 +117,8 @@ class TestWorkflow(base.TestCase):
         resp = requests.put('{0}/v1/repositories/{1}/{2}/images'.format(
             self.index_endpoint, namespace, repos),
             auth=tuple(self.user_credentials),
-            headers={'X-Endpoints': self.registry_endpoint},
+            headers={'X-Endpoints': self.registry_endpoint,
+                     'User-Agent': ua},
             data=json.dumps(images_json))
         self.assertEqual(resp.status_code, 204)
         return (namespace, repos)
@@ -160,7 +170,7 @@ class TestWorkflow(base.TestCase):
             json_data, checksum, blob = self.fetch_image(image_id)
             # check queried checksum and local computed checksum from the image
             # are the same
-            tmpfile = StringIO.StringIO()
+            tmpfile = StringIO()
             tmpfile.write(blob)
             tmpfile.seek(0)
             computed_checksum = checksums.compute_simple(tmpfile, json_data)
