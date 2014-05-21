@@ -19,7 +19,7 @@ from .lib import cache
 from .lib import checksums
 from .lib import layers
 from .lib import mirroring
-from .lib import xtarfile
+from .vendor import xtarfile
 
 
 store = storage.load()
