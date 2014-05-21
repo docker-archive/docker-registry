@@ -3,7 +3,6 @@
 import datetime
 import functools
 import logging
-import xtarfile
 import time
 
 import flask
@@ -20,6 +19,7 @@ from .lib import cache
 from .lib import checksums
 from .lib import layers
 from .lib import mirroring
+from .lib import xtarfile
 
 
 store = storage.load()
