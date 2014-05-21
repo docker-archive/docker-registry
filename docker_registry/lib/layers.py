@@ -59,9 +59,11 @@ class Archive(lzma.LZMAFile):
         if not self.compressed:
             return getattr(self._fp, method)(*args, **kwargs)
         if self.compressed:
+            previous = self._sp.tell()
             try:
                 return getattr(super(Archive, self), method)(*args, **kwargs)
             except lzma._lzma.LZMAError:
+                self._fp.seek(previous)
                 self.compressed = False
                 return getattr(self._fp, method)(*args, **kwargs)
 
