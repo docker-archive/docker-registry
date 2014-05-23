@@ -76,8 +76,13 @@ def source_lookup_tag(f):
             )
             if not source_resp:
                 return resp
-            return toolkit.response(data=source_resp.content,
-                                    headers=source_resp.headers, raw=True)
+
+            headers = source_resp.headers
+            if 'Content-Encoding' in headers:
+                del headers['Content-Encoding']
+
+            return toolkit.response(data=source_resp.content, headers=headers,
+                                    raw=True)
 
         store = storage.load()
         request_path = flask.request.path
@@ -100,10 +105,14 @@ def source_lookup_tag(f):
         if not source_resp:
             return resp
         data = source_resp.content
+        headers = source_resp.headers
+        if 'Content-Encoding' in headers:
+                del headers['Content-Encoding']
+
         cache.redis_conn.setex('{0}:{1}'.format(
             cache.cache_prefix, tag_path
         ), tags_cache_ttl, data)
-        return toolkit.response(data=data, headers=source_resp.headers,
+        return toolkit.response(data=data, headers=headers,
                                 raw=True)
     return wrapper
 
