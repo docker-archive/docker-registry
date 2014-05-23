@@ -6,7 +6,6 @@ import simplejson as json
 
 from . import storage
 from . import toolkit
-from .lib import config
 from .lib import mirroring
 from .lib import signals
 
@@ -16,12 +15,12 @@ from .app import app
 store = storage.load()
 logger = logging.getLogger(__name__)
 
-
 """Those routes are loaded only when `standalone' is enabled in the config
    file. The goal is to make the Registry working without the central Index
    It's then possible to push images from Docker without talking to any other
    entities. This module mimics the Index.
 """
+
 
 def generate_headers(namespace, repository, access):
     registry_endpoints = toolkit.get_endpoints()
