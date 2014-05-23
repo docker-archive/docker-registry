@@ -82,12 +82,15 @@ def response(data=None, code=200, headers=None, raw=False):
         data = True
     h = {
         'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache',
         'Expires': '-1',
         'Content-Type': 'application/json'
     }
     if headers:
         h.update(headers)
+
+    if h['Cache-Control'] == 'no-cache':
+        h['Pragma'] = 'no-cache'
+
     try:
         if raw is False:
             data = json.dumps(data, sort_keys=True, skipkeys=True)
