@@ -16,6 +16,7 @@ from .app import app
 store = storage.load()
 logger = logging.getLogger(__name__)
 
+
 """Those routes are loaded only when `standalone' is enabled in the config
    file. The goal is to make the Registry working without the central Index
    It's then possible to push images from Docker without talking to any other
