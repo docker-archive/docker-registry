@@ -63,7 +63,10 @@ class TestDriver(testing.Driver):
         self._storage.stream_write(filename, io)
         assert self._storage.exists(filename)
         # Test that EOFed io string throws IOError on lib/storage/s3
-        self._storage.stream_write(filename, io)
+        try:
+            self._storage.stream_write(filename, io)
+        except IOError:
+            pass
         # Cleanup
         io.close()
         self._storage.remove(filename)
