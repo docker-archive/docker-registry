@@ -20,10 +20,10 @@ import os
 import re
 import time
 
+import boto.exception
 import boto.s3
 import boto.s3.connection
 import boto.s3.key
-import boto.exception
 
 logger = logging.getLogger(__name__)
 
