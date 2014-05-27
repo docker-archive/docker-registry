@@ -11,7 +11,10 @@ Major architecture rehaul, with potentially breaking changes:
  * largely enhanced configuration mechanism (setup-configs.sh is no more)
  * cookies are no longer used
  * CORS is now enabled on a number of endpoints
+ * extras requirements
+ * Cloudfront redirect experimental support
 
  * [BUGFIX] unicode issues. Depending on the storage driver you are using, you may encounter unicode issues on already published content (likely garbled content).
  * [BUGFIX] content-length fix for bytes ranges
-
+ * [BUGFIX] tar not being seeked back to 0 after lzma read attempt
+ * [BUGFIX] inconsistent cache-control headers
