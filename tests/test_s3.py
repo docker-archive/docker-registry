@@ -60,10 +60,16 @@ class TestDriver(testing.Driver):
         content = self.gen_random_string(8 * 1024 * 1024)
         io = StringIOWithError(content)
         assert not self._storage.exists(filename)
-        self._storage.stream_write(filename, io)
+        try:
+            self._storage.stream_write(filename, io)
+        except IOError:
+            pass
         assert self._storage.exists(filename)
         # Test that EOFed io string throws IOError on lib/storage/s3
-        self._storage.stream_write(filename, io)
+        try:
+            self._storage.stream_write(filename, io)
+        except IOError:
+            pass
         # Cleanup
         io.close()
         self._storage.remove(filename)

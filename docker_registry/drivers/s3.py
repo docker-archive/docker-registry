@@ -15,16 +15,48 @@ import docker_registry.core.boto as coreboto
 from docker_registry.core import compat
 from docker_registry.core import lru
 
-# import gevent.monkey
-# gevent.monkey.patch_all()
-
 import logging
+import os
+import re
+import time
 
+import boto.exception
 import boto.s3
 import boto.s3.connection
 import boto.s3.key
 
 logger = logging.getLogger(__name__)
+
+
+class Cloudfront():
+    def __init__(self, awsaccess, awssecret, base, keyid, privatekey):
+        boto.connect_cloudfront(
+            awsaccess,
+            awssecret
+        )
+        host = re.compile('^https?://([^/]+)').findall(base)
+        self.dist = boto.cloudfront.distribution.Distribution(domain_name=host)
+        self.base = base
+        self.keyid = keyid
+        self.privatekey = privatekey
+        try:
+            self.privatekey = open(privatekey).read()
+        except Exception:
+            logger.debug('Passed private key is not readable. Assume string.')
+
+    def sign(self, url, expire_time=0):
+        path = os.path.join(self.base, url)
+        if expire_time:
+            expire_time = time.time() + expire_time
+        return self.dist.create_signed_url(
+            path,
+            self.keyid,
+            private_key_string=self.privatekey,
+            expire_time=int(expire_time)
+        )
+
+    def pub(self, path):
+        return os.path.join(self.base, path)
 
 
 class Storage(coreboto.Base):
@@ -48,6 +80,16 @@ class Storage(coreboto.Base):
                 **kwargs)
         logger.warn("No S3 region specified, using boto default region, " +
                     "this may affect performance and stability.")
+        # Connect cloudfront if we are required to
+        if self._config.cloudfront:
+            self.signer = Cloudfront(
+                self._config.s3_access_key,
+                self._config.s3_secret_key,
+                self._config.cloudfront['base'],
+                self._config.cloudfront['keyid'],
+                self._config.cloudfront['keysecret']
+            ).sign
+
         return boto.s3.connection.S3Connection(
             self._config.s3_access_key,
             self._config.s3_secret_key,
@@ -82,8 +124,8 @@ class Storage(coreboto.Base):
                 mp.upload_part_from_file(io, num_part)
                 num_part += 1
                 io.close()
-        except IOError:
-            pass
+        except IOError as e:
+            raise e
         mp.complete_upload()
 
     def content_redirect_url(self, path):
@@ -91,7 +133,13 @@ class Storage(coreboto.Base):
         key = self.makeKey(path)
         if not key.exists():
             raise IOError('No such key: \'{0}\''.format(path))
-        return key.generate_url(
-            expires_in=1200,
-            method='GET',
-            query_auth=True)
+
+        # No cloudfront? Sign to the bucket
+        if not self.signer:
+            return key.generate_url(
+                expires_in=1200,
+                method='GET',
+                query_auth=True)
+
+        # Have cloudfront? Sign it
+        return self.signer(path, expire_time=60)
