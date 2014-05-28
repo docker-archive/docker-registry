@@ -18,6 +18,18 @@ def is_mirror():
     return bool(cfg.get('mirroring', False))
 
 
+def _response_headers(base):
+    headers = {}
+    if not base:
+        return headers
+    for k, v in base.iteritems():
+        if k.lower() == 'content-encoding':
+            continue
+        headers[k.lower()] = v
+    logger.warn(headers)
+    return headers
+
+
 def lookup_source(path, stream=False, source=None):
     if not source:
         cfg = config.load()
@@ -77,10 +89,7 @@ def source_lookup_tag(f):
             if not source_resp:
                 return resp
 
-            headers = source_resp.headers
-            if 'Content-Encoding' in headers:
-                del headers['Content-Encoding']
-
+            headers = _response_headers(source_resp.headers)
             return toolkit.response(data=source_resp.content, headers=headers,
                                     raw=True)
 
@@ -105,10 +114,7 @@ def source_lookup_tag(f):
         if not source_resp:
             return resp
         data = source_resp.content
-        headers = source_resp.headers
-        if 'Content-Encoding' in headers:
-                del headers['Content-Encoding']
-
+        headers = _response_headers(source_resp.headers)
         cache.redis_conn.setex('{0}:{1}'.format(
             cache.cache_prefix, tag_path
         ), tags_cache_ttl, data)
@@ -142,11 +148,9 @@ def source_lookup(cache=False, stream=False, index_route=False):
 
             store = storage.load()
 
-            headers = source_resp.headers
-            if 'Content-Encoding' in headers:
-                del headers['Content-Encoding']
-            if index_route and 'X-Docker-Endpoints' in headers:
-                headers['X-Docker-Endpoints'] = toolkit.get_endpoints()
+            headers = _response_headers(source_resp.headers)
+            if index_route and 'x-docker-endpoints' in headers:
+                headers['x-docker-endpoints'] = toolkit.get_endpoints()
 
             if not stream:
                 logger.debug('JSON data found on source, writing response')
