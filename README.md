@@ -99,6 +99,7 @@ prod:
     s3_access_key: _env:AWS_S3_ACCESS_KEY
     s3_secret_key: _env:AWS_S3_SECRET_KEY
     s3_bucket: _env:AWS_S3_BUCKET
+    boto_bucket: _env:AWS_S3_BUCKET
     storage_path: /srv/docker
     smtp_host: localhost
     from_addr: docker@myself.com
