@@ -52,14 +52,12 @@ class SocketReader(object):
             if chunk_size == -1:
                 chunk_size = 1024
             for chunk in self._fp.iter_content(chunk_size):
-                logger.debug('Read %d bytes' % len(chunk))
                 for handler in self.handlers:
                     handler(chunk)
                 yield chunk
         else:
             chunk = self._fp.read(chunk_size)
             while chunk:
-                logger.debug('Read %d bytes' % len(chunk))
                 for handler in self.handlers:
                     handler(chunk)
                 yield chunk
