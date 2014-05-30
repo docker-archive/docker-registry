@@ -56,7 +56,6 @@ class TestWorkflow(base.TestCase):
         io.close()
 
     def upload_image(self, image_id, parent_id, token):
-        # XXX revert
         layer = self.gen_random_string(7 * 1024 * 1024)
         json_obj = {
             'id': image_id
