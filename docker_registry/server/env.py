@@ -4,7 +4,7 @@ import os
 
 __all__ = ['source']
 
-defined = {
+_DEFAULT = {
     'REGISTRY_PORT': 5000,
     'REGISTRY_HOST': '0.0.0.0',
     'SETTINGS_FLAVOR': 'dev',
@@ -15,4 +15,4 @@ defined = {
 
 
 def source(key, override=None):
-    return os.environ.get(key, defined[key] if key in defined else override)
+    return os.environ.get(key, _DEFAULT[key] if key in _DEFAULT else override)
