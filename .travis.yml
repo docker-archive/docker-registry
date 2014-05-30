@@ -22,5 +22,3 @@ script: SETTINGS_FLAVOR=test DOCKER_REGISTRY_CONFIG=config_sample.yml flake8 . &
 before_install:
   - sudo apt-get update
   - sudo apt-get install libevent-dev liblzma-dev
-
-# build-essential python-dev

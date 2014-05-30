@@ -14,13 +14,20 @@ requirements = [line for line in requirements_txt]
 ver = sys.version_info
 
 if ver[0] == 2:
+    # Python 2 requires lzma backport
     requirements.insert(0, 'backports.lzma>=0.0.2')
     if ver[1] <= 6:
+        # Python 2.6 requires additional libraries
         requirements.insert(0, 'argparse>=1.2.1')
         requirements.insert(0, 'importlib>=1.0.3')
 
+# Require core (the reason this is out of req.txt is to ease tox)
+requirements.insert(0, 'docker-registry-core>=1,<2')
+
+# Explicit packages list to avoid setup_tools funkyness
 packages = ['docker_registry',
             'docker_registry.drivers',
+            'docker_registry.server',
             'docker_registry.lib',
             'docker_registry.storage',
             'docker_registry.lib.index']
