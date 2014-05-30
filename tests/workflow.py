@@ -1,3 +1,15 @@
+"""
+How to run locally:
+Start your local registry:
+`INDEX_ENDPOINT=https://indexstaging-docker.dotcloud.com \
+ SETTINGS_FLAVOR=test DOCKER_REGISTRY_CONFIG=config_sample.yml docker-registry`
+
+Start the tests:
+`DOCKER_REGISTRY_ENDPOINT=http://localhost:5000 SETTINGS_FLAVOR=test \
+DOCKER_REGISTRY_CONFIG=config_sample.yml DOCKER_CREDS=USER:PASS \
+nosetests --tests=tests/workflow.py`
+"""
+
 import hashlib
 import os
 
@@ -19,7 +31,7 @@ StringIO = compat.StringIO
 
 cfg = config.load()
 
-ua = 'docker/1.0.0 registry test pretending to be docker'
+ua = 'docker/0.11 registry test pretending to be docker'
 
 
 class TestWorkflow(base.TestCase):
@@ -28,13 +40,10 @@ class TestWorkflow(base.TestCase):
     registry_endpoint = os.environ.get(
         'DOCKER_REGISTRY_ENDPOINT',
         'https://registrystaging-docker.dotcloud.com')
-    #registry_endpoint = 'http://localhost:5000'
     index_endpoint = os.environ.get(
         'DOCKER_INDEX_ENDPOINT',
         'https://indexstaging-docker.dotcloud.com')
-    # export DOCKER_CREDS="login:password"
     user_credentials = os.environ['DOCKER_CREDS'].split(':')
-    cookies = None
 
     def generate_chunk(self, data):
         bufsize = 1024
@@ -46,12 +55,8 @@ class TestWorkflow(base.TestCase):
             yield buf
         io.close()
 
-    def update_cookies(self, response):
-        cookies = response.cookies
-        if cookies:
-            self.cookies = cookies
-
     def upload_image(self, image_id, parent_id, token):
+        # XXX revert
         layer = self.gen_random_string(7 * 1024 * 1024)
         json_obj = {
             'id': image_id
@@ -68,26 +73,34 @@ class TestWorkflow(base.TestCase):
             headers={'Authorization': 'Token ' + token,
                      'User-Agent': ua,
                      'X-Docker-Checksum': layer_checksum},
-            cookies=self.cookies)
+        )
+
         self.assertEqual(resp.status_code, 200, resp.text)
-        self.update_cookies(resp)
         resp = requests.put('{0}/v1/images/{1}/layer'.format(
             self.registry_endpoint, image_id),
             data=self.generate_chunk(layer),
             headers={'Authorization': 'Token ' + token,
                      'User-Agent': ua},
-            cookies=self.cookies)
+        )
+
+        resp = requests.put('{0}/v1/images/{1}/checksum'.format(
+            self.registry_endpoint, image_id),
+            data={},
+            headers={'Authorization': 'Token ' + token,
+                     'X-Docker-Checksum-Payload': layer_checksum,
+                     'User-Agent': ua}
+        )
+
         self.assertEqual(resp.status_code, 200, resp.text)
-        self.update_cookies(resp)
         return {'id': image_id, 'checksum': layer_checksum}
 
     def update_tag(self, namespace, repos, image_id, tag_name):
         resp = requests.put('{0}/v1/repositories/{1}/{2}/tags/{3}'.format(
             self.registry_endpoint, namespace, repos, tag_name),
             data=json.dumps(image_id),
-            cookies=self.cookies)
+        )
+
         self.assertEqual(resp.status_code, 200, resp.text)
-        self.update_cookies(resp)
 
     def docker_push(self):
         # Test Push
@@ -106,11 +119,11 @@ class TestWorkflow(base.TestCase):
                      'User-Agent': ua},
             data=images_json)
         self.assertEqual(resp.status_code, 200, resp.text)
-        token = resp.headers.get('x-docker-token')
+        self.token = resp.headers.get('x-docker-token')
         # Docker -> Registry
         images_json = []
-        images_json.append(self.upload_image(parent_id, None, token))
-        images_json.append(self.upload_image(image_id, parent_id, token))
+        images_json.append(self.upload_image(parent_id, None, self.token))
+        images_json.append(self.upload_image(image_id, parent_id, self.token))
         # Updating the tags does not need a token, it will use the Cookie
         self.update_tag(namespace, repos, image_id, 'latest')
         # Docker -> Index
@@ -127,41 +140,62 @@ class TestWorkflow(base.TestCase):
         """Return image json metadata, checksum and its blob."""
         resp = requests.get('{0}/v1/images/{1}/json'.format(
             self.registry_endpoint, image_id),
-            cookies=self.cookies)
+        )
         self.assertEqual(resp.status_code, 200, resp.text)
-        self.update_cookies(resp)
+
+        resp = requests.get('{0}/v1/images/{1}/json'.format(
+            self.registry_endpoint, image_id),
+            headers={'Authorization': 'Token ' + self.token}
+        )
+        self.assertEqual(resp.status_code, 200, resp.text)
+
         json_data = resp.text
-        checksum = resp.headers['x-docker-checksum']
+        checksum = resp.headers['x-docker-payload-checksum']
+
         resp = requests.get('{0}/v1/images/{1}/layer'.format(
             self.registry_endpoint, image_id),
-            cookies=self.cookies)
+        )
         self.assertEqual(resp.status_code, 200, resp.text)
-        self.update_cookies(resp)
+
+        resp = requests.get('{0}/v1/images/{1}/layer'.format(
+            self.registry_endpoint, image_id),
+            headers={'Authorization': 'Token ' + self.token}
+        )
+        self.assertEqual(resp.status_code, 200, resp.text)
         return (json_data, checksum, resp.text)
 
     def docker_pull(self, namespace, repos):
         # Test pull
         # Docker -> Index
+
+        resp = requests.get('{0}/v1/repositories/{1}/{2}/images'.format(
+            self.index_endpoint, namespace, repos),)
+        self.assertEqual(resp.status_code, 200)
+
         resp = requests.get('{0}/v1/repositories/{1}/{2}/images'.format(
             self.index_endpoint, namespace, repos),
             auth=tuple(self.user_credentials),
             headers={'X-Docker-Token': 'true'})
         self.assertEqual(resp.status_code, 200)
-        token = resp.headers.get('x-docker-token')
+        self.token = resp.headers.get('x-docker-token')
         # Here we should use the 'X-Endpoints' returned in a real environment
         # Docker -> Registry
         resp = requests.get('{0}/v1/repositories/{1}/{2}/tags/latest'.format(
                             self.registry_endpoint, namespace, repos),
-                            headers={'Authorization': 'Token ' + token})
+                            headers={'Authorization': 'Token ' + self.token})
         self.assertEqual(resp.status_code, 200, resp.text)
-        self.cookies = resp.cookies
+
+        resp = requests.get('{0}/v1/repositories/{1}/{2}/tags/latest'.format(
+                            self.registry_endpoint, namespace, repos),
+                            )
+        self.assertEqual(resp.status_code, 200, resp.text)
+
         # Docker -> Registry
         # Note(dmp): unicode patch XXX not applied assume requests does the job
         image_id = json.loads(resp.text)
         resp = requests.get('{0}/v1/images/{1}/ancestry'.format(
             self.registry_endpoint, image_id),
-            cookies=self.cookies)
-        self.update_cookies(resp)
+        )
         self.assertEqual(resp.status_code, 200, resp.text)
         # Note(dmp): unicode patch XXX not applied assume requests does the job
         ancestry = json.loads(resp.text)
@@ -177,14 +211,19 @@ class TestWorkflow(base.TestCase):
             tmpfile.close()
             self.assertEqual(checksum, computed_checksum)
         # Remove the repository
-        resp = requests.delete('{0}/v1/repositories/{1}/{2}/'.format(
-            self.registry_endpoint, namespace, repos), cookies=self.cookies)
-        self.assertEqual(resp.status_code, 200, resp.text)
-        self.update_cookies(resp)
+        resp = requests.delete('{0}/v1/repositories/{1}/{2}/images'.format(
+            self.registry_endpoint, namespace, repos), )
+        self.assertEqual(resp.status_code, 204, resp.text)
         # Remove image_id, then parent_id
         store = storage.load()
-        store.remove(os.path.join(store.images, self.image_id))
-        store.remove(os.path.join(store.images, self.parent_id))
+        try:
+            store.remove(os.path.join(store.images, self.image_id))
+        except Exception:
+            pass
+        try:
+            store.remove(os.path.join(store.images, self.parent_id))
+        except Exception:
+            pass
 
     def test_workflow(self):
         (namespace, repos) = self.docker_push()
