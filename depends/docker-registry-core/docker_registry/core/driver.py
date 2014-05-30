@@ -63,6 +63,9 @@ class Base(object):
     # By default no storage plugin supports it
     supports_bytes_range = False
 
+    def __init__(self, path=None, config=None):
+        pass
+
     # FIXME(samalba): Move all path resolver in each module (out of the base)
     def images_list_path(self, namespace, repository):
         repository_path = self.repository_path(
@@ -232,13 +235,14 @@ def fetch(name):
         module = __import__('docker_registry.drivers.%s' % name, globals(),
                             locals(), ['Storage'], 0)  # noqa
         logger.debug("Will return docker-registry.drivers.%s.Storage" % name)
-    except ImportError:
+    except ImportError as e:
+        logger.warn("Got exception: %s" % e)
         raise NotImplementedError(
             """You requested storage driver docker_registry.drivers.%s
 which is not installed. Try `pip install docker-registry-driver-%s`
 or check your configuration. The following are currently
-available on your system: %s"""
-            % (name, name, available())
+available on your system: %s. Exception was: %s"""
+            % (name, name, available(), e)
         )
     module.Storage.scheme = name
     return module.Storage
