@@ -158,7 +158,7 @@ When using the `config_sample.yml`, you can pass all options through as environm
    *non*-Amazon S3-compliant object store, in one of the boto config files'
    `[Credentials]` section, set `boto_host`, `boto_port` as appropriate for the
    service you are using.
-1. `bugsnag`: The bugsnag API key
+1. `bugsnag`: The bugsnag API key (note that if you don't use the official docker container, you need to install the registry with bugsnag enabled: `pip install docker-registry[bugsnag]`)
 
 ### Authentication options
 
@@ -405,6 +405,13 @@ Then install the Registry app:
 sudo pip install docker-registry
 ```
 
+If you need extra requirements, like bugsnag, specify them:
+
+```
+sudo pip install docker-registry[bugsnag]
+```
+
+
 (or clone the repository and `pip install .`)
 
 #### On Red Hat-based systems:
@@ -421,7 +428,7 @@ should not require the additional repositories.
 Then install the Registry app:
 
 ```
-sudo python-pip install docker-registry
+sudo python-pip install docker-registry[bugsnag]
 ```
 
 (or clone the repository and `pip install .`)

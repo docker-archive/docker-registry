@@ -7,7 +7,7 @@ cd $SERVICE_APPROOT
 . ~/env/bin/activate
 
 pip install --download-cache=~/.pip-cache ./depends/docker-registry-core || exit 1
-pip install --download-cache=~/.pip-cache . || exit 1
+pip install --download-cache=~/.pip-cache file://`pwd`#egg=docker-registry[bugsnag] || exit 1
 
 cp -R * ~/
 

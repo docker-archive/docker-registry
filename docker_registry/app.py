@@ -14,8 +14,8 @@ import flask
 
 from . import toolkit
 from .lib import config
+from .server import __version__
 
-VERSION = '0.7.0'
 app = flask.Flask('docker-registry')
 cfg = config.load()
 loglevel = getattr(logging, cfg.get('loglevel', 'INFO').upper())
@@ -35,12 +35,12 @@ def ping():
 @app.route('/')
 def root():
     return toolkit.response('docker-registry server ({0}) (v{1})'
-                            .format(cfg.flavor, VERSION))
+                            .format(cfg.flavor, __version__))
 
 
 @app.after_request
 def after_request(response):
-    response.headers['X-Docker-Registry-Version'] = VERSION
+    response.headers['X-Docker-Registry-Version'] = __version__
     response.headers['X-Docker-Registry-Config'] = cfg.flavor
     return response
 
@@ -76,7 +76,7 @@ def init():
                           project_root=root_path,
                           release_stage=cfg.flavor,
                           notify_release_stages=[cfg.flavor],
-                          app_version=VERSION
+                          app_version=__version__
                           )
         bugsnag.flask.handle_exceptions(app)
 
