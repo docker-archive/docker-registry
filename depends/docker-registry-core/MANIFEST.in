@@ -1,5 +1,5 @@
-include requirements.txt
-include tests/requirements-tests.txt
-include tests/requirements-style.txt
+include requirements/main.txt
+include requirements/test.txt
+include requirements/style.txt
 include README.md
 include LICENSE

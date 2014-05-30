@@ -9,6 +9,7 @@ except ImportError:
 import sys
 
 requirements_txt = open('./requirements.txt')
+requirements_txt = open('./requirements/main.txt')
 requirements = [line for line in requirements_txt]
 
 ver = sys.version_info
