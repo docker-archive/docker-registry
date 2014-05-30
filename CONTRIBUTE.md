@@ -2,9 +2,9 @@
 
 ## Bare minimum
 
-You need `git`, `pip` and `tox`.
+System-wide, you need `git` and `pip` installed. You also need `tox` (usually just `pip install tox`).
 
-You might need `nose`, `coverage` and `flake`.
+You optionally need `nose`, `coverage` and `flake8` (usually just `pip install nose coverage flake8`) .
 
 
 ## Architecture
@@ -17,7 +17,7 @@ It provides:
 
  * exceptions
  * a driver interface describing how the registry interacts with the data storage
- * a compatibility layer (eg: python version)
+ * a compatibility layer (eg: abstracting behavior differences between python versions)
  * common useful utility code
  * filesystem storage driver
 
