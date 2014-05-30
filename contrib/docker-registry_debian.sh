@@ -5,7 +5,7 @@
 # Required-Start:  $network $remote_fs $syslog
 # Required-Stop:   $network $remote_fs $syslog
 # Default-Start:   2 3 4 5
-# Default-Stop:    0 1 6 
+# Default-Stop:    0 1 6
 # Short-Description: Start Docker-Registry
 ### END INIT INFO
 
@@ -33,7 +33,7 @@ self_dir="${self_path%%/${self_path##*/}}"
 # set defaults if they are not set by config
 [[ -z "$RUNAS" ]] && RUNAS=$(stat --format "%U" $self_path)                  # defaults to user owning this init script
 [[ -z "$LOGFILE" ]] && LOGFILE=/var/log/docker-registry.log                  # will be chowned to $RUNAS
-[[ -z "$PIDFILE" ]] && PIDFILE=/var/run/docker-registry/docker-registry.pid  # path will created and chowned to $RUNAS 
+[[ -z "$PIDFILE" ]] && PIDFILE=/var/run/docker-registry/docker-registry.pid  # path will created and chowned to $RUNAS
 [[ -z "$LISTEN_IP" ]]            && LISTEN_IP="0.0.0.0"
 [[ -z "$LISTEN_PORT" ]]          && LISTEN_PORT=5000
 [[ -z "$GUNICORN_WORKERS" ]]     && GUNICORN_WORKERS=2
@@ -41,7 +41,7 @@ self_dir="${self_path%%/${self_path##*/}}"
 
 NAME="Docker Registry"
 DAEMON="/usr/local/bin/gunicorn"
-DAEMON_OPTS="-D --access-logfile ${LOGFILE} --pid ${PIDFILE} --max-requests 500 --graceful-timeout 3600 -t 3600 -k gevent -b ${LISTEN_IP}:${LISTEN_PORT} -w ${GUNICORN_WORKERS:-2} wsgi:application"
+DAEMON_OPTS="-D --access-logfile ${LOGFILE} --pid ${PIDFILE} --max-requests 500 --graceful-timeout 3600 -t 3600 -k gevent -b ${LISTEN_IP}:${LISTEN_PORT} -w ${GUNICORN_WORKERS:-2} docker_registry.wsgi:application"
 
 RED='\e[0;31m'
 GREEN='\e[0;32m'
