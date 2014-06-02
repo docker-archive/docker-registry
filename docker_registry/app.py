@@ -15,7 +15,7 @@ import flask
 from . import toolkit
 from .lib import config
 
-VERSION = '0.7.0'
+VERSION = '0.7.1'
 app = flask.Flask('docker-registry')
 cfg = config.load()
 loglevel = getattr(logging, cfg.get('loglevel', 'INFO').upper())
