@@ -48,11 +48,11 @@ def run_gunicorn():
                             formatter_class=RawTextHelpFormatter)
     parser.parse_args()
 
-    workers = env.source('GUNICORN_WORKERS')
+    workers = str(env.source('GUNICORN_WORKERS'))
     host = env.source('REGISTRY_HOST')
     port = env.source('REGISTRY_PORT')
-    graceful_timeout = env.source('GUNICORN_GRACEFUL_TIMEOUT')
-    silent_timeout = env.source('GUNICORN_SILENT_TIMEOUT')
+    graceful_timeout = str(env.source('GUNICORN_GRACEFUL_TIMEOUT'))
+    silent_timeout = str(env.source('GUNICORN_SILENT_TIMEOUT'))
 
     address = '%s:%s' % (host, port)
 
