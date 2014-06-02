@@ -33,6 +33,8 @@ def load(kind=None):
     if kind in _storage:
         return _storage[kind]
 
-    _storage[kind] = engine.fetch(kind)(None, config=cfg)
+    _storage[kind] = engine.fetch(kind)(
+        path=cfg.get('storage_path'),
+        config=cfg)
 
     return _storage[kind]
