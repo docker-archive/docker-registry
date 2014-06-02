@@ -214,19 +214,6 @@ class Base(object):
 
 
 def fetch(name):
-    """The only public method you should access if you are not implementing
-    your own driver. - use this to get a backend
-    instance to which you can delegate actual requests.
-
-    :param host: host name
-    :type host: unicode
-    :param port: port number
-    :type port: int
-    :param basepath: base path (will be prepended to actual requests)
-    :type basepath: unicode
-    :returns: a docker connection instance usable for the requested scheme
-    :rtype: DockerConnection
-    """
     try:
         # XXX The noqa below is because of hacking being non-sensical on this
         module = __import__('docker_registry.drivers.%s' % name, globals(),
