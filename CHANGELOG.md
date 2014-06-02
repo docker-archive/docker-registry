@@ -1,5 +1,10 @@
 # Docker-registry
 
+
+## 0.7.1
+
+ * [BUGFIX] storage_path is now handled correctly to the filesystem storage driver
+
 ## 0.7
 
 Major architecture rehaul, with potentially breaking changes:
