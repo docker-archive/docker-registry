@@ -8,51 +8,77 @@ except ImportError:
 
 import sys
 
-requirements_txt = open('./requirements.txt')
+# XXX as ugly as this looks, namespaces break terribly otherwise
+# import docker_registry.lib as lib
+execfile('./docker_registry/server/__init__.py')
+
+requirements_txt = open('./requirements/main.txt')
 requirements = [line for line in requirements_txt]
 
 ver = sys.version_info
 
 if ver[0] == 2:
+    # Python 2 requires lzma backport
     requirements.insert(0, 'backports.lzma>=0.0.2')
     if ver[1] <= 6:
+        # Python 2.6 requires additional libraries
         requirements.insert(0, 'argparse>=1.2.1')
         requirements.insert(0, 'importlib>=1.0.3')
 
+# Require core (the reason this is out of req.txt is to ease tox)
+requirements.insert(0, 'docker-registry-core>=1,<2')
+
+# Explicit packages list to avoid setup_tools funkyness
 packages = ['docker_registry',
             'docker_registry.drivers',
+            'docker_registry.server',
             'docker_registry.lib',
             'docker_registry.storage',
             'docker_registry.lib.index']
 
+namespaces = ['docker_registry', 'docker_registry.drivers']
+
+package_data = {'docker_registry': ['../config/*']}
+
+
 setuptools.setup(
-    name='docker-registry',
-    # TODO: Load the version programatically, which is currently available in
-    #       docker_registry.app. This is not possible yet because importing
-    #       causes config files to be loaded
-    version='0.7.0',
-    description='Registry server for Docker',
-    long_description=open('README.md').read(),
-    namespace_packages=['docker_registry', 'docker_registry.drivers'],
+    name=__title__,  # noqa
+    version=__version__,  # noqa
+    author=__author__,  # noqa
+    author_email=__email__,  # noqa
+    maintainer=__maintainer__,  # noqa
+    maintainer_email=__email__,  # noqa
+    url=__url__,  # noqa
+    description=__description__,  # noqa
+    download_url=__download__,  # noqa
+    long_description=open('./README.md').read(),
+    namespace_packages=namespaces,
     packages=packages,
-    license=open('LICENSE').read(),
-    author='Docker Registry Contributors',
-    author_email='docker-dev@googlegroups.com',
-    url='https://github.com/dotcloud/docker-registry',
-    install_requires=requirements,
-    classifiers=(
-        'License :: OSI Approved :: Apache Software License',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-    ),
-    platforms=['Independent'],
-    package_data={'docker_registry': ['../config/*']},
+    package_data=package_data,
     entry_points={
         'console_scripts': [
             'docker-registry = docker_registry.run:run_gunicorn'
         ]
     },
+
+    classifiers=['Development Status :: 4 - Beta',
+                 'Intended Audience :: Developers',
+                 # 'Programming Language :: Python :: 2.6',
+                 'Programming Language :: Python :: 2.7',
+                 # 'Programming Language :: Python :: 3.2',
+                 # 'Programming Language :: Python :: 3.3',
+                 # 'Programming Language :: Python :: 3.4',
+                 'Programming Language :: Python :: Implementation :: CPython',
+                 'Operating System :: OS Independent',
+                 'Topic :: Utilities',
+                 'License :: OSI Approved :: Apache Software License'],
+    platforms=['Independent'],
+    license=open('./LICENSE').read(),
     zip_safe=False,
-    tests_require=open('./tests/requirements.txt').read(),
-    test_suite='nose.collector'
+    test_suite='nose.collector',
+    install_requires=requirements,
+    tests_require=open('./requirements/test.txt').read(),
+    extras_require={
+        'bugsnag': ['bugsnag==2.0.1']
+    }
 )

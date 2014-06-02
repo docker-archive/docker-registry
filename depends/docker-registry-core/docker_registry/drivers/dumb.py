@@ -53,9 +53,20 @@ class Storage(driver.Base):
         self._storage[path] = content
 
     def remove(self, path):
-        if path not in self._storage:
+        # Straight key, delete
+        if path in self._storage:
+            del self._storage[path]
+            return
+        # Directory like, get the list
+        ls = []
+        for k in self._storage.keys():
+            if (not k == path) and k.startswith(path):
+                ls.append(k)
+
+        if not len(ls):
             raise exceptions.FileNotFoundError('%s is not there' % path)
-        del self._storage[path]
+        for item in ls:
+            self.remove(item)
 
     def stream_read(self, path, bytes_range=None):
         if path not in self._storage:

@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from docker_registry import testing
+import docker_registry.testing as testing
 
 
 class TestQueryDumb(testing.Query):

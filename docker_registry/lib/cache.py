@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-
 import redis
 
 from docker_registry.core import lru

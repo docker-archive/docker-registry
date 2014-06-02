@@ -167,6 +167,30 @@ class Driver(object):
         self._storage.remove(filename)
         assert not self._storage.exists(filename)
 
+    def test_remove_folder(self):
+        dirname = self.gen_random_string()
+        filename1 = self.gen_random_string()
+        filename2 = self.gen_random_string()
+        content = self.gen_random_string().encode('utf8')
+        self._storage.put_content('%s/%s' % (dirname, filename1), content)
+        self._storage.put_content('%s/%s' % (dirname, filename2), content)
+        self._storage.remove(dirname)
+        assert not self._storage.exists(filename1)
+        assert not self._storage.exists(filename2)
+        assert not self._storage.exists(dirname)
+        # Check the lru is ok
+        try:
+            self._storage.get_content(filename1)
+            assert False
+        except Exception:
+            pass
+
+        try:
+            self._storage.get_content(filename2)
+            assert False
+        except Exception:
+            pass
+
     @tools.raises(exceptions.FileNotFoundError)
     def test_remove_inexistent(self):
         filename = self.gen_random_string()

@@ -43,7 +43,7 @@ self_dir="${self_path%%/${self_path##*/}}"
 
 NAME="Docker Registry"
 DAEMON="/usr/bin/gunicorn"
-DAEMON_OPTS="-D --error-logfile ${ERROR_LOGFILE} --access-logfile ${ACCESS_LOGFILE} --log-file ${LOGFILE} --pid ${PIDFILE} --max-requests 500 --graceful-timeout 3600 -t 3600 -k gevent -b ${LISTEN_IP}:${LISTEN_PORT} -w ${GUNICORN_WORKERS:-2} wsgi:application"
+DAEMON_OPTS="-D --error-logfile ${ERROR_LOGFILE} --access-logfile ${ACCESS_LOGFILE} --log-file ${LOGFILE} --pid ${PIDFILE} --max-requests 500 --graceful-timeout 3600 -t 3600 -k gevent -b ${LISTEN_IP}:${LISTEN_PORT} -w ${GUNICORN_WORKERS:-2} docker_registry.wsgi:application"
 
 RED='\e[0;31m'
 GREEN='\e[0;32m'

@@ -16,6 +16,7 @@ from .app import app  # noqa
 from .tags import *  # noqa
 from .images import *  # noqa
 from .lib import config
+from .server import env
 from .status import *  # noqa
 from .search import *  # noqa
 
@@ -47,12 +48,13 @@ def run_gunicorn():
                             formatter_class=RawTextHelpFormatter)
     parser.parse_args()
 
-    workers = os.environ.get('GUNICORN_WORKERS', '4')
-    port = os.environ.get('REGISTRY_PORT', '5000')
-    graceful_timeout = os.environ.get('GUNICORN_GRACEFUL_TIMEOUT', '3600')
-    silent_timeout = os.environ.get('GUNICORN_SILENT_TIMEOUT', '3600')
+    workers = env.source('GUNICORN_WORKERS')
+    host = env.source('REGISTRY_HOST')
+    port = env.source('REGISTRY_PORT')
+    graceful_timeout = env.source('GUNICORN_GRACEFUL_TIMEOUT')
+    silent_timeout = env.source('GUNICORN_SILENT_TIMEOUT')
 
-    address = '0.0.0.0:{0}'.format(port)
+    address = '%s:%s' % (host, port)
 
     gunicorn_path = distutils.spawn.find_executable('gunicorn')
     if gunicorn_path is None:

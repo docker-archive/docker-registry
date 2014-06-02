@@ -22,12 +22,12 @@ except ImportError:
 
 import sys
 
-from docker_registry import core  # noqa
+import docker_registry.core as core
 
 if sys.version_info < (2, 6):
     raise Exception("Docker registry requires Python 2.6 or higher.")
 
-requirements_txt = open('./requirements.txt')
+requirements_txt = open('./requirements/main.txt')
 requirements = [line for line in requirements_txt]
 
 ver = sys.version_info
@@ -45,7 +45,8 @@ setuptools.setup(
     author_email=core.__email__,
     maintainer=core.__maintainer__,
     maintainer_email=core.__email__,
-    url='https://github.com/dotclout/docker-registry',
+    keywords="docker registry core",
+    url='https://github.com/dotcloud/docker-registry',
     description="Docker registry core package",
     long_description=open('./README.md').read(),
     # download_url=d,
@@ -72,8 +73,6 @@ setuptools.setup(
               'docker_registry.drivers', 'docker_registry.testing'],
     install_requires=requirements,
     zip_safe=True,
-    tests_require="%s\n%s" % (
-        open('./tests/requirements-tests.txt').read(),
-        open('./tests/requirements-style.txt').read()),
+    tests_require=open('./requirements/test.txt').read(),
     test_suite='nose.collector'
 )
