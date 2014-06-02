@@ -19,7 +19,10 @@ from .lib import cache
 from .lib import checksums
 from .lib import layers
 from .lib import mirroring
-from .vendor import xtarfile
+from .lib import xtarfile
+
+
+tarfile = xtarfile.tarfile
 
 
 store = storage.load()
@@ -244,13 +247,13 @@ def put_image_layer(image_id):
         tarsum = checksums.TarSum(json_data)
         try:
             tmp.seek(0)
-            tar = xtarfile.open(mode='r|*', fileobj=tmp)
+            tar = tarfile.open(mode='r|*', fileobj=tmp)
             tarfilesinfo = layers.TarFilesInfo()
             for member in tar:
                 tarsum.append(member, tar)
                 tarfilesinfo.append(member)
             layers.set_image_files_cache(image_id, tarfilesinfo.json())
-        except (IOError, xtarfile.TarError) as e:
+        except (IOError, tarfile.TarError) as e:
             logger.debug('put_image_layer: Error when reading Tar stream '
                          'tarsum. Disabling TarSum, TarFilesInfo. '
                          'Error: {0}'.format(e))
@@ -433,7 +436,7 @@ def get_private_image_files(image_id, headers):
         return toolkit.response(data, headers=headers, raw=True)
     except exceptions.FileNotFoundError:
         return toolkit.api_error('Image not found', 404)
-    except xtarfile.TarError:
+    except tarfile.TarError:
         return toolkit.api_error('Layer format not supported', 400)
 
 
@@ -452,7 +455,7 @@ def get_image_files(image_id, headers):
         return toolkit.response(data, headers=headers, raw=True)
     except exceptions.FileNotFoundError:
         return toolkit.api_error('Image not found', 404)
-    except xtarfile.TarError:
+    except tarfile.TarError:
         return toolkit.api_error('Layer format not supported', 400)
 
 
@@ -479,5 +482,5 @@ def get_image_diff(image_id, headers):
         return toolkit.response(diff_json, headers=headers, raw=True)
     except exceptions.FileNotFoundError:
         return toolkit.api_error('Image not found', 404)
-    except xtarfile.TarError:
+    except tarfile.TarError:
         return toolkit.api_error('Layer format not supported', 400)
