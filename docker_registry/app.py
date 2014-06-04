@@ -15,7 +15,7 @@ import flask
 from . import toolkit
 from .lib import config
 
-VERSION = '0.7.0'
+VERSION = '0.7.1'
 app = flask.Flask('docker-registry')
 cfg = config.load()
 loglevel = getattr(logging, cfg.get('loglevel', 'INFO').upper())
@@ -26,9 +26,10 @@ logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
 @app.route('/_ping')
 @app.route('/v1/_ping')
 def ping():
-    return toolkit.response(headers={
-        'X-Docker-Registry-Standalone': cfg.standalone is not False
-    })
+    headers = {'X-Docker-Registry-Standalone': cfg.standalone is not False}
+    if cfg.mirroring:
+        headers['X-Docker-Registry-Standalone'] = 'mirror'
+    return toolkit.response(headers=headers)
 
 
 @app.route('/')
