@@ -6,9 +6,11 @@ import hashlib
 import random
 import string
 import unittest
+import os
 
 from docker_registry.core import compat
 
+data_dir = os.path.join(os.path.dirname(__file__), "data")
 
 class TestCase(unittest.TestCase):
 
