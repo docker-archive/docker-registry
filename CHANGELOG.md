@@ -4,6 +4,7 @@
 ## 0.7.1
 
  * [BUGFIX] storage_path is now handled correctly to the filesystem storage driver
+ * [BUGFIX] change standalone header when in mirroring mode (prevents client from sending basic auth headers and overwriting token)
 
 ## 0.7
 
