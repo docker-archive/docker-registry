@@ -65,7 +65,11 @@ def set(f):
         content = args[-1]
         key = args[-2]
         key = cache_key(key)
-        redis_conn.set(key, content)
+        try:
+            redis_conn.set(key, content)
+        except redis.exceptions.ConnectionError:
+            logging.warning("LRU: Redis connection error")
+
         return f(*args)
     if redis_conn is None:
         return f
@@ -77,13 +81,21 @@ def get(f):
     def wrapper(*args):
         key = args[-1]
         key = cache_key(key)
-        content = redis_conn.get(key)
+        try:
+            content = redis_conn.get(key)
+        except redis.exceptions.ConnectionError:
+            logging.warning("LRU: Redis connection error")
+            content = None
+
         if content is not None:
             return content
         # Refresh cache
         content = f(*args)
         if content is not None:
-            redis_conn.set(key, content)
+            try:
+                redis_conn.set(key, content)
+            except redis.exceptions.ConnectionError:
+                logging.warning("LRU: Redis connection error")
         return content
     if redis_conn is None:
         return f
@@ -95,7 +107,10 @@ def remove(f):
     def wrapper(*args):
         key = args[-1]
         key = cache_key(key)
-        redis_conn.delete(key)
+        try:
+            redis_conn.delete(key)
+        except redis.exceptions.ConnectionError:
+            logging.warning("LRU: Redis connection error")
         return f(*args)
     if redis_conn is None:
         return f
