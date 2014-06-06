@@ -39,7 +39,7 @@ def enqueue_diff(image_id):
     try:
         if cache.redis_conn:
             diff_queue.push(image_id)
-    except redis.exceptions.ConnectionError as e:
+    except cache.redis.exceptions.ConnectionError as e:
         logger.warning("Diff queue: Redis connection error: {0}".format(e))
 
 

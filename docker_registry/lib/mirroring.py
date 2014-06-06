@@ -128,7 +128,7 @@ def source_lookup_tag(f):
             cache.redis_conn.setex('{0}:{1}'.format(
                 cache.cache_prefix, tag_path
             ), tags_cache_ttl, data)
-        except redis.exceptions.ConnectionError as e:
+        except cache.redis.exceptions.ConnectionError as e:
             logger.warning("Diff queue: Redis connection error: {0}".format(
                 e
             ))
