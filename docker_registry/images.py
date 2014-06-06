@@ -19,10 +19,9 @@ from .lib import cache
 from .lib import checksums
 from .lib import layers
 from .lib import mirroring
-from .lib import xtarfile
-
-
-tarfile = xtarfile.tarfile
+# this is our monkey patched snippet from python v2.7.6 'tarfile'
+# with xattr support
+from .lib.xtarfile import tarfile
 
 
 store = storage.load()

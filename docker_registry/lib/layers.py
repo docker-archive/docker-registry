@@ -10,11 +10,9 @@ json = compat.json
 from .. import storage
 from . import cache
 from . import rqueue
-# this is our monkey patched 'tarfile' from python v2.7.6, with xattr support
-from . import xtarfile
-
-
-tarfile = xtarfile.tarfile
+# this is our monkey patched snippet from python v2.7.6 'tarfile'
+# with xattr support
+from .xtarfile import tarfile
 
 
 store = storage.load()

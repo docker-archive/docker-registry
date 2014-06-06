@@ -1,15 +1,31 @@
 # -*- coding: utf-8 -*-
 
+import imp
 import os
+
+from nose import tools
 
 import base
 from docker_registry.lib import checksums
 from docker_registry.lib import xtarfile
 
+
+# setting like this in test, due to flake8 H302
 tarfile = xtarfile.tarfile
+
+# To test whether the UnicodeDecodeError still exists
+# (it's still present in python 3.4.0)
+# ((loading this way, since we've monkey patched currently loaded tarfile))
+tarfile_vanilla = imp.load_module('test_failing', *imp.find_module('tarfile'))
 
 
 class TestTarfile(base.TestCase):
+    @tools.raises(UnicodeDecodeError)
+    def test_vanilla_tarfile(self):
+        layer_fh = open(os.path.join(base.data_dir, "xattr/layer.tar"))
+        tar = tarfile_vanilla.open(mode='r|*', fileobj=layer_fh)
+        assert tar
+
     def test_headers(self):
         expected = {
             "46af0962ab5afeb5ce6740d4d91652e69206fc991fd5328c1a94d364ad00e457/layer.tar": {  # noqa
@@ -70,31 +86,21 @@ class TestTarfile(base.TestCase):
             for member in tar:
                 member_count += 1
                 # check that we know the file names
-                assert(
-                      (len(
-                          filter(
-                              lambda x: member.path in x, expected[file].keys()
-                          )
-                      ) > 0), "in %s, did not find file %s" % (
-                          file,
-                          member.path))
+                msg = "in %s, did not find file %s" % (file, member.path)
+                l = len(filter(lambda x: member.path in x,
+                        expected[file].keys()))
+                assert (l > 0), msg
                 e = expected[file][member.path]
                 for attr in e["headers"].keys():
-                    assert(e["headers"][attr] == getattr(member, attr),
-                           "in %s:%s, expected %s of %s, but got %s" % (
-                               file,
-                               member.path,
-                               attr,
-                               e["headers"][attr],
-                               getattr(member, attr)))
+                    msg = "in %s:%s, expected %s of %s, but got %s" % (
+                        file, member.path, attr, e["headers"][attr],
+                        getattr(member, attr))
+                    assert e["headers"][attr] == getattr(member, attr), msg
                 for attr in e["pax"].keys():
-                    assert(e["pax"][attr] == member.pax_headers[attr],
-                           b"in %s:%s, expected %s of %s, but got %s".format(
-                               file,
-                               member.path,
-                               attr,
-                               e["pax"][attr],
-                               member.pax_headers[attr]))
+                    msg = b"in %s:%s, expected %s of %s, but got %s".format(
+                        file, member.path, attr, e["pax"][attr],
+                        member.pax_headers[attr])
+                    assert e["pax"][attr] == member.pax_headers[attr], msg
 
             assert member_count == len(expected[file])
             layer_fh.close()
@@ -114,11 +120,9 @@ class TestTarfile(base.TestCase):
             for member in tar:
                 tarsum.append(member, tar)
             sum = tarsum.compute()
-            assert(expected[layer] == sum,
-                   "layer %s, expected [%s] but got [%s]" % (
-                       layer,
-                       expected[layer],
-                       sum))
+            msg = "layer %s, expected [%s] but got [%s]" % (
+                layer, expected[layer], sum)
+            assert expected[layer] == sum, msg
 
             layer_fh.close()
             json_fh.close()

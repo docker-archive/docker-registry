@@ -10,11 +10,6 @@ interacting with inodes on the filesystem that have xattr's.
 import re
 import tarfile
 
-tarfile.PAX_FIELDS = tarfile.PAX_FIELDS + ("SCHILY.xattr.",)
-tarfile.PAX_NUMBER_FIELDS["SCHILY.xattr."] = dict
-
-# class XattrTarInfo(tarfile.TarInfo):
-
 
 def _proc_pax(self, filetar):
     """Process an extended or global header as described in
