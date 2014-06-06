@@ -67,8 +67,8 @@ def set(f):
         key = cache_key(key)
         try:
             redis_conn.set(key, content)
-        except redis.exceptions.ConnectionError:
-            logging.warning("LRU: Redis connection error")
+        except redis.exceptions.ConnectionError as e:
+            logging.warning("LRU: Redis connection error: {0}".format(e))
 
         return f(*args)
     if redis_conn is None:
@@ -83,8 +83,8 @@ def get(f):
         key = cache_key(key)
         try:
             content = redis_conn.get(key)
-        except redis.exceptions.ConnectionError:
-            logging.warning("LRU: Redis connection error")
+        except redis.exceptions.ConnectionError as e:
+            logging.warning("LRU: Redis connection error: {0}".format(e))
             content = None
 
         if content is not None:
@@ -94,8 +94,8 @@ def get(f):
         if content is not None:
             try:
                 redis_conn.set(key, content)
-            except redis.exceptions.ConnectionError:
-                logging.warning("LRU: Redis connection error")
+            except redis.exceptions.ConnectionError as e:
+                logging.warning("LRU: Redis connection error: {0}".format(e))
         return content
     if redis_conn is None:
         return f
@@ -109,8 +109,8 @@ def remove(f):
         key = cache_key(key)
         try:
             redis_conn.delete(key)
-        except redis.exceptions.ConnectionError:
-            logging.warning("LRU: Redis connection error")
+        except redis.exceptions.ConnectionError as e:
+            logging.warning("LRU: Redis connection error: {0}".format(e))
         return f(*args)
     if redis_conn is None:
         return f

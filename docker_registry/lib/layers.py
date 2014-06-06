@@ -39,8 +39,8 @@ def enqueue_diff(image_id):
     try:
         if cache.redis_conn:
             diff_queue.push(image_id)
-    except cache.redis.exceptions.ConnectionError:
-        logger.warning('Diff queue: Redis connection error')
+    except redis.exceptions.ConnectionError as e:
+        logger.warning("Diff queue: Redis connection error: {0}".format(e))
 
 
 def generate_ancestry(image_id, parent_id=None):

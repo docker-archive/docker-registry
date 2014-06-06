@@ -109,9 +109,11 @@ def source_lookup_tag(f):
             data = cache.redis_conn.get('{0}:{1}'.format(
                 cache.cache_prefix, tag_path
             ))
-        except cache.redis.exceptions.ConnectionError:
+        except cache.redis.exceptions.ConnectionError as e:
             data = None
-            logger.warning('Tags cache: Redis connection error')
+            logger.warning("Diff queue: Redis connection error: {0}".format(
+                e
+            ))
 
         if data is not None:
             return toolkit.response(data=data, raw=True)
@@ -126,8 +128,10 @@ def source_lookup_tag(f):
             cache.redis_conn.setex('{0}:{1}'.format(
                 cache.cache_prefix, tag_path
             ), tags_cache_ttl, data)
-        except cache.redis.exceptions.ConnectionError:
-            logger.warning('Tags cache: Redis connection error')
+        except redis.exceptions.ConnectionError as e:
+            logger.warning("Diff queue: Redis connection error: {0}".format(
+                e
+            ))
 
         return toolkit.response(data=data, headers=headers,
                                 raw=True)
