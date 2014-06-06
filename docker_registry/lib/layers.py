@@ -35,11 +35,10 @@ logger = logging.getLogger(__name__)
 diff_queue = rqueue.CappedCollection(cache.redis_conn, "diff-worker", 1024)
 
 
-
 def enqueue_diff(image_id):
     try:
         if cache.redis_conn:
-            layers.diff_queue.push(image_id)
+            diff_queue.push(image_id)
     except cache.redis.exceptions.ConnectionError:
         logger.warning('Diff queue: Redis connection error')
 
