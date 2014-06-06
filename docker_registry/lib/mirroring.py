@@ -105,9 +105,14 @@ def source_lookup_tag(f):
             # client GETs a single tag
             tag_path = store.tag_path(namespace, repository, kwargs['tag'])
 
-        data = cache.redis_conn.get('{0}:{1}'.format(
-            cache.cache_prefix, tag_path
-        ))
+        try:
+            data = cache.redis_conn.get('{0}:{1}'.format(
+                cache.cache_prefix, tag_path
+            ))
+        except cache.redis.exceptions.ConnectionError:
+            data = None
+            logger.warning('Tags cache: Redis connection error')
+
         if data is not None:
             return toolkit.response(data=data, raw=True)
         source_resp = lookup_source(
@@ -117,9 +122,13 @@ def source_lookup_tag(f):
             return resp
         data = source_resp.content
         headers = _response_headers(source_resp.headers)
-        cache.redis_conn.setex('{0}:{1}'.format(
-            cache.cache_prefix, tag_path
-        ), tags_cache_ttl, data)
+        try:
+            cache.redis_conn.setex('{0}:{1}'.format(
+                cache.cache_prefix, tag_path
+            ), tags_cache_ttl, data)
+        except cache.redis.exceptions.ConnectionError:
+            logger.warning('Tags cache: Redis connection error')
+
         return toolkit.response(data=data, headers=headers,
                                 raw=True)
     return wrapper

@@ -289,8 +289,7 @@ def put_image_checksum(image_id):
     # Checksum is ok, we remove the marker
     store.remove(mark_path)
     # We trigger a task on the diff worker if it's running
-    if cache.redis_conn:
-        layers.diff_queue.push(image_id)
+    layers.enqueue_diff(image_id)
     return toolkit.response()
 
 
