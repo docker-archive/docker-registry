@@ -11,7 +11,7 @@ import gevent.monkey
 gevent.monkey.patch_all()
 
 import docker_registry.core.boto as coreboto
-# from docker_registry.core import exceptions
+from docker_registry.core import exceptions
 from docker_registry.core import compat
 from docker_registry.core import lru
 
@@ -146,3 +146,13 @@ class Storage(coreboto.Base):
 
         # Have cloudfront? Sign it
         return self.signer(path, expire_time=60)
+
+    def get_content(self, path, tries = 0):
+        try:
+            return super(Storage, self).get_content(path)
+        except exceptions.FileNotFoundError, e:
+            if tries <= 3:
+                time.sleep(.1)
+                return self.get_content(path, tries+1)
+            else:
+                raise e

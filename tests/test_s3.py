@@ -3,10 +3,14 @@
 import StringIO
 import sys
 
+import time
+
 from nose import tools
 
 from docker_registry.core import exceptions
 import docker_registry.testing as testing
+import docker_registry.testing.mock_boto as mock_boto
+from docker_registry.drivers import s3
 
 from docker_registry.testing import mock_boto  # noqa
 
@@ -137,3 +141,35 @@ class TestDriver(testing.Driver):
 
         tag_content = store.get_content(tag_path)
         assert tag_content == 'randomdata'
+
+    def test_consistency_latency(self):
+        self.testCount = -1
+        mockKey = mock_boto.Key()
+        def mockExists():
+            self.testCount += 1
+            return self.testCount == 1
+        mockKey.exists = mockExists
+        mockKey.get_contents_as_string = lambda: "Foo bar"
+        storage = s3.Storage(self.path, self.config)
+        storage.makeKey = lambda x: mockKey
+        startTime = time.time()
+
+        content = storage.get_content("/FOO")
+
+        waitTime = time.time() - startTime
+        assert waitTime >= 0.1, "Waiting time was less than %sms (actual : %sms)" % (0.1*1000, waitTime*1000)
+        assert content == "Foo bar", "expected : %s; actual: %s" % ("Foo bar", content)
+
+    @tools.raises(exceptions.FileNotFoundError)
+    def test_too_many_read_retries(self):
+        self.testCount = -1
+        mockKey = mock_boto.Key()
+        def mockExists():
+            self.testCount += 1
+            return self.testCount == 5
+        mockKey.exists = mockExists
+        mockKey.get_contents_as_string = lambda: "Foo bar"
+        storage = s3.Storage(self.path, self.config)
+        storage.makeKey = lambda x: mockKey
+
+        storage.get_content("/FOO")
