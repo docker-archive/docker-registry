@@ -11,7 +11,7 @@ As the documentation evolves with different registry versions, be sure that befo
  * check which version of the registry you are running
  * switch to the corresponding tag to access the README that matches your product version
 
-The stable, released version is currently the [0.7.1 tag](https://github.com/dotcloud/docker-registry/tree/0.7.1).
+The stable, released version is currently the [0.7.2 tag](https://github.com/dotcloud/docker-registry/tree/0.7.2).
 
 
 Quick start
