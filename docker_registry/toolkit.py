@@ -99,7 +99,7 @@ def response(data=None, code=200, headers=None, raw=False):
 
 def validate_parent_access(parent_id):
     cfg = config.load()
-    if cfg.standalone is not False:
+    if cfg.standalone is True:
         return True
     auth = _parse_auth_header()
     if not auth:
@@ -189,10 +189,10 @@ def _parse_auth_header():
 
 
 def check_token(args):
-    cfg = config.load()
-    if cfg.disable_token_auth is True or cfg.standalone is not False:
-        return True
     logger.debug('args = {0}'.format(args))
+    cfg = config.load()
+    if cfg.disable_token_auth is True or cfg.standalone is True:
+        return True
     auth = _parse_auth_header()
     if not auth:
         return False
