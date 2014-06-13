@@ -344,7 +344,7 @@ def get_image_ancestry(image_id, headers):
 
 
 def check_images_list(image_id):
-    if cfg.disable_token_auth is True or cfg.standalone is not False:
+    if cfg.disable_token_auth is True or cfg.standalone is True:
         # We enforce the check only when auth is enabled so we have a token.
         return True
     repository = toolkit.get_repository()

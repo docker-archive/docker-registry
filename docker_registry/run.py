@@ -20,7 +20,7 @@ from .status import *  # noqa
 from .search import *  # noqa
 
 cfg = config.load()
-if cfg.standalone is not False:
+if cfg.standalone is True:
     # If standalone mode is enabled (default), load the fake Index routes
     from .index import *  # noqa
 

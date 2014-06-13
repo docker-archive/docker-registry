@@ -26,7 +26,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
 @app.route('/_ping')
 @app.route('/v1/_ping')
 def ping():
-    headers = {'X-Docker-Registry-Standalone': cfg.standalone is not False}
+    headers = {'X-Docker-Registry-Standalone': cfg.standalone is True}
     if cfg.mirroring:
         headers['X-Docker-Registry-Standalone'] = 'mirror'
     return toolkit.response(headers=headers)
