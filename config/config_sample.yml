@@ -3,7 +3,7 @@
 common:
     loglevel: _env:LOGLEVEL:debug
     storage_redirect: _env:STORAGE_REDIRECT
-    standalone: _env:STANDALONE
+    standalone: true
     index_endpoint: _env:INDEX_ENDPOINT
     disable_token_auth: _env:DISABLE_TOKEN_AUTH
     privileged_key: _env:PRIVILEGED_KEY
