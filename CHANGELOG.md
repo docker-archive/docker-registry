@@ -1,5 +1,14 @@
 # Docker-registry
 
+## 0.7.2
+
+* `standalone` option must now be set explicitly in the configuration file.
+* FIXME
+
+## 0.7.1
+
+* FIXME
+
 ## 0.7
 
 Major architecture rehaul, with potentially breaking changes:
