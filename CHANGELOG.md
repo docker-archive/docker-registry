@@ -1,5 +1,9 @@
 # Docker-registry
 
+## 0.7.3
+
+ * [BUGFIX] fixed default value for standalone to true
+
 ## 0.7.2
 
  * [BUGFIX] fixed configuration handling on standalone mode
