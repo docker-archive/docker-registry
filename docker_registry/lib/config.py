@@ -33,6 +33,9 @@ class Config(object):
     def __dir__(self):
         return self._config.keys()
 
+    def keys(self):
+        return self._config.keys()
+
     # Python 2.6 and below need this
     @property
     def __members__(self):
@@ -48,9 +51,6 @@ class Config(object):
             return None
             # raise exceptions.ConfigError("No such attribute: %s" % key)
         result = self._config[key]
-        # Dicts are rewrapped inside a Config object
-        if isinstance(result, dict):
-            return Config(result)
         # Strings starting with `_env:' get evaluated
         if isinstance(
                 result, compat.basestring) and result.startswith('_env:'):
@@ -63,6 +63,9 @@ class Config(object):
                 raise exceptions.ConfigError(
                     'Config `%s` (value: `%s`) is not valid: %s' % (
                         varname, e, result))
+        # Dicts are rewrapped inside a Config object
+        if isinstance(result, dict):
+            result = Config(result)
         return result
 
     def __getitem__(self, key):

@@ -64,6 +64,7 @@ class TestConfig():
         assert conf.array[2] == 'three'
         assert len(conf.array) == 3
         assert conf.dict.two == 'valuetwo'
+        assert isinstance(conf.dict, config.Config)
 
     def test_env_defaults(self):
         global fakeenv
@@ -84,6 +85,7 @@ class TestConfig():
         assert conf.bugger == 'bug:me:endlessly'
         assert conf.array[2] == 'three'
         assert len(conf.array) == 3
+        assert conf.dict is None
 
     def test_env_overrides(self):
         global fakeenv
@@ -97,6 +99,7 @@ class TestConfig():
         fakeenv['NONEMPTYSTRING'] = '""'
         fakeenv['BUGGER'] = '"whatever:the:flush:"'
         fakeenv['ARRAY'] = '[one, again]'
+        fakeenv['DICT'] = '{"one": "oneagain", "two": "twoagain"}'
 
         conf = self.c.ENV
         assert conf.booltrue is False
@@ -116,6 +119,9 @@ class TestConfig():
 
         fakeenv['ISNONE'] = ''
         assert conf.isnone is None
+
+        assert isinstance(conf.dict, config.Config)
+        assert conf.dict.one == 'oneagain'
 
     def test_write(self):
         conf = self.c
