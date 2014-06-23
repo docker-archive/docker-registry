@@ -10,7 +10,7 @@ from .server import env
 if __name__ == '__main__':
     # Bind to PORT if defined, otherwise default to 5000.
     host = env.source('REGISTRY_HOST')
-    port = int(env.source('REGISTRY_PORT'))
+    port = env.source('REGISTRY_PORT')
     app.debug = True
     app.run(host=host, port=port)
     # Or you can run:

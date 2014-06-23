@@ -19,7 +19,7 @@ json = compat.json
 from . import storage
 from .lib import config
 
-
+cfg = config.load()
 logger = logging.getLogger(__name__)
 _re_docker_version = re.compile('docker/([^\s]+)')
 _re_authorization = re.compile(r'(\w+)[:=][\s"]?([^",]+)"?')
@@ -98,8 +98,7 @@ def response(data=None, code=200, headers=None, raw=False):
 
 
 def validate_parent_access(parent_id):
-    cfg = config.load()
-    if cfg.standalone is True:
+    if cfg.standalone:
         return True
     auth = _parse_auth_header()
     if not auth:
@@ -108,12 +107,8 @@ def validate_parent_access(parent_id):
     if len(full_repos_name) != 2:
         logger.debug('validate_parent: Invalid repository field')
         return False
-    index_endpoint = cfg.index_endpoint
-    if index_endpoint is None:
-        index_endpoint = 'https://index.docker.io'
-    index_endpoint = index_endpoint.strip('/')
     url = '{0}/v1/repositories/{1}/{2}/layer/{3}/access'.format(
-        index_endpoint, full_repos_name[0], full_repos_name[1], parent_id
+        cfg.index_endpoint, full_repos_name[0], full_repos_name[1], parent_id
     )
     headers = {'Authorization': flask.request.headers.get('authorization')}
     resp = requests.get(url, verify=True, headers=headers)
@@ -136,12 +131,7 @@ def validate_token(auth):
     if len(full_repos_name) != 2:
         logger.debug('validate_token: Invalid repository field')
         return False
-    cfg = config.load()
-    index_endpoint = cfg.index_endpoint
-    if index_endpoint is None:
-        index_endpoint = 'https://index.docker.io'
-    index_endpoint = index_endpoint.strip('/')
-    url = '{0}/v1/repositories/{1}/{2}/images'.format(index_endpoint,
+    url = '{0}/v1/repositories/{1}/{2}/images'.format(cfg.index_endpoint,
                                                       full_repos_name[0],
                                                       full_repos_name[1])
     headers = {'Authorization': flask.request.headers.get('authorization')}
@@ -190,7 +180,6 @@ def _parse_auth_header():
 
 def check_token(args):
     logger.debug('args = {0}'.format(args))
-    cfg = config.load()
     if cfg.disable_token_auth is True or cfg.standalone is True:
         return True
     auth = _parse_auth_header()
@@ -224,8 +213,7 @@ def check_token(args):
 
 
 def check_signature():
-    cfg = config.load()
-    if not cfg.get('privileged_key'):
+    if not cfg.privileged_key:
         return False
     headers = flask.request.headers
     signature = headers.get('X-Signature')
@@ -242,7 +230,7 @@ def check_signature():
                        ['{}:{}'.format(k, headers[k]) for k in header_keys])
     logger.debug('Signed message: {}'.format(message))
     try:
-        return rsa.verify(message, sigdata, cfg.get('privileged_key'))
+        return rsa.verify(message, sigdata, cfg.privileged_key)
     except rsa.VerificationError:
         return False
 
@@ -303,10 +291,8 @@ def get_repository():
     return (parts[0], parts[1])
 
 
-def get_endpoints(cfg=None):
-    if not cfg:
-        cfg = config.load()
-    registry_endpoints = cfg.registry_endpoints
+def get_endpoints(overcfg=None):
+    registry_endpoints = (overcfg or cfg).registry_endpoints
     if not registry_endpoints:
         #registry_endpoints = socket.gethostname()
         registry_endpoints = flask.request.environ['HTTP_HOST']

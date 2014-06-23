@@ -1,12 +1,13 @@
 # The `common' part is automatically included (and possibly overriden by all
 # other flavors)
-common:
+common: &common
     mirroring:
         source: https://registry-1.docker.io
         source_index: https://index.docker.io
-        tags_cache_ttl: 864000  # seconds
+        tags_cache_ttl: 172800  # seconds
 
 dev:
+    <<: *common
     storage: local
     storage_path: /tmp/registry
     loglevel: debug

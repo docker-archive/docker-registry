@@ -18,9 +18,8 @@ from .server import __version__
 
 app = flask.Flask('docker-registry')
 cfg = config.load()
-loglevel = getattr(logging, cfg.get('loglevel', 'INFO').upper())
 logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
-                    level=loglevel)
+                    level=getattr(logging, cfg.loglevel.upper()))
 
 
 @app.route('/_ping')
@@ -48,20 +47,20 @@ def after_request(response):
 def init():
     # Configure the email exceptions
     info = cfg.email_exceptions
-    if info and 'smtp_host' in info:
-        mailhost = info['smtp_host']
-        mailport = info.get('smtp_port')
+    if info and info.smtp_host:
+        mailhost = info.smtp_host
+        mailport = info.smtp_port
         if mailport:
             mailhost = (mailhost, mailport)
-        smtp_secure = info.get('smtp_secure', None)
+        smtp_secure = info.smtp_secure
         secure_args = _adapt_smtp_secure(smtp_secure)
         mail_handler = logging.handlers.SMTPHandler(
             mailhost=mailhost,
-            fromaddr=info['from_addr'],
-            toaddrs=[info['to_addr']],
+            fromaddr=info.from_addr,
+            toaddrs=[info.to_addr],
             subject='Docker registry exception',
-            credentials=(info['smtp_login'],
-                         info['smtp_password']),
+            credentials=(info.smtp_login,
+                         info.smtp_password),
             secure=secure_args)
         mail_handler.setLevel(logging.ERROR)
         app.logger.addHandler(mail_handler)
@@ -91,9 +90,9 @@ def _adapt_smtp_secure(value):
     if isinstance(value, basestring):
         # a string - wrap it in the tuple
         return (value,)
-    if isinstance(value, dict):
+    if isinstance(value, config.Config):
         assert set(value.keys()) <= set(['keyfile', 'certfile'])
-        return (value['keyfile'], value.get('certfile', None))
+        return (value.keyfile, value.certfile)
     if value:
         return ()
 

@@ -18,7 +18,7 @@ from .app import app
 from .lib import cache
 from .lib import config
 
-_config = config.load()
+cfg = config.load()
 
 
 def redis_status():
@@ -41,7 +41,7 @@ def redis_status():
 def storage_status():
     message = ''
     try:
-        _storage = storage.load(_config.storage)
+        _storage = storage.load(cfg.storage)
         key = toolkit.gen_random_string()
         value = toolkit.gen_random_string()
         _storage.put_content(key, value)

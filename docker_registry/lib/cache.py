@@ -7,67 +7,48 @@ from docker_registry.core import lru
 
 from . import config
 
-
-# Default options
+logger = logging.getLogger(__name__)
 
 redis_conn = None
 cache_prefix = None
 
+cfg = config.load()
+
 
 def init():
-    cfg = config.load()
-    enable_redis_cache(cfg)
-    enable_redis_lru(cfg)
+    enable_redis_cache(cfg.cache, cfg.storage_path)
+    enable_redis_lru(cfg.cache_lru, cfg.storage_path)
 
 
-def enable_redis_cache(cfg):
+def enable_redis_cache(cache, path):
     global redis_conn, cache_prefix
-    cache = cfg.cache
-    if not cache:
+    if not cache or not cache.host:
+        logger.warn('Cache storage disabled!')
         return
 
-    logging.info('Enabling storage cache on Redis')
-    if not isinstance(cache, dict):
-        cache = {}
-    redis_opts = {
-        'host': 'localhost',
-        'port': 6379,
-        'db': 0,
-        'password': None
-    }
-    for k, v in cache.iteritems():
-        redis_opts[k] = v
-    logging.info('Redis config: {0}'.format(redis_opts))
-    redis_conn = redis.StrictRedis(host=redis_opts['host'],
-                                   port=int(redis_opts['port']),
-                                   db=int(redis_opts['db']),
-                                   password=redis_opts['password'])
-    cache_prefix = 'cache_path:{0}'.format(cfg.get('storage_path', '/'))
+    logger.info('Enabling storage cache on Redis')
+    logger.info('Redis config: {0}'.format(cache))
+    redis_conn = redis.StrictRedis(
+        host=cache.host,
+        port=int(cache.port),
+        db=int(cache.db),
+        password=cache.password
+    )
+    cache_prefix = 'cache_path:{0}'.format(path or '/')
 
 
-def enable_redis_lru(cfg):
-    cache = cfg.cache_lru
-    if not cache:
+def enable_redis_lru(cache, path):
+    if not cache or not cache.host:
+        logger.warn('LRU cache disabled!')
         return
-    logging.info('Enabling lru cache on Redis')
-    if not isinstance(cache, dict):
-        cache = {}
-    redis_opts = {
-        'host': 'localhost',
-        'port': 6379,
-        'db': 0,
-        'password': None
-    }
-    for k, v in cache.iteritems():
-        redis_opts[k] = v
-
-    logging.info('Redis lru config: {0}'.format(redis_opts))
+    logger.info('Enabling lru cache on Redis')
+    logger.info('Redis lru config: {0}'.format(cache))
     lru.init(
-        host=redis_opts['host'],
-        port=int(redis_opts['port']),
-        db=int(redis_opts['db']),
-        password=redis_opts['password'],
-        path=cfg.get('storage_path', '/')
+        host=cache.host,
+        port=cache.port,
+        db=cache.db,
+        password=cache.password,
+        path=path or '/'
     )
 
 init()

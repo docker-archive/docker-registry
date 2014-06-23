@@ -21,7 +21,7 @@ common: &common
     mirroring:
         source: _env:MIRROR_SOURCE # https://registry-1.docker.io
         source_index: _env:MIRROR_SOURCE_INDEX # https://index.docker.io
-        tags_cache_ttl: _env:MIRROR_TAGS_CACHE_TTL # 864000 # seconds
+        tags_cache_ttl: _env:MIRROR_TAGS_CACHE_TTL:172800 # seconds
 
     cache:
         host: _env:CACHE_REDIS_HOST:localhost
