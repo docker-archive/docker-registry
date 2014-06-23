@@ -42,8 +42,9 @@ class Config(object):
         return repr(self._config)
 
     def __getattr__(self, key):
-        if key in self._config:
-            return self._config[key]
+        if key not in self._config:
+            return None
+        return self._config[key]
 
-    def get(self, *args, **kwargs):
-        return self._config.get(*args, **kwargs)
+    def __getitem__(self, key):
+        return getattr(self, key)
