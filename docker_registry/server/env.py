@@ -15,7 +15,7 @@ _DEFAULT = {
 }
 
 
-def source(key, override='None'):
+def source(key, override=''):
     # Using yaml gives us proper typage
     return yaml.load(
         os.environ.get(key, _DEFAULT[key] if key in _DEFAULT else override))

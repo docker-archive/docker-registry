@@ -9,6 +9,8 @@ gevent.monkey.patch_all()
 from argparse import ArgumentParser  # noqa
 from argparse import RawTextHelpFormatter  # noqa
 import distutils.spawn
+import getpass
+import logging
 import os
 import sys
 
@@ -21,18 +23,22 @@ from .status import *  # noqa
 from .search import *  # noqa
 
 cfg = config.load()
-if cfg.standalone is True:
-    # If standalone mode is enabled (default), load the fake Index routes
+if cfg.standalone:
+    # If standalone mode is enabled, load the fake Index routes
     from .index import *  # noqa
 
 
+logger = logging.getLogger(__name__)
+
 DESCRIPTION = """run the docker-registry with gunicorn, honoring the following
 environment variables:
-
+REGISTRY_HOST: TCP host or ip to bind to; default is 0.0.0.0
+REGISTRY_PORT: TCP port to bind to; default is 5000
 GUNICORN_WORKERS: number of worker processes gunicorn should start
-REGISTRY_PORT: TCP port to bind to on all ipv4 addresses; default is 5000
 GUNICORN_GRACEFUL_TIMEOUT: timeout in seconds for graceful worker restart
 GUNiCORN_SILENT_TIMEOUT: timeout in seconds for restarting silent workers
+GUNiCORN_USER: unix user to downgrade priviledges to
+GUNiCORN_GROUP: unix group to downgrade priviledges to
 """
 
 
@@ -48,20 +54,45 @@ def run_gunicorn():
                             formatter_class=RawTextHelpFormatter)
     parser.parse_args()
 
-    workers = str(env.source('GUNICORN_WORKERS'))
-    host = env.source('REGISTRY_HOST')
-    port = env.source('REGISTRY_PORT')
-    graceful_timeout = str(env.source('GUNICORN_GRACEFUL_TIMEOUT'))
-    silent_timeout = str(env.source('GUNICORN_SILENT_TIMEOUT'))
-
-    address = '%s:%s' % (host, port)
-
     gunicorn_path = distutils.spawn.find_executable('gunicorn')
-    if gunicorn_path is None:
+    if not gunicorn_path:
         print('error: gunicorn executable not found', file=sys.stderr)
         sys.exit(1)
 
-    os.execl(gunicorn_path, 'gunicorn', '--access-logfile', '-', '--debug',
-             '--max-requests', '100', '--graceful-timeout', graceful_timeout,
-             '-t', silent_timeout, '-k', 'gevent', '-b', address,
-             '-w', workers, 'docker_registry.wsgi:application')
+    address = '%s:%s' % (
+        env.source('REGISTRY_HOST'),
+        env.source('REGISTRY_PORT')
+    )
+
+    args = [
+        gunicorn_path, 'gunicorn',
+        '--access-logfile', '-', '--debug',
+        '--max-requests', '100',
+        '-k', 'gevent',
+        '--graceful-timeout', env.source('GUNICORN_GRACEFUL_TIMEOUT'),
+        '-t', env.source('GUNICORN_SILENT_TIMEOUT'),
+        '-w', env.source('GUNICORN_WORKERS'),
+        '-b', address,
+        'docker_registry.wsgi:application'
+    ]
+
+    user = env.source('GUNICORN_USER')
+    group = env.source('GUNICORN_GROUP')
+    if user or group:
+        if getpass.getuser() == 'root':
+            if user:
+                logger.info('Downgrading privs to user %s' % user)
+                args.append('-u')
+                args.append(user)
+
+            if group:
+                logger.info('Downgrading privs to group %s' % user)
+                args.append('-g')
+                args.append(group)
+        else:
+            logger.warn('You asked we drop priviledges, but we are not root!')
+
+    # Stringify all args
+    for (k, v) in enumerate(args):
+        args[k] = str(v)
+    os.execl(*args)
