@@ -1,13 +1,17 @@
 # Docker-registry
 
+## 0.7.3
+
+ * [BUGFIX] fixed default value for standalone to true
+
 ## 0.7.2
 
-* `standalone` option must now be set explicitly in the configuration file.
-* FIXME
+ * [BUGFIX] fixed configuration handling on standalone mode
 
 ## 0.7.1
 
-* FIXME
+ * [BUGFIX] storage_path is now handled correctly to the filesystem storage driver
+ * [BUGFIX] change standalone header when in mirroring mode (prevents client from sending basic auth headers and overwriting token)
 
 ## 0.7
 
