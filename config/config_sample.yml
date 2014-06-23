@@ -1,30 +1,41 @@
-# The `common' part is automatically included (and possibly overriden by all
-# other flavors)
-common:
-    loglevel: _env:LOGLEVEL:debug
+# All other flavors inherit the `common' config snippet
+common: &common
+    # Default log level is info
+    loglevel: _env:LOGLEVEL:info
+    # By default, the registry acts standalone (eg: doesn't query the index)
+    standalone: _env:STANDALONE:true
+    # The default endpoint to use (if NOT standalone) is index.docker.io
+    index_endpoint: _env:INDEX_ENDPOINT:https://index.docker.io
+    # Storage redirect is disabled
     storage_redirect: _env:STORAGE_REDIRECT
-    standalone: true
-    index_endpoint: _env:INDEX_ENDPOINT
+    # Token auth is enabled (if NOT standalone)
     disable_token_auth: _env:DISABLE_TOKEN_AUTH
+    # No priv key
     privileged_key: _env:PRIVILEGED_KEY
-
+    # No search backend
     search_backend: _env:SEARCH_BACKEND
+    # SQLite search backend
     sqlalchemy_index_database: _env:SQLALCHEMY_INDEX_DATABASE:sqlite:////tmp/docker-registry.db
 
+    # Mirroring is not enabled
     mirroring:
         source: _env:MIRROR_SOURCE # https://registry-1.docker.io
         source_index: _env:MIRROR_SOURCE_INDEX # https://index.docker.io
         tags_cache_ttl: _env:MIRROR_TAGS_CACHE_TTL # 864000 # seconds
 
-    # Enabling LRU cache for small files. This speeds up read/write on small files
-    # when using a remote storage backend (like S3).
     cache:
-        host: _env:CACHE_REDIS_HOST
-        port: _env:CACHE_REDIS_PORT
+        host: _env:CACHE_REDIS_HOST:localhost
+        port: _env:CACHE_REDIS_PORT:6379
+        db: 0
         password: _env:CACHE_REDIS_PASSWORD
+
+    # Enabling LRU cache for small files
+    # This speeds up read/write on small files
+    # when using a remote storage backend (like S3).
     cache_lru:
-        host: _env:CACHE_LRU_REDIS_HOST
-        port: _env:CACHE_LRU_REDIS_PORT
+        host: _env:CACHE_LRU_REDIS_HOST:localhost
+        port: _env:CACHE_LRU_REDIS_PORT:6379
+        db: 0
         password: _env:CACHE_LRU_REDIS_PASSWORD
 
     # Enabling these options makes the Registry send an email on each code Exception
@@ -40,14 +51,14 @@ common:
     # Enable bugsnag (set the API key)
     bugsnag: _env:BUGSNAG
 
-
-
 local: &local
+    <<: *common
     storage: local
     storage_path: _env:STORAGE_PATH:/tmp/registry
 
 
 s3: &s3
+    <<: *common
     storage: s3
     s3_region: _env:AWS_REGION
     s3_bucket: _env:AWS_BUCKET
@@ -63,6 +74,7 @@ s3: &s3
 # https://developers.google.com/storage/docs/reference/v1/getting-startedv1#keys
 # for details on access and secret keys.
 gcs:
+    <<: *common
     storage: gcs
     boto_bucket: _env:GCS_BUCKET
     storage_path: _env:STORAGE_PATH:/registry
@@ -79,6 +91,7 @@ gcs:
 
 # This flavor is for storing images in Openstack Swift
 swift: &swift
+    <<: *common
     storage: swift
     storage_path: _env:STORAGE_PATH:/registry
     # keystone authorization
@@ -92,8 +105,9 @@ swift: &swift
 # This flavor stores the images in Glance (to integrate with openstack)
 # See also: https://github.com/dotcloud/openstack-docker
 glance: &glance
+    <<: *common
     storage: glance
-    storage_alternate: _env:GLANCE_STORAGE_ALTERNATE:local
+    storage_alternate: _env:GLANCE_STORAGE_ALTERNATE:file
     storage_path: _env:STORAGE_PATH:/tmp/registry
 
 openstack:
@@ -110,6 +124,7 @@ openstack-swift:
     <<: *glance-swift
 
 elliptics:
+    <<: *common
     storage: elliptics
     elliptics_nodes: _env:ELLIPTICS_NODES
     elliptics_wait_timeout: _env:ELLIPTICS_WAIT_TIMEOUT:60
@@ -127,11 +142,13 @@ elliptics:
 # This is the default configuration when no flavor is specified
 dev: &dev
     <<: *local
+    loglevel: _env:LOGLEVEL:debug
     search_backend: _env:SEARCH_BACKEND:sqlalchemy
 
-# This flavor is automatically used by unit tests
+# This flavor is used by unit tests
 test:
     <<: *dev
+    index_endpoint: https://indexstaging-docker.dotcloud.com
     standalone: True
     storage_path: _env:STORAGE_PATH:~/tmp/test
 
