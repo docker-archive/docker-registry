@@ -23,20 +23,20 @@ common: &common
         source_index: _env:MIRROR_SOURCE_INDEX # https://index.docker.io
         tags_cache_ttl: _env:MIRROR_TAGS_CACHE_TTL:172800 # seconds
 
-    cache:
-        host: _env:CACHE_REDIS_HOST:localhost
-        port: _env:CACHE_REDIS_PORT:6379
-        db: 0
-        password: _env:CACHE_REDIS_PASSWORD
+    # cache:
+    #     host: _env:CACHE_REDIS_HOST:localhost
+    #     port: _env:CACHE_REDIS_PORT:6379
+    #     db: 0
+    #     password: _env:CACHE_REDIS_PASSWORD
 
     # Enabling LRU cache for small files
     # This speeds up read/write on small files
     # when using a remote storage backend (like S3).
-    cache_lru:
-        host: _env:CACHE_LRU_REDIS_HOST:localhost
-        port: _env:CACHE_LRU_REDIS_PORT:6379
-        db: 0
-        password: _env:CACHE_LRU_REDIS_PASSWORD
+    # cache_lru:
+    #     host: _env:CACHE_LRU_REDIS_HOST:localhost
+    #     port: _env:CACHE_LRU_REDIS_PORT:6379
+    #     db: 0
+    #     password: _env:CACHE_LRU_REDIS_PASSWORD
 
     # Enabling these options makes the Registry send an email on each code Exception
     email_exceptions:
@@ -150,7 +150,7 @@ test:
     <<: *dev
     index_endpoint: https://indexstaging-docker.dotcloud.com
     standalone: True
-    storage_path: _env:STORAGE_PATH:~/tmp/test
+    storage_path: _env:STORAGE_PATH:./tmp/test
 
 # To specify another flavor, set the environment variable SETTINGS_FLAVOR
 # $ export SETTINGS_FLAVOR=prod
