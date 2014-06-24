@@ -72,14 +72,6 @@ class Storage(coreboto.Base):
 
     def makeConnection(self):
         kwargs = self._build_connection_params()
-        if self._config.s3_region is not None:
-            return boto.s3.connect_to_region(
-                region_name=self._config.s3_region,
-                aws_access_key_id=self._config.s3_access_key,
-                aws_secret_access_key=self._config.s3_secret_key,
-                **kwargs)
-        logger.warn("No S3 region specified, using boto default region, " +
-                    "this may affect performance and stability.")
         # Connect cloudfront if we are required to
         if self._config.cloudfront:
             self.signer = Cloudfront(
@@ -89,6 +81,17 @@ class Storage(coreboto.Base):
                 self._config.cloudfront['keyid'],
                 self._config.cloudfront['keysecret']
             ).sign
+        else:
+            self.signer = None
+
+        if self._config.s3_region is not None:
+            return boto.s3.connect_to_region(
+                region_name=self._config.s3_region,
+                aws_access_key_id=self._config.s3_access_key,
+                aws_secret_access_key=self._config.s3_secret_key,
+                **kwargs)
+        logger.warn("No S3 region specified, using boto default region, " +
+                    "this may affect performance and stability.")
 
         return boto.s3.connection.S3Connection(
             self._config.s3_access_key,
