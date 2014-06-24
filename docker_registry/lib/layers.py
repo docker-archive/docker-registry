@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import tarfile
 import tempfile
 
@@ -28,8 +29,18 @@ FILE_TYPES = {
     tarfile.GNUTYPE_SPARSE: 'S',
 }
 
+logger = logging.getLogger(__name__)
+
 # queue for requesting diff calculations from workers
 diff_queue = rqueue.CappedCollection(cache.redis_conn, "diff-worker", 1024)
+
+
+def enqueue_diff(image_id):
+    try:
+        if cache.redis_conn:
+            diff_queue.push(image_id)
+    except cache.redis.exceptions.ConnectionError as e:
+        logger.warning("Diff queue: Redis connection error: {0}".format(e))
 
 
 def generate_ancestry(image_id, parent_id=None):
