@@ -20,7 +20,6 @@ sess.mount('https://', adapter)
 requests = sess
 
 from docker_registry.lib import checksums
-from docker_registry.lib import config
 import docker_registry.storage as storage
 
 import base
@@ -29,9 +28,7 @@ from docker_registry.core import compat
 json = compat.json
 StringIO = compat.StringIO
 
-cfg = config.load()
-
-ua = 'docker/0.11 registry test pretending to be docker'
+ua = 'docker/1.0.0 registry test pretending to be docker'
 
 
 class TestWorkflow(base.TestCase):

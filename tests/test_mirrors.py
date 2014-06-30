@@ -34,17 +34,16 @@ def mock_lookup_source(path, stream=False, source=None):
 
 class TestMirrorDecorator(base.TestCase):
     def setUp(self):
-        config.load()
-        config._config._config['mirroring'] = {
+        self.cfg = config.load()
+        self.cfg._config['mirroring'] = {
             'source': 'https://registry.mock'
         }
-        self.cfg = config.load()
 
     def tearDown(self):
-        del config._config._config['mirroring']
+        del self.cfg._config['mirroring']
 
     def test_config_tampering(self):
-        self.assertEqual(self.cfg.get('mirroring')['source'],
+        self.assertEqual(self.cfg.mirroring.source,
                          'https://registry.mock')
 
     def test_is_mirror(self):

@@ -252,7 +252,7 @@ common:
   mirroring:
     source: https://registry-1.docker.io
     source_index: https://index.docker.io
-    tags_cache_ttl: 864000 # 10 days
+    tags_cache_ttl: 172800 # 2 days
 ```
 
 ### Cache options

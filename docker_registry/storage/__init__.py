@@ -34,7 +34,7 @@ def load(kind=None):
         return _storage[kind]
 
     _storage[kind] = engine.fetch(kind)(
-        path=cfg.get('storage_path'),
+        path=cfg.storage_path,
         config=cfg)
 
     return _storage[kind]

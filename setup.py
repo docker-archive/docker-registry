@@ -26,7 +26,7 @@ if ver[0] == 2:
         requirements.insert(0, 'importlib>=1.0.3')
 
 # Require core (the reason this is out of req.txt is to ease tox)
-requirements.insert(0, 'docker-registry-core>=1,<2')
+requirements.insert(0, 'docker-registry-core>=2,<3')
 
 # Explicit packages list to avoid setup_tools funkyness
 packages = ['docker_registry',

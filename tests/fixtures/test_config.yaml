@@ -1,0 +1,33 @@
+booltrue: True
+boolfalse: False
+uint: 10
+int: -10
+float: 0.01
+emptystring: ''
+isnone:
+nonemptystring: nonemptystring
+anothernonemptystring: 'nonemptystring'
+yetanothernonemptystring: 'nonemptystring'
+array: [one, two, three]
+dict:
+    one: valueone
+    two: valuetwo
+    three: valuethree
+something: 'else'
+uni: "ß∞"
+
+
+ENV:
+    booltrue: _env:BOOLTRUE:True
+    boolfalse: _env:BOOLFALSE:False
+    uint: _env:UINT:10
+    int: _env:INT:-10
+    float: _env:FLOAT:0.01
+    emptystring: _env:EMPTYSTRING:''
+    isnone: _env:ISNONE
+    nonemptystring: _env:NONEMPTYSTRING:nonemptystring
+    anothernonemptystring: _env:ANOTHERNONEMPTYSTRING:'nonemptystring'
+    yetanothernonemptystring: _env:YETANOTHERNONEMPTYSTRING:'nonemptystring'
+    bugger: _env:BUGGER:bug:me:endlessly
+    array: _env:ARRAY:[one, two, three]
+    dict: _env:DICT
