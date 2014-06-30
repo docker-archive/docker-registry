@@ -3,7 +3,6 @@
 import datetime
 import functools
 import logging
-import tarfile
 import time
 
 import flask
@@ -20,6 +19,9 @@ from .lib import cache
 from .lib import checksums
 from .lib import layers
 from .lib import mirroring
+# this is our monkey patched snippet from python v2.7.6 'tarfile'
+# with xattr support
+from .lib.xtarfile import tarfile
 
 
 store = storage.load()

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import tarfile
 import tempfile
 
 import backports.lzma as lzma
@@ -11,6 +10,10 @@ json = compat.json
 from .. import storage
 from . import cache
 from . import rqueue
+# this is our monkey patched snippet from python v2.7.6 'tarfile'
+# with xattr support
+from .xtarfile import tarfile
+
 
 store = storage.load()
 

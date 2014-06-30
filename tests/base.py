@@ -3,11 +3,14 @@
 import docker_registry.run as run
 
 import hashlib
+import os
 import random
 import string
 import unittest
 
 from docker_registry.core import compat
+
+data_dir = os.path.join(os.path.dirname(__file__), "data")
 
 
 class TestCase(unittest.TestCase):
