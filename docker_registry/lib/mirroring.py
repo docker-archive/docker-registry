@@ -195,7 +195,7 @@ def _handle_mirrored_layer(source_resp, layer_path, store, headers):
         tmp.seek(0)
         store.stream_write(layer_path, tmp)
         tmp.close()
-    return flask.Response(generate(), headers=headers)
+    return flask.Response(generate(), headers=dict(headers))
 
 
 def store_mirrored_data(data, endpoint, args, store):
