@@ -14,6 +14,7 @@ import flask
 
 from . import toolkit
 from .lib import config
+from .lib import mirroring
 from .server import __version__
 
 app = flask.Flask('docker-registry')
@@ -26,7 +27,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
 @app.route('/v1/_ping')
 def ping():
     headers = {'X-Docker-Registry-Standalone': cfg.standalone is True}
-    if cfg.mirroring:
+    if mirroring.is_mirror():
         headers['X-Docker-Registry-Standalone'] = 'mirror'
     return toolkit.response(headers=headers)
 
