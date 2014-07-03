@@ -23,20 +23,20 @@ common: &common
         source_index: _env:MIRROR_SOURCE_INDEX # https://index.docker.io
         tags_cache_ttl: _env:MIRROR_TAGS_CACHE_TTL:172800 # seconds
 
-    # cache:
-    #     host: _env:CACHE_REDIS_HOST:localhost
-    #     port: _env:CACHE_REDIS_PORT:6379
-    #     db: 0
-    #     password: _env:CACHE_REDIS_PASSWORD
+    cache:
+        host: _env:CACHE_REDIS_HOST
+        port: _env:CACHE_REDIS_PORT
+        db: _env:CACHE_REDIS_DB:0
+        password: _env:CACHE_REDIS_PASSWORD
 
     # Enabling LRU cache for small files
     # This speeds up read/write on small files
     # when using a remote storage backend (like S3).
-    # cache_lru:
-    #     host: _env:CACHE_LRU_REDIS_HOST:localhost
-    #     port: _env:CACHE_LRU_REDIS_PORT:6379
-    #     db: 0
-    #     password: _env:CACHE_LRU_REDIS_PASSWORD
+    cache_lru:
+        host: _env:CACHE_LRU_REDIS_HOST
+        port: _env:CACHE_LRU_REDIS_PORT
+        db: _env:CACHE_LRU_REDIS_DB:0
+        password: _env:CACHE_LRU_REDIS_PASSWORD
 
     # Enabling these options makes the Registry send an email on each code Exception
     email_exceptions:
