@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import backports.lzma as lzma
+import mock
 import os
 import random
 import string
@@ -53,6 +54,58 @@ def _get_xzfile(filenames):
     return lzma_fobj
 
 
+class TestHelpers(base.TestCase):
+
+    @mock.patch.object(layers.cache, 'redis_conn')
+    @mock.patch.object(layers.diff_queue, 'push')
+    @mock.patch.object(layers.logger, 'warning')
+    def test_enqueue_diff(self, logger, diff_queue, redis):
+        redis.return_value = False
+        self.assertEqual(logger.call_count, 0)
+        diff_queue.return_value = mock.MagicMock()
+        redis.return_value = True
+        image_id = 'abcd'
+        layers.enqueue_diff(image_id)
+        diff_queue.assert_called_once_with(image_id)
+        self.assertEqual(logger.call_count, 0)
+        diff_queue.side_effect = layers.cache.redis.exceptions.ConnectionError
+        layers.enqueue_diff(image_id)
+        self.assertEqual(logger.call_count, 1)
+
+
+class TestArchive(base.TestCase):
+
+    def setUp(self):
+        self.archive = layers.Archive(_get_tarfile(list(comp(5, rndstr))))
+
+    def test_properties(self):
+        self.assertEqual(self.archive.seekable(), True)
+        self.assertEqual(self.archive.readable(), True)
+        self.assertEqual(self.archive._check_can_seek(), True)
+
+
+class TestTarFilesInfo(base.TestCase):
+
+    def setUp(self):
+        self.tar_files_info = layers.TarFilesInfo()
+
+    def test__init__(self):
+        self.assertEqual(type(self.tar_files_info.infos), list)
+
+    @mock.patch('docker_registry.lib.layers.serialize_tar_info')
+    def test_append(self, serialize_tar_info):
+        tar_info = ('test', True)
+        serialize_tar_info.return_value = tar_info
+        self.assertEqual(len(self.tar_files_info.infos), 0)
+        self.assertEqual(self.tar_files_info.append('test'), None)
+        self.assertNotEqual(len(self.tar_files_info.infos), 0)
+        self.assertTrue(tar_info in self.tar_files_info.infos)
+
+    def test_json(self):
+        self.assertEqual(type(self.tar_files_info.json()), str)
+        self.assertEqual(self.tar_files_info.json(), '[]')
+
+
 class TestLayers(base.TestCase):
 
     def setUp(self):
@@ -85,6 +138,22 @@ class TestLayers(base.TestCase):
             sinfo = layers.serialize_tar_info(tarinfo)
             assert sinfo[0] in self.filenames
             assert sinfo[1:] == ('f', False, 512, 0, 420, 0, 0)
+
+        tar_info = mock.MagicMock()
+        expectations = [(".", "/"), ("./", "/"), ("./ab", "/ab")]
+        for name_in, name_out in expectations:
+            tar_info.name = name_in
+            out = layers.serialize_tar_info(tar_info)
+            self.assertEqual(out[0], name_out)
+            self.assertEqual(out[2], False)
+        tar_info.name = "./.wh..wh."
+        self.assertEqual(layers.serialize_tar_info(tar_info), None)
+        expectations = [("./.wh.", "/"), ("/.wh.", "/")]
+        for name_in, name_out in expectations:
+            tar_info.name = name_in
+            out = layers.serialize_tar_info(tar_info)
+            self.assertEqual(out[0], name_out)
+            self.assertEqual(out[2], True)
 
     def test_tar_serialization(self):
         tfobj = _get_tarfile(self.filenames)
@@ -177,3 +246,9 @@ class TestLayers(base.TestCase):
         for type in ("deleted", "changed", "created"):
             assert type in diff
             assert type in diff[type]
+
+    @mock.patch('docker_registry.lib.layers.get_image_diff_cache')
+    def test_get_image_diff_json(self, get_image_diff_cache):
+        diff_json = 'test'
+        get_image_diff_cache.return_value = diff_json
+        self.assertEqual(layers.get_image_diff_json(1), diff_json)
