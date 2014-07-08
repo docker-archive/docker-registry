@@ -7,6 +7,7 @@
 
 import mock
 import os
+import unittest
 
 from docker_registry.lib import config
 
@@ -22,13 +23,29 @@ def mockget(key, opt=None):
 
 
 @mock.patch('os.environ.get', mockget)
-class TestConfig():
+class TestConfig(unittest.TestCase):
 
-    def __init__(self):
+    def setUp(self):
         p = os.path.join(
             os.path.dirname(__file__), 'fixtures', 'test_config.yaml')
 
         self.c = config.Config(open(p, 'rb').read())
+
+    def test__init__(self):
+        self.assertRaises(config.exceptions.ConfigError, config.Config, '\1')
+
+    @mock.patch('__builtin__.repr')
+    def test__repr(self, r):
+        self.c.__repr__()
+        r.assert_called_once_with(self.c._config)
+
+    def test__methods__(self):
+        self.assertEqual(self.c.__methods__, [])
+
+    def test__members__(self):
+        self.assertEqual(type(self.c.__members__), list)
+        self.assertEqual(self.c.__members__, self.c.keys())
+        self.assertEqual(self.c.__members__, self.c.__dir__())
 
     def test_accessors(self):
         assert self.c.booltrue == self.c['booltrue']
@@ -133,3 +150,17 @@ class TestConfig():
 
     def test_unicode(self):
         assert self.c.uni == u'ß∞'
+
+
+class TestLoad(unittest.TestCase):
+
+    def setUp(self):
+        self._config = config._config
+
+    def tearDown(self):
+        config._config = self._config
+
+    @mock.patch.object(config.os.environ, 'get')
+    def test_config_path_exception(self, get):
+        config._config = None
+        self.assertRaises(config.exceptions.FileNotFoundError, config.load)
