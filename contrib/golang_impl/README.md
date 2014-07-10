@@ -4,6 +4,10 @@
 
 You need to have docker >= 0.5.0 up and running.
 
+## Limitations
+
+This implementation doesn't provide all the features that are available in the Python implementation of the Docker Registry.
+
 ## Build and start docker image for registry
 
     $ git clone https://github.com/dotcloud/docker-registry.git docker-registry.git
