@@ -103,11 +103,3 @@ Pretty much:
 
 Drivers are expected to receive bytes and to return bytes.
 Don't try to decode or encode content.
-
-## API documentation
-
-[search-endpoint]:
-  http://docs.docker.io/en/latest/reference/api/index_api/#get--v1-search
-[SQLAlchemy]: http://docs.sqlalchemy.org/
-[create_engine]:
-  http://docs.sqlalchemy.org/en/latest/core/engines.html#sqlalchemy.create_engine
