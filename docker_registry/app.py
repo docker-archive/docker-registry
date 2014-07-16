@@ -3,6 +3,7 @@
 import logging
 import logging.handlers
 import os
+import sys
 
 try:
     import bugsnag
@@ -30,6 +31,30 @@ def ping():
     if mirroring.is_mirror():
         headers['X-Docker-Registry-Standalone'] = 'mirror'
     return toolkit.response(headers=headers)
+
+
+@app.route('/_versions')
+@app.route('/v1/_versions')
+def versions():
+    """Return a JSON object ({"package-name": "package-version", ...}).
+
+    This is an unofficial endpoint for debugging your docker-registry
+    install.  If you're running a publicly-accessible endpoint, it's
+    probably best to disable this endpoint to avoid leaking
+    implementation details.
+    """
+    versions = {}
+    if cfg.debug_versions:
+        for name, module in sys.modules.items():
+            if name.startswith('_'):
+                continue
+            try:
+                version = module.__version__
+            except AttributeError:
+                continue
+            versions[name] = version
+        versions['python'] = sys.version
+    return toolkit.response(versions)
 
 
 @app.route('/')
