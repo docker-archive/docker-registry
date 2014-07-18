@@ -127,7 +127,7 @@ def _get_image_json(image_id, headers=None):
         pass
     try:
         csums = load_checksums(image_id)
-        headers['X-Docker-Payload-Checksum'] = csums
+        headers['X-Docker-Checksum-Payload'] = csums
     except exceptions.FileNotFoundError:
         pass
     return toolkit.response(data, headers=headers, raw=True)
