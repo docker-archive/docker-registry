@@ -77,6 +77,7 @@ def run_gunicorn():
         '-t', env.source('GUNICORN_SILENT_TIMEOUT'),
         '-w', env.source('GUNICORN_WORKERS'),
         '-b', address,
+    ] + env.source('GUNICORN_OPTS') + [
         'docker_registry.wsgi:application'
     ]
 
