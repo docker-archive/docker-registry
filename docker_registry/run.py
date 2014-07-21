@@ -36,9 +36,11 @@ REGISTRY_HOST: TCP host or ip to bind to; default is 0.0.0.0
 REGISTRY_PORT: TCP port to bind to; default is 5000
 GUNICORN_WORKERS: number of worker processes gunicorn should start
 GUNICORN_GRACEFUL_TIMEOUT: timeout in seconds for graceful worker restart
-GUNiCORN_SILENT_TIMEOUT: timeout in seconds for restarting silent workers
-GUNiCORN_USER: unix user to downgrade priviledges to
-GUNiCORN_GROUP: unix group to downgrade priviledges to
+GUNICORN_SILENT_TIMEOUT: timeout in seconds for restarting silent workers
+GUNICORN_USER: unix user to downgrade priviledges to
+GUNICORN_GROUP: unix group to downgrade priviledges to
+GUNICORN_ACCESS_LOG_FILE: File to log access to
+GUNICORN_ERROR_LOG_FILE: File to log errors to
 """
 
 
@@ -66,7 +68,9 @@ def run_gunicorn():
 
     args = [
         gunicorn_path, 'gunicorn',
-        '--access-logfile', '-', '--debug',
+        '--access-logfile', env.source('GUNICORN_ACCESS_LOG_FILE'),
+        '--error-logfile', env.source('GUNICORN_ERROR_LOG_FILE'),
+        '--debug',
         '--max-requests', '100',
         '-k', 'gevent',
         '--graceful-timeout', env.source('GUNICORN_GRACEFUL_TIMEOUT'),
