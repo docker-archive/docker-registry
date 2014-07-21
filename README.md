@@ -209,7 +209,6 @@ returns empty results.
    Currently supported backends are:
    1. `sqlalchemy`
 
-
 If `search_backend` is neither empty nor one of the supported backends, it
 should point to a module.
 
@@ -222,7 +221,10 @@ common:
 
 #### sqlalchemy
 
-1. `sqlalchemy_index_database`: The database URL
+Use [SQLAlchemy][] as the search backend.
+
+1. `sqlalchemy_index_database`: The database URL passed through to
+   [create_engine][].
 
 Example:
 
@@ -231,7 +233,6 @@ common:
   search_backend: sqlalchemy
   sqlalchemy_index_database: sqlite:////tmp/docker-registry.db
 ```
-
 
 In this case, the module is imported, and an instance of it's `Index`
 class is used as the search backend.
@@ -494,3 +495,8 @@ For developers
 --------------
 
 Read CONTRIBUTE.md
+
+[search-endpoint]: http://docs.docker.com/reference/api/docker-io_api/#search
+[SQLAlchemy]: http://docs.sqlalchemy.org/
+[create_engine]:
+  http://docs.sqlalchemy.org/en/latest/core/engines.html#sqlalchemy.create_engine
