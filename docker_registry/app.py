@@ -14,13 +14,17 @@ import flask
 
 from . import toolkit
 from .lib import config
+
+# configure logging prior to subsequent imports which assume
+# logging has been configured
+cfg = config.load()
+logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
+                    level=getattr(logging, cfg.loglevel.upper()))
+
 from .lib import mirroring
 from .server import __version__
 
 app = flask.Flask('docker-registry')
-cfg = config.load()
-logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
-                    level=getattr(logging, cfg.loglevel.upper()))
 
 
 @app.route('/_ping')
