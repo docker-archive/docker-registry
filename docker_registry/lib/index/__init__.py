@@ -69,7 +69,7 @@ class Index (object):
 
           {'name': name, 'description': description}
         """
-        raise NotImplementedError('results method for {!r}'.format(self))
+        raise NotImplementedError('results method for {0!r}'.format(self))
 
 
 def load(kind=None):
