@@ -136,7 +136,7 @@ class Base(driver.Base):
         logger.info("Boto based storage initialized")
 
     def _build_connection_params(self):
-        kwargs = {'is_secure': (self._config.boto_secure is True)}
+        kwargs = {'is_secure': (self._config.s3_secure is True)}
         config_args = [
             'host', 'port', 'debug',
             'proxy', 'proxy_port',
