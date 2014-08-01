@@ -27,7 +27,9 @@ def enable_redis_cache(cache, path):
         return
 
     logger.info('Enabling storage cache on Redis')
-    logger.info('Redis config: {0}'.format(cache))
+    logger.info(
+        'Redis host: {0}:{1} (db{2})'.format(cache.host, cache.port, cache.db)
+    )
     redis_conn = redis.StrictRedis(
         host=cache.host,
         port=int(cache.port),
@@ -42,7 +44,10 @@ def enable_redis_lru(cache, path):
         logger.warn('LRU cache disabled!')
         return
     logger.info('Enabling lru cache on Redis')
-    logger.info('Redis lru config: {0}'.format(cache))
+    logger.info(
+        'Redis lru host: {0}:{1} (db{2})'.format(cache.host, cache.port,
+                                                 cache.db)
+    )
     lru.init(
         host=cache.host,
         port=cache.port,
