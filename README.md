@@ -442,8 +442,9 @@ gunicorn --access-logfile - --debug -k gevent -b 0.0.0.0:5000 -w 1 docker_regist
 
 ### How do I setup user accounts?
 
-The first time someone tries to push to your registry, it will prompt
-them for a username, password, and email.
+The standalone registry does not provide account management. For simple
+access control, you can set up an nginx or Apache frontend with basic
+auth enabled (see `contrib/` for examples).
 
 ### What about a Production environment?
 
