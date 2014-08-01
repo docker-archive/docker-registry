@@ -79,6 +79,6 @@ setuptools.setup(
     install_requires=requirements,
     tests_require=open('./requirements/test.txt').read(),
     extras_require={
-        'bugsnag': ['bugsnag==2.0.1']
+        'bugsnag': ['bugsnag>=2.0.1,<2.1']
     }
 )
