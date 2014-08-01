@@ -383,6 +383,7 @@ def load_checksums(image_id):
 @app.route('/v1/images/<image_id>/json', methods=['PUT'])
 @toolkit.requires_auth
 def put_image_json(image_id):
+    data = None
     try:
         # Note(dmp): unicode patch
         data = json.loads(flask.request.data.decode('utf8'))
