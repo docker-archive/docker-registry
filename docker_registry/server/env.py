@@ -15,6 +15,8 @@ _DEFAULT = {
     'GUNICORN_ACCESS_LOG_FILE': '"-"',
     'GUNICORN_ERROR_LOG_FILE': '"-"',
     'GUNICORN_OPTS': '[]',
+    'NEW_RELIC_INI': '',
+    'NEW_RELIC_STAGE': 'dev'
 }
 
 

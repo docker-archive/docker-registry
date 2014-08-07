@@ -1,11 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from .server import env
 import logging
 
-from .run import app
-from .server import env
+newini = env.source('NEW_RELIC_INI')
+if newini:
+    try:
+        import newrelic.agent
+        newrelic.agent.initialize(
+            env.source('NEW_RELIC_INI'),
+            env.source('NEW_RELIC_STAGE'))
+    except Exception as e:
+        raise(Exception('Failed to init new relic agent %s' % e))
 
+from .run import app
 
 if __name__ == '__main__':
     # Bind to PORT if defined, otherwise default to 5000.
