@@ -8,14 +8,14 @@ except ImportError:
 
 import sys
 
+ver = sys.version_info
+
 # XXX as ugly as this looks, namespaces break terribly otherwise
-# import docker_registry.lib as lib
-execfile('./docker_registry/server/__init__.py')
+filename = './docker_registry/server/__init__.py'
+exec(compile(open(filename, 'rb').read(), filename, 'exec'))
 
 requirements_txt = open('./requirements/main.txt')
 requirements = [line for line in requirements_txt]
-
-ver = sys.version_info
 
 if ver[0] == 2:
     # Python 2 requires lzma backport
