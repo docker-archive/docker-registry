@@ -80,6 +80,6 @@ setuptools.setup(
     tests_require=open('./requirements/test.txt').read(),
     extras_require={
         'bugsnag': ['bugsnag>=2.0,<2.1'],
-        'newrelic': ['newrelic>=2.22,<2.23']
+        'newrelic': ['newrelic>=2.22,<2.23'],
     }
 )
