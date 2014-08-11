@@ -1,5 +1,18 @@
 # Docker-registry
 
+## 0.8.0
+
+ * configuration rehaul: https://github.com/docker/docker-registry/pull/444 - beware this breaks API for the drivers, and the core package has been updated accordingly to denote that
+ * better redis error handling
+ * improved coverage
+ * experimental (undocumented) new-relic bundle support
+ * bugsnag and new-relic are now installable as setup-tools "extras"
+ * centralized version and other meta-informations
+ * port / host and other gunicorn options are more consistent
+ * mirroring fixes
+ * tarfile: pax header and xattr support
+ * some dependency requirements loosen (extras, test and style requirements)
+
 ## 0.7.3
 
  * [BUGFIX] fixed default value for standalone to true
