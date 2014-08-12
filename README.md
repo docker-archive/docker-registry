@@ -437,7 +437,7 @@ sudo python-pip install docker-registry[bugsnag]
 #### Run it
 
 ```
-gunicorn --access-logfile - --debug -k gevent -b 0.0.0.0:5000 -w 1 docker_registry.wsgi:application
+gunicorn --access-logfile - -k gevent -b 0.0.0.0:5000 -w 4 --max-requests 100 docker_registry.wsgi:application
 ```
 
 ### How do I setup user accounts?
