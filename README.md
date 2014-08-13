@@ -1,7 +1,7 @@
 Docker-Registry
 ===============
 
-[![Build Status](https://travis-ci.org/dotcloud/docker-registry.png)](https://travis-ci.org/dotcloud/docker-registry)
+[![Build Status](https://travis-ci.org/docker/docker-registry.png)](https://travis-ci.org/docker/docker-registry)
 
 About this document
 ===================
@@ -11,7 +11,7 @@ As the documentation evolves with different registry versions, be sure that befo
  * check which version of the registry you are running
  * switch to the corresponding tag to access the README that matches your product version
 
-The stable, released version is currently the [0.8.0 tag](https://github.com/dotcloud/docker-registry/tree/0.8.0).
+The stable, released version is currently the [0.8.0 tag](https://github.com/docker/docker-registry/tree/0.8.0).
 
 
 Quick start
@@ -460,9 +460,9 @@ gunicorn -k gevent --max-requests 100 --graceful-timeout 3600 -t 3600 -b localho
 
 #### nginx
 
-[Here is an nginx configuration file example.](https://github.com/dotcloud/docker-registry/blob/master/contrib/nginx.conf), which applies to versions < 1.3.9 which are compiled with the [HttpChunkinModule](http://wiki.nginx.org/HttpChunkinModule). 
+[Here is an nginx configuration file example.](https://github.com/docker/docker-registry/blob/master/contrib/nginx.conf), which applies to versions < 1.3.9 which are compiled with the [HttpChunkinModule](http://wiki.nginx.org/HttpChunkinModule). 
 
-[This is another example nginx configuration file](https://github.com/dotcloud/docker-registry/blob/master/contrib/nginx_1-3-9.conf) that applies to versions of nginx greater than 1.3.9 that have support for the chunked_transfer_encoding directive.
+[This is another example nginx configuration file](https://github.com/docker/docker-registry/blob/master/contrib/nginx_1-3-9.conf) that applies to versions of nginx greater than 1.3.9 that have support for the chunked_transfer_encoding directive.
 
 And you might want to add
 [Basic auth on Nginx](http://wiki.nginx.org/HttpAuthBasicModule) to protect it
@@ -479,17 +479,6 @@ requests to the Docker Registry:
   ProxyRequests      Off
   ProxyPass          /  http://localhost:5000/
   ProxyPassReverse   /  http://localhost:5000/
-```
-
-
-#### dotCloud
-
-The central Registry runs on the dotCloud platform:
-
-```
-cd docker-registry/
-dotcloud create myregistry
-dotcloud push
 ```
 
 For developers
