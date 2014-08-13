@@ -19,7 +19,8 @@ from .lib import config
 # logging has been configured
 cfg = config.load()
 logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
-                    level=getattr(logging, cfg.loglevel.upper()))
+                    level=getattr(logging, cfg.loglevel.upper()),
+                    datefmt="%d/%b/%Y:%H:%M:%S %z")
 
 from .lib import mirroring
 from .server import __version__
