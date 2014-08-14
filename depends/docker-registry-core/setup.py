@@ -20,23 +20,24 @@ try:
 except ImportError:
     import distutils.core as setuptools
 
+import os
+import re
 import sys
 
 import docker_registry.core as core
 
-if sys.version_info < (2, 6):
+ver = sys.version_info
+
+if ver < (2, 6):
     raise Exception("Docker registry requires Python 2.6 or higher.")
 
 requirements_txt = open('./requirements/main.txt')
 requirements = [line for line in requirements_txt]
 
-ver = sys.version_info
-
 # 2.6 native json raw_decode doesn't fit the bill, so add simple to our req
-if ver[0] == 2 and ver[1] <= 6:
-    requirements.insert(0, 'simplejson>=2.0.9')
+if ver < (2, 7):
+    requirements.insert(0, 'simplejson==3.6.2')
 
-# d = 'https://github.com/dotcloud/docker-registry-core/archive/master.zip'
 
 setuptools.setup(
     name=core.__title__,
@@ -45,11 +46,11 @@ setuptools.setup(
     author_email=core.__email__,
     maintainer=core.__maintainer__,
     maintainer_email=core.__email__,
-    keywords="docker registry core",
-    url='https://github.com/dotcloud/docker-registry',
-    description="Docker registry core package",
+    keywords='docker registry core',
+    url=core.__url__,
+    description=core.__description__,
     long_description=open('./README.md').read(),
-    # download_url=d,
+    download_url=core.__download__,
     classifiers=['Development Status :: 4 - Beta',
                  'Intended Audience :: Developers',
                  'Programming Language :: Python',
@@ -66,9 +67,6 @@ setuptools.setup(
     platforms=['Independent'],
     license=open('./LICENSE').read(),
     namespace_packages=['docker_registry', 'docker_registry.drivers'],
-    # XXX setuptools breaks terribly when mixing namespaces and package_dir
-    # TODO must report this to upstream
-    # package_dir={'docker_registry': 'lib'},
     packages=['docker_registry', 'docker_registry.core',
               'docker_registry.drivers', 'docker_registry.testing'],
     install_requires=requirements,
