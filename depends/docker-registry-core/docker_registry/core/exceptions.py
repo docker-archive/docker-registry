@@ -34,8 +34,7 @@ __all__ = [
 
 class UnspecifiedError(Exception):
 
-    """Base class for all exceptions in docker_registry
-    """
+    """Base class for all exceptions in docker_registry."""
 
     def __init__(self, *args, **kwargs):
         self.message = kwargs.pop('message', 'No details')
@@ -44,8 +43,9 @@ class UnspecifiedError(Exception):
 
 class UsageError(UnspecifiedError):
 
-    """Exceptions related to use of the library, like missing files,
-    wrong argument type, etc.
+    """Exceptions related to use of the library.
+
+    Missing files, wrong argument type, etc.
     """
 
 
