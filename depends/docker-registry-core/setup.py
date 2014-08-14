@@ -38,6 +38,18 @@ requirements = [line for line in requirements_txt]
 if ver < (2, 7):
     requirements.insert(0, 'simplejson==3.6.2')
 
+# Using this will relax dependencies to semver major matching
+if 'DEPS' in os.environ and os.environ['DEPS'].lower() == 'loose':
+    loose = []
+    for item in requirements:
+        d = re.match(r'([^=]+)==([0-9]+)[.]([0-9]+)[.]([0-9]+)', item)
+        if d:
+            d = list(d.groups())
+            name = d.pop(0)
+            version = d.pop(0)
+            item = '%s>=%s,<%s' % (name, int(version), int(version) + 1)
+        loose.insert(0, item)
+    requirements = loose
 
 setuptools.setup(
     name=core.__title__,
