@@ -103,3 +103,10 @@ Pretty much:
 
 Drivers are expected to receive bytes and to return bytes.
 Don't try to decode or encode content.
+
+## Development environement notes
+
+We don't currently run any tests for python3, as we are stuck on gevent not being py3 ready.
+
+On OSX, in order for the dependencies to compile properly (inside tox venv) you might need to have extra include and lib specified. Environment variables are provided for that, namely $TOX_INCLUDE and $TOX_LIB.
+
