@@ -23,7 +23,7 @@ from . import utils
 import boto.s3.bucket
 import boto.s3.connection
 import boto.s3.key
-import six.add_metaclass
+import six
 
 Bucket__init__ = boto.s3.bucket.Bucket.__init__
 
