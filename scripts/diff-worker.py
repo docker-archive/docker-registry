@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import argparse
+import argparse  # noqa
+
 import logging
 import os
 
