@@ -82,4 +82,4 @@ if __name__ == '__main__':
     json_data = file(sys.argv[1]).read()
     fp = open(sys.argv[2])
     print(compute_simple(fp, json_data))
-    #print compute_tarsum(fp, json_data)
+    # print compute_tarsum(fp, json_data)

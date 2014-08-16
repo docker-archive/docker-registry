@@ -4,8 +4,9 @@ import datetime
 import json
 import logging
 import re
-import redis
 import sys
+
+import redis
 
 logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
                     level=logging.INFO)
@@ -213,20 +214,21 @@ def generate_bandwidth_data(start_time, min_time, time_interval):
                                    num_items)
                     if not most_recent_parsing:
                         most_recent_parsing = str_end_time
-                    time_interval, items = \
+                    time_interval, items = (
                         update_current_interval(items,
                                                 logging_interval,
                                                 start_time)
+                    )
                 else:
-                    time_interval, items = \
+                    time_interval, items = (
                         adjust_current_interval(time_interval,
                                                 end_time,
                                                 items)
-            bandwidth_items[time_interval] = \
-                bandwidth_items.get(time_interval, 0.0) \
-                + bandwidth
-            num_items[time_interval] = \
-                num_items.get(time_interval, 0.0) + 1
+                    )
+            bandwidth_items[time_interval] = (
+                bandwidth_items.get(time_interval, 0.0) + bandwidth
+            )
+            num_items[time_interval] = num_items.get(time_interval, 0.0) + 1
             end_times.pop(key, None)
     if most_recent_parsing:
         save_last_line_parsed(most_recent_parsing)

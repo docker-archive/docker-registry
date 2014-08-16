@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from docker_registry.core import driver as driveengine
-
 from docker_registry import testing
 # Mock any boto
 from docker_registry.testing import mock_boto  # noqa

@@ -12,9 +12,7 @@ import tarfile
 
 
 def _proc_pax(self, filetar):
-    """Process an extended or global header as described in
-      POSIX.1-2001.
-   """
+    """Process an extended or global header as described in POSIX.1-2001."""
     # Read the header information.
     buf = filetar.fileobj.read(self._block(self.size))
 

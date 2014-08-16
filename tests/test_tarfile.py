@@ -3,9 +3,9 @@
 import imp
 import os
 
+import base
 from nose import tools
 
-import base
 from docker_registry.lib import checksums
 from docker_registry.lib import xtarfile
 

@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import flask
 import functools
 import logging
-import requests
 
 from .. import storage
 from .. import toolkit
 from . import cache
 from . import config
+import flask
+import requests
 
 logger = logging.getLogger(__name__)
 cfg = config.load()

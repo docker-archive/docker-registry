@@ -1,5 +1,6 @@
-import mock
 import unittest
+
+import mock
 
 from docker_registry.lib.index import db
 

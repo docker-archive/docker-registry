@@ -10,10 +10,11 @@ try:
 except ImportError as e:
     _bugsnag_import_error = e
     bugsnag = None
-import flask
 
 from . import toolkit
 from .lib import config
+from .server import __version__
+import flask
 
 # configure logging prior to subsequent imports which assume
 # logging has been configured
@@ -22,8 +23,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
                     level=getattr(logging, cfg.loglevel.upper()),
                     datefmt="%d/%b/%Y:%H:%M:%S %z")
 
-from .lib import mirroring
-from .server import __version__
+from .lib import mirroring  # noqa
 
 app = flask.Flask('docker-registry')
 

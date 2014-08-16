@@ -4,6 +4,7 @@ import logging
 import tempfile
 
 import backports.lzma as lzma
+
 from docker_registry.core import compat
 json = compat.json
 
@@ -60,6 +61,7 @@ def generate_ancestry(image_id, parent_id=None):
 
 class Archive(lzma.LZMAFile):
     """file-object wrapper for decompressing xz compressed tar archives
+
     This class wraps a file-object that contains tar archive data. The data
     will be optionally decompressed with lzma/xz if found to be a compressed
     archive.
@@ -120,6 +122,7 @@ class TarFilesInfo(object):
 
 def serialize_tar_info(tar_info):
     '''serialize a tarfile.TarInfo instance
+
     Take a single tarfile.TarInfo instance and serialize it to a
     tuple. Consider union whiteouts by filename and mark them as
     deleted in the third element. Don't include union metadata
@@ -190,6 +193,7 @@ def get_image_files_from_fobj(layer_file):
 
 def get_image_files_json(image_id):
     '''return json file listing for given image id
+
     Download the specified layer and determine the file contents.
     Alternatively, process a passed in file-object containing the
     layer data.
@@ -212,6 +216,7 @@ def get_image_files_json(image_id):
 
 def get_file_info_map(file_infos):
     '''convert a list of file info tuples to dictionaries
+
     Convert a list of layer file info tuples to a dictionary using the
     first element (filename) as the key.
     '''
@@ -231,6 +236,7 @@ def set_image_diff_cache(image_id, diff_json):
 
 def get_image_diff_json(image_id):
     '''get json describing file differences in layer
+
     Calculate the diff information for the files contained within
     the layer. Return a dictionary of lists grouped by whether they
     were deleted, changed or created in this layer.

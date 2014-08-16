@@ -137,6 +137,7 @@ class BaseQueue(object):
 
 class CappedCollection(BaseQueue):
     """a bounded queue
+
     Implements a capped collection (the collection never
     gets larger than the specified size).
     """

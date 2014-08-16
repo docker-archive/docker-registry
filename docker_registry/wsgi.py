@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from .server import env
 import logging
+
+from .server import env
 
 _new_relic_ini = env.source('NEW_RELIC_INI')
 if _new_relic_ini:
