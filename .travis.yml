@@ -16,8 +16,9 @@ install:
   - pip install -rrequirements/test.txt
   - pip install .
 
-# XXX should run the core tests as well
-script: SETTINGS_FLAVOR=test DOCKER_REGISTRY_CONFIG=config_sample.yml flake8 . && SETTINGS_FLAVOR=test DOCKER_REGISTRY_CONFIG=config_sample.yml python setup.py nosetests
+script: SETTINGS_FLAVOR=test DOCKER_REGISTRY_CONFIG=config_sample.yml flake8 . && \
+        SETTINGS_FLAVOR=test DOCKER_REGISTRY_CONFIG=config_sample.yml python setup.py nosetests && \
+        cd depends/docker-registry-core && python setup.py nosetests
 
 before_install:
   - sudo apt-get update
