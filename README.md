@@ -149,6 +149,7 @@ When using the `config_sample.yml`, you can pass all options through as environm
 1. `loglevel`: string, level of debugging. Any of python's
    [logging](http://docs.python.org/2/library/logging.html) module levels:
    `debug`, `info`, `warn`, `error` or `critical`
+1. `debug_versions`: boolean, enable the `/_versions` endpoint for debugging.
 1. `storage_redirect`: Redirect resource requested if storage engine supports
    this, e.g. S3 will redirect signed URLs, this can be used to offload the
    server.
