@@ -37,7 +37,6 @@ import tempfile
 
 from . import driver
 from . import lru
-
 from .exceptions import FileNotFoundError
 
 logger = logging.getLogger(__name__)

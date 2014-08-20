@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+
 import rsa
 import yaml
 
@@ -9,7 +10,8 @@ from docker_registry.core import exceptions
 
 
 class Config(object):
-    """A simple config class that:
+    """A simple config class
+
      * gives properties access through either items or attributes
      * enforce types (thanks to yaml)
      * interpolate from ENV

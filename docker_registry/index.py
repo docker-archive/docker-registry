@@ -12,7 +12,7 @@ from . import toolkit
 from .lib import mirroring
 from .lib import signals
 
-from .app import app
+from .app import app  # noqa
 
 
 store = storage.load()

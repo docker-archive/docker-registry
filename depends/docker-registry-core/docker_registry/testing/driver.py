@@ -19,11 +19,10 @@ import math
 import random
 import string
 
-from nose import tools
-
 from ..core import compat
 from ..core import driver
 from ..core import exceptions
+from nose import tools
 
 logger = logging.getLogger(__name__)
 

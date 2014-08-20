@@ -4,6 +4,11 @@ python:
   - "2.6"
   - "2.7"
 
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install redis-server
+  - sudo apt-get install libevent-dev liblzma-dev
+
 install:
 ## This below should be separated when core lives elsewhere
 # Install core tests reqs
@@ -16,9 +21,10 @@ install:
   - pip install -rrequirements/test.txt
   - pip install .
 
-# XXX should run the core tests as well
-script: SETTINGS_FLAVOR=test DOCKER_REGISTRY_CONFIG=config_sample.yml flake8 . && SETTINGS_FLAVOR=test DOCKER_REGISTRY_CONFIG=config_sample.yml python setup.py nosetests
+before_script:
+  - redis-server &
 
-before_install:
-  - sudo apt-get update
-  - sudo apt-get install libevent-dev liblzma-dev
+script:
+  - SETTINGS_FLAVOR=test DOCKER_REGISTRY_CONFIG=config_sample.yml flake8
+  - SETTINGS_FLAVOR=test DOCKER_REGISTRY_CONFIG=config_sample.yml python setup.py nosetests
+  - cd depends/docker-registry-core && python setup.py nosetests

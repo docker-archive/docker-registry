@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 
-import backports.lzma as lzma
-import mock
 import os
 import random
 import string
 import tarfile
 
+import backports.lzma as lzma
 import base
+import mock
+
+from docker_registry.core import compat
 from docker_registry.lib import layers
 from docker_registry import storage
 
-from docker_registry.core import compat
 json = compat.json
 StringIO = compat.StringIO
 

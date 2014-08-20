@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import sys
-
 import StringIO
+import sys
 
 from nose import tools
 

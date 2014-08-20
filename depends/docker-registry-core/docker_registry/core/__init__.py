@@ -47,6 +47,10 @@ __status__ = 'Production'
 __title__ = 'docker-registry-core'
 __build__ = 0x000000
 
+__url__ = 'https://github.com/docker/docker-registry'
+__description__ = 'Docker registry core package'
+__download__ = 'https://github.com/docker/docker-registry/archive/master.zip'
+
 try:
     NullHandler = logging.NullHandler
 except AttributeError:

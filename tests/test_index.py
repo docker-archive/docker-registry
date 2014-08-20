@@ -8,8 +8,9 @@ json = compat.json
 
 class TestIndex(base.TestCase):
 
-    """The Index module is fake at the moment, hence the unit tests only
-       test the return codes
+    """The Index module is fake at the moment
+
+    hence the unit tests only test the return codes
     """
 
     def test_users(self):

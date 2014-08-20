@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+
 import yaml
 
 __all__ = ['source']
@@ -12,6 +13,8 @@ _DEFAULT = {
     'GUNICORN_WORKERS': '4',
     'GUNICORN_GRACEFUL_TIMEOUT': '3600',
     'GUNICORN_SILENT_TIMEOUT': '3600',
+    'GUNICORN_USER': '',
+    'GUNICORN_GROUP': '',
     'GUNICORN_ACCESS_LOG_FILE': '"-"',
     'GUNICORN_ERROR_LOG_FILE': '"-"',
     'GUNICORN_OPTS': '[]',

@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import flask
-import flask_cors
-
-from .lib import config
-from .lib import index
-
 from . import toolkit
 from .app import app
+from .lib import config
+from .lib import index
+import flask
+import flask_cors
 
 
 cfg = config.load()

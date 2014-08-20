@@ -15,7 +15,7 @@ class TestTags(base.TestCase):
         layer_data = self.gen_random_string(1024)
         self.upload_image(image_id, parent_id=None, layer=layer_data)
 
-       # test tags create
+        # test tags create
         url = '/v1/repositories/foo/{0}/tags/latest'.format(repos_name)
         headers = {'User-Agent':
                    'docker/0.7.2-dev go/go1.2 os/ostest arch/archtest'}
@@ -57,7 +57,7 @@ class TestTags(base.TestCase):
         self.assertEqual(props['os'], 'ostest')
         self.assertEqual(props['arch'], 'archtest')
 
-       # test tags update
+        # test tags update
         url = '/v1/repositories/foo/{0}/tags/latest'.format(repos_name)
         headers = {'User-Agent':
                    'docker/0.7.2-dev go/go1.2 os/ostest arch/changedarch'}

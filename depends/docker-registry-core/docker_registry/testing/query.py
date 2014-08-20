@@ -14,10 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from nose import tools
-
 from ..core import driver
 from ..core import exceptions
+from nose import tools
 
 
 class Query(object):

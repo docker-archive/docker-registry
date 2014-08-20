@@ -161,8 +161,9 @@ def get_remote_ip():
 
 def is_ssl():
     for header in ('X-Forwarded-Proto', 'X-Forwarded-Protocol'):
-        if header in flask.request.headers and \
-                flask.request.headers[header].lower() in ('https', 'ssl'):
+        if header in flask.request.headers and (
+                flask.request.headers[header].lower() in ('https', 'ssl')
+        ):
                     return True
     return False
 
@@ -294,6 +295,6 @@ def get_repository():
 def get_endpoints(overcfg=None):
     registry_endpoints = (overcfg or cfg).registry_endpoints
     if not registry_endpoints:
-        #registry_endpoints = socket.gethostname()
+        # registry_endpoints = socket.gethostname()
         registry_endpoints = flask.request.environ['HTTP_HOST']
     return registry_endpoints

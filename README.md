@@ -19,11 +19,11 @@ Quick start
 
 The fastest way to get running:
 
- * install docker according to the [following instructions](http://docs.docker.io/installation/#installation)
+ * install docker according to the [following instructions](https://docs.docker.com/installation/#installation)
  * run the registry: `docker run -p 5000:5000 registry`
 
 That will use the
-[official image from the Docker index](https://index.docker.io/_/registry/).
+[official image from the Docker index](https://registry.hub.docker.com/_/registry/).
 
 Here is another example that will launch a container on port 5000, and store images in an Amazon S3 bucket:  
 ```
@@ -407,10 +407,10 @@ Then install the Registry app:
 sudo pip install docker-registry
 ```
 
-If you need extra requirements, like bugsnag, specify them:
+If you need extra requirements, like bugsnag, or new-relic specify them:
 
 ```
-sudo pip install docker-registry[bugsnag]
+sudo pip install docker-registry[bugsnag,newrelic]
 ```
 
 
@@ -430,7 +430,7 @@ should not require the additional repositories.
 Then install the Registry app:
 
 ```
-sudo python-pip install docker-registry[bugsnag]
+sudo python-pip install docker-registry[bugsnag,newrelic]
 ```
 
 (or clone the repository and `pip install .`)
@@ -438,7 +438,7 @@ sudo python-pip install docker-registry[bugsnag]
 #### Run it
 
 ```
-gunicorn --access-logfile - -k gevent -b 0.0.0.0:5000 -w 4 --max-requests 100 docker_registry.wsgi:application
+docker-registry
 ```
 
 ### How do I setup user accounts?
@@ -451,13 +451,6 @@ auth enabled (see `contrib/` for examples).
 
 The recommended setting to run the Registry in a prod environment is gunicorn
 behind a nginx server which supports chunked transfer-encoding (nginx >= 1.3.9).
-
-You could use for instance supervisord to spawn the registry with 8 workers
-using this command:
-
-```
-gunicorn -k gevent --max-requests 100 --graceful-timeout 3600 -t 3600 -b localhost:5000 -w 8 docker_registry.wsgi:application
-```
 
 #### nginx
 
@@ -480,6 +473,20 @@ requests to the Docker Registry:
   ProxyRequests      Off
   ProxyPass          /  http://localhost:5000/
   ProxyPassReverse   /  http://localhost:5000/
+```
+
+#### Advanced start options (NOT recommended)
+
+If you want greater control over gunicorn:
+
+```
+gunicorn -c contrib/gunicorn.py docker_registry.wsgi:application
+```
+
+or even bare
+
+```
+gunicorn --access-logfile - --error-logfile - -k gevent -b 0.0.0.0:5000 -w 4 --max-requests 100 docker_registry.wsgi:application
 ```
 
 For developers

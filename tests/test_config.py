@@ -5,9 +5,10 @@
 # from docker_registry.core import exceptions
 # import docker_registry.testing as testing
 
-import mock
 import os
 import unittest
+
+import mock
 
 from docker_registry.lib import config
 

@@ -1,5 +1,14 @@
 # Docker-registry
 
+## 0.9.0-dev
+
+ * "loose" dependencies mechanism (DEPS=loose environment var will let you install without strictly versioned dependencies)
+ * enhanced python version compatibility
+ * enhanced style checking
+ * enhanced testing
+ * uniformized various gunicorn start stances
+ 
+
 ## 0.8.0
 
  * configuration rehaul: https://github.com/docker/docker-registry/pull/444 - beware this breaks API for the drivers, and the core package has been updated accordingly to denote that

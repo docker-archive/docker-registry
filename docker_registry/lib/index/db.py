@@ -3,15 +3,14 @@
 """An SQLAlchemy backend for the search endpoint
 """
 
+from ... import storage
+from .. import config
+from . import Index
 import sqlalchemy
 import sqlalchemy.exc
 import sqlalchemy.ext.declarative
 import sqlalchemy.orm
 import sqlalchemy.sql.functions
-
-from ... import storage
-from .. import config
-from . import Index
 
 
 Base = sqlalchemy.ext.declarative.declarative_base()

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import argparse
+import argparse  # noqa
+
 import logging
 import os
 
@@ -60,6 +61,7 @@ def get_redis_connection(options):
 
 def handle_request(layer_id, redis_conn):
     '''handler for any item pulled from worker job queue
+
     This handler is called every time the worker is able to pop a message
     from the job queue filled by the registry. The worker blocks until a
     message is available. This handler will then attempt to aquire a lock

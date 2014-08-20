@@ -26,8 +26,8 @@ By default, doesn't run, until one calls init().
 
 import functools
 import logging
-import redis
 
+import redis
 logger = logging.getLogger(__name__)
 
 redis_conn = None
