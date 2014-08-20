@@ -77,5 +77,5 @@ class TestCase(unittest.TestCase):
         resp = self.http_client.get('/v1/images/{0}/json'.format(image_id))
         self.assertEqual(resp.status_code, 200, resp.data)
         self.assertEqual(resp.headers.get('x-docker-size'), str(len(layer)))
-        self.assertEqual(resp.headers['x-docker-payload-checksum'],
+        self.assertEqual(resp.headers['x-docker-checksum-payload'],
                          layer_checksum)
