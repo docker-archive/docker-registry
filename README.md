@@ -435,7 +435,7 @@ Then install the Registry app:
 sudo pip install docker-registry
 ```
 
-If you need extra requirements, like bugsnag, or new-relic specify them:
+If you need extra requirements, like bugsnag or new-relic, specify them:
 
 ```
 sudo pip install docker-registry[bugsnag,newrelic]
