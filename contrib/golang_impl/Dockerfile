@@ -9,7 +9,7 @@ env GOPATH  /go
 env CGO_ENABLED 0
 run cd /tmp && echo 'package main' > t.go && go test -a -i -v
 
-run git clone https://github.com/dotcloud/docker-registry.git /docker-registry.git
+run git clone https://github.com/docker/docker-registry.git /docker-registry.git
 run cd /docker-registry.git/contrib/golang_impl && make && cp bin/docker-registry /usr/local/bin/
 
 expose 80

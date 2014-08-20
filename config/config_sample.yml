@@ -139,7 +139,7 @@ swift: &swift
     swift_region_name: _env:OS_REGION_NAME
 
 # This flavor stores the images in Glance (to integrate with openstack)
-# See also: https://github.com/dotcloud/openstack-docker
+# See also: https://github.com/docker/openstack-docker
 glance: &glance
     <<: *common
     storage: glance
@@ -185,7 +185,7 @@ dev: &dev
 # This flavor is used by unit tests
 test:
     <<: *dev
-    index_endpoint: https://indexstaging-docker.dotcloud.com
+    index_endpoint: https://registry-stage.hub.docker.com
     standalone: true
     storage_path: _env:STORAGE_PATH:./tmp/test
 
