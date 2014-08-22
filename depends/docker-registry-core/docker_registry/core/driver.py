@@ -28,8 +28,10 @@ implementation, for a given scheme.
 
 __all__ = ["fetch", "available", "Base"]
 
+import functools
 import logging
 import pkgutil
+import urllib
 
 import docker_registry.drivers
 
@@ -37,6 +39,26 @@ from .compat import json
 from .exceptions import NotImplementedError
 
 logger = logging.getLogger(__name__)
+
+
+def check(value):
+    value = str(value)
+    if value == '..':
+        value = '%2E%2E'
+    return urllib.quote_plus(value)
+
+
+def filter_args(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        args = list(args)
+        ref = args.pop(0)
+        args = [check(arg) for arg in args]
+        args.insert(0, ref)
+        for key, value in kwargs.iteritems():
+            kwargs[key] = check(value)
+        return f(*args, **kwargs)
+    return wrapper
 
 
 class Base(object):
@@ -59,6 +81,10 @@ class Base(object):
     repositories = 'repositories'
     images = 'images'
 
+    def _repository_path(self, namespace, repository):
+        return '{0}/{1}/{2}'.format(
+            self.repositories, namespace, repository)
+
     # Set the IO buffer to 128kB
     buffer_size = 128 * 1024
     # By default no storage plugin supports it
@@ -68,60 +94,74 @@ class Base(object):
         pass
 
     # FIXME(samalba): Move all path resolver in each module (out of the base)
+    @filter_args
     def images_list_path(self, namespace, repository):
-        repository_path = self.repository_path(
+        repository_path = self._repository_path(
             namespace=namespace, repository=repository)
         return '{0}/_images_list'.format(repository_path)
 
+    @filter_args
     def image_json_path(self, image_id):
         return '{0}/{1}/json'.format(self.images, image_id)
 
+    @filter_args
     def image_mark_path(self, image_id):
         return '{0}/{1}/_inprogress'.format(self.images, image_id)
 
+    @filter_args
     def image_checksum_path(self, image_id):
         return '{0}/{1}/_checksum'.format(self.images, image_id)
 
+    @filter_args
     def image_layer_path(self, image_id):
         return '{0}/{1}/layer'.format(self.images, image_id)
 
+    @filter_args
     def image_ancestry_path(self, image_id):
         return '{0}/{1}/ancestry'.format(self.images, image_id)
 
+    @filter_args
     def image_files_path(self, image_id):
         return '{0}/{1}/_files'.format(self.images, image_id)
 
+    @filter_args
     def image_diff_path(self, image_id):
         return '{0}/{1}/_diff'.format(self.images, image_id)
 
+    @filter_args
     def repository_path(self, namespace, repository):
         return '{0}/{1}/{2}'.format(
             self.repositories, namespace, repository)
 
+    @filter_args
     def tag_path(self, namespace, repository, tagname=None):
-        repository_path = self.repository_path(
+        repository_path = self._repository_path(
             namespace=namespace, repository=repository)
         if not tagname:
             return repository_path
         return '{0}/tag_{1}'.format(repository_path, tagname)
 
+    @filter_args
     def repository_json_path(self, namespace, repository):
-        repository_path = self.repository_path(
+        repository_path = self._repository_path(
             namespace=namespace, repository=repository)
         return '{0}/json'.format(repository_path)
 
+    @filter_args
     def repository_tag_json_path(self, namespace, repository, tag):
-        repository_path = self.repository_path(
+        repository_path = self._repository_path(
             namespace=namespace, repository=repository)
         return '{0}/tag{1}_json'.format(repository_path, tag)
 
+    @filter_args
     def index_images_path(self, namespace, repository):
-        repository_path = self.repository_path(
+        repository_path = self._repository_path(
             namespace=namespace, repository=repository)
         return '{0}/_index_images'.format(repository_path)
 
+    @filter_args
     def private_flag_path(self, namespace, repository):
-        repository_path = self.repository_path(
+        repository_path = self._repository_path(
             namespace=namespace, repository=repository)
         return '{0}/_private'.format(repository_path)
 
