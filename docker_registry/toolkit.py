@@ -273,7 +273,7 @@ def parse_repository_name(f):
         else:
             (namespace, repository) = parts
         repository = urllib.quote_plus(repository)
-        return f(namespace, repository, *args, **kwargs)
+        return f(namespace=namespace, repository=repository, *args, **kwargs)
     return wrapper
 
 
