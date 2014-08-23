@@ -203,7 +203,8 @@ def get_image_layer(image_id, headers):
             bytes_range = _parse_bytes_range()
         repository = toolkit.get_repository()
         if repository and store.is_private(*repository):
-            return toolkit.api_error('Image not found', 404)
+            if not toolkit.validate_parent_access(image_id):
+                return toolkit.api_error('Image not found', 404)
         # If no auth token found, either standalone registry or privileged
         # access. In both cases, access is always "public".
         return _get_image_layer(image_id, headers, bytes_range)
@@ -321,7 +322,8 @@ def get_image_json(image_id, headers):
     try:
         repository = toolkit.get_repository()
         if repository and store.is_private(*repository):
-            return toolkit.api_error('Image not found', 404)
+            if not toolkit.validate_parent_access(image_id):
+                return toolkit.api_error('Image not found', 404)
         # If no auth token found, either standalone registry or privileged
         # access. In both cases, access is always "public".
         return _get_image_json(image_id, headers)
@@ -448,7 +450,8 @@ def get_image_files(image_id, headers):
     try:
         repository = toolkit.get_repository()
         if repository and store.is_private(*repository):
-            return toolkit.api_error('Image not found', 404)
+            if not toolkit.validate_parent_access(image_id):
+                return toolkit.api_error('Image not found', 404)
         # If no auth token found, either standalone registry or privileged
         # access. In both cases, access is always "public".
         data = layers.get_image_files_json(image_id)
@@ -469,7 +472,8 @@ def get_image_diff(image_id, headers):
             return toolkit.api_error('Diff queue is disabled', 400)
         repository = toolkit.get_repository()
         if repository and store.is_private(*repository):
-            return toolkit.api_error('Image not found', 404)
+            if not toolkit.validate_parent_access(image_id):
+                return toolkit.api_error('Image not found', 404)
 
         # first try the cache
         diff_json = layers.get_image_diff_cache(image_id)
