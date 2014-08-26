@@ -45,6 +45,8 @@ def check(value):
     value = str(value)
     if value == '..':
         value = '%2E%2E'
+    if value == '.':
+        value = '%2E'
     return urllib.quote_plus(value)
 
 
