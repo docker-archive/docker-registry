@@ -1,9 +1,10 @@
 # All other flavors inherit the `common' config snippet
 common: &common
+    issue: '"docker-registry server"'
     # Default log level is info
     loglevel: _env:LOGLEVEL:info
-    # Enable the debugging /_versions endpoint
-    debug_versions: _env:DEBUG_VERSIONS:false
+    # Enable debugging (additional informations in the output of the _ping endpoint)
+    debug: _env:DEBUG:false
     # By default, the registry acts standalone (eg: doesn't query the index)
     standalone: _env:STANDALONE:true
     # The default endpoint to use (if NOT standalone) is index.docker.io
@@ -179,7 +180,7 @@ elliptics:
 dev: &dev
     <<: *local
     loglevel: _env:LOGLEVEL:debug
-    debug_versions: _env:DEBUG_VERSIONS:true
+    debug: _env:DEBUG:true
     search_backend: _env:SEARCH_BACKEND:sqlalchemy
 
 # This flavor is used by unit tests

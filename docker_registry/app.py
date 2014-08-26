@@ -3,6 +3,7 @@
 import logging
 import logging.handlers
 import os
+import platform
 import sys
 
 from . import toolkit
@@ -26,24 +27,16 @@ app = flask.Flask('docker-registry')
 @app.route('/_ping')
 @app.route('/v1/_ping')
 def ping():
-    headers = {'X-Docker-Registry-Standalone': cfg.standalone is True}
-    if mirroring.is_mirror():
-        headers['X-Docker-Registry-Standalone'] = 'mirror'
-    return toolkit.response(headers=headers)
+    headers = {
+        'X-Docker-Registry-Standalone': 'mirror' if mirroring.is_mirror()
+                                        else (cfg.standalone is True)
+    }
+    infos = {}
+    if cfg.debug:
+        # Versions
+        versions = infos['versions'] = {}
+        headers['X-Docker-Registry-Config'] = cfg.flavor
 
-
-@app.route('/_versions')
-@app.route('/v1/_versions')
-def versions():
-    """Return a JSON object ({"package-name": "package-version", ...}).
-
-    This is an unofficial endpoint for debugging your docker-registry
-    install.  If you're running a publicly-accessible endpoint, it's
-    probably best to disable this endpoint to avoid leaking
-    implementation details.
-    """
-    versions = {}
-    if cfg.debug_versions:
         for name, module in sys.modules.items():
             if name.startswith('_'):
                 continue
@@ -53,20 +46,17 @@ def versions():
                 continue
             versions[name] = version
         versions['python'] = sys.version
-    return toolkit.response(versions)
+
+        # Hosts infos
+        infos['host'] = platform.uname()
+        infos['launch'] = sys.argv
+
+    return toolkit.response(infos, headers=headers)
 
 
 @app.route('/')
 def root():
-    return toolkit.response('docker-registry server ({0}) (v{1})'
-                            .format(cfg.flavor, __version__))
-
-
-@app.after_request
-def after_request(response):
-    response.headers['X-Docker-Registry-Version'] = __version__
-    response.headers['X-Docker-Registry-Config'] = cfg.flavor
-    return response
+    return toolkit.response(cfg.issue)
 
 
 def bugsnag(application, api_key, flavor, version):
