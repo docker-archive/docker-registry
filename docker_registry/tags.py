@@ -26,9 +26,9 @@ RE_USER_AGENT = re.compile('([^\s/]+)/([^\s/]+)')
 @app.route('/v1/repositories/<path:repository>/properties', methods=['PUT'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
-def set_properties(namespace, repo):
+def set_properties(namespace, repository):
     logger.debug("[set_access] namespace={0}; repository={1}".format(namespace,
-                 repo))
+                 repository))
     data = None
     try:
         # Note(dmp): unicode patch
@@ -37,10 +37,12 @@ def set_properties(namespace, repo):
         pass
     if not data or not isinstance(data, dict):
         return toolkit.api_error('Invalid data')
-    private_flag_path = store.private_flag_path(namespace, repo)
-    if data['access'] == 'private' and not store.is_private(namespace, repo):
+    private_flag_path = store.private_flag_path(namespace, repository)
+    if (data['access'] == 'private'
+       and not store.is_private(namespace, repository)):
         store.put_content(private_flag_path, '')
-    elif data['access'] == 'public' and store.is_private(namespace, repo):
+    elif (data['access'] == 'public'
+          and store.is_private(namespace, repository)):
         # XXX is this necessary? Or do we know for sure the file exists?
         try:
             store.remove(private_flag_path)
@@ -52,10 +54,10 @@ def set_properties(namespace, repo):
 @app.route('/v1/repositories/<path:repository>/properties', methods=['GET'])
 @toolkit.parse_repository_name
 @toolkit.requires_auth
-def get_properties(namespace, repo):
+def get_properties(namespace, repository):
     logger.debug("[get_access] namespace={0}; repository={1}".format(namespace,
-                 repo))
-    is_private = store.is_private(namespace, repo)
+                 repository))
+    is_private = store.is_private(namespace, repository)
     return toolkit.response({
         'access': 'private' if is_private else 'public'
     })
