@@ -230,7 +230,7 @@ def _delete_tag(namespace, repository, tag):
     try:
         delete_tag(namespace=namespace, repository=repository, tag=tag)
     except exceptions.FileNotFoundError:
-        return toolkit.api_error('Tag not found', 404)
+        return toolkit.api_error('Tag not found: %s' % tag, 404)
     return toolkit.response()
 
 
