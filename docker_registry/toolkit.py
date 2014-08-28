@@ -3,13 +3,13 @@
 
 import distutils.version
 import functools
+import hashlib.sha1 as sha1
 import hmac
 import logging
 import random
 import re
 import string
 import urllib
-from hashlib import sha1
 
 import flask
 import requests
@@ -297,6 +297,6 @@ def get_repository():
 def get_endpoints(overcfg=None):
     registry_endpoints = (overcfg or cfg).registry_endpoints
     if not registry_endpoints:
-        #registry_endpoints = socket.gethostname()
+        # registry_endpoints = socket.gethostname()
         registry_endpoints = flask.request.environ['HTTP_HOST']
     return registry_endpoints
