@@ -176,24 +176,9 @@ When using the `config_sample.yml`, you can pass all options through as environm
 
 #### Privileged access
 
-1. `privileged_key`: allows you to make direct requests to the registry by using
-   an RSA key pair. The value is the path to a file containing the public key.
+1. `privileged_key`: allows you to make direct requests to the registry by
+   using HMAC-signed requests. The value is the HMAC key to be used.
    If it is not set, privileged access is disabled.
-
-##### Generating keys with `openssl`
-
-You will need to install the python-rsa package (`pip install rsa`) in addition to using `openssl`.
-Generating the public key using openssl will lead to producing a key in a format not supported by 
-the RSA library the registry is using.
-
-Generate private key:
-
-    openssl genrsa  -out private.pem 2048
-
-Associated public key :
-
-    pyrsa-priv2pub -i private.pem -o public.pem
-
 
 ### Search-engine options
 

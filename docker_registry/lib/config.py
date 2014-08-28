@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import rsa
 import yaml
 
 from docker_registry.core import compat
@@ -99,19 +98,6 @@ def load():
     if flavor:
         _config = _config[flavor]
         _config.flavor = flavor
-
-    if _config.privileged_key:
-        try:
-            f = open(_config.privileged_key)
-        except Exception:
-            raise exceptions.FileNotFoundError(
-                'Heads-up! File is missing: %s' % _config.privileged_key)
-
-        try:
-            _config.privileged_key = rsa.PublicKey.load_pkcs1(f.read())
-        except Exception:
-            raise exceptions.ConfigError(
-                'Key at %s is not a valid RSA key' % _config.privileged_key)
 
     if _config.index_endpoint:
         _config.index_endpoint = _config.index_endpoint.strip('/')

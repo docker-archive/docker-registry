@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 
-import base64
+
 import distutils.version
 import functools
+import hmac
 import logging
 import random
 import re
 import string
 import urllib
+from hashlib import sha1
 
 import flask
 import requests
-import rsa
 
 from docker_registry.core import compat
 json = compat.json
@@ -222,7 +223,7 @@ def check_signature():
         return False
     sig = parse_content_signature(signature)
     logger.debug('Parsed signature: {}'.format(sig))
-    sigdata = base64.b64decode(sig['data'])
+    sigdata = sig['data']
     header_keys = sorted([
         x for x in headers.iterkeys() if x.startswith('X-Docker')
     ])
@@ -230,8 +231,10 @@ def check_signature():
                        ['{}:{}'.format(k, headers[k]) for k in header_keys])
     logger.debug('Signed message: {}'.format(message))
     try:
-        return rsa.verify(message, sigdata, cfg.privileged_key)
-    except rsa.VerificationError:
+        return (
+            hmac.new(cfg.privileged_key, message, sha1).hexdigest() == sigdata
+        )
+    except Exception:
         return False
 
 
