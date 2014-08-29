@@ -66,6 +66,11 @@ def set(f):
         key = args[-2]
         key = cache_key(key)
         try:
+            cached_content = get_by_key(key)
+            if cached_content and cached_content == content:
+                # If cached content is the same as what we are about to
+                # write, we don't need to write again.
+                return args[-2]
             redis_conn.set(key, content)
         except redis.exceptions.ConnectionError as e:
             logging.warning("LRU: Redis connection error: {0}".format(e))
@@ -81,11 +86,7 @@ def get(f):
     def wrapper(*args):
         key = args[-1]
         key = cache_key(key)
-        try:
-            content = redis_conn.get(key)
-        except redis.exceptions.ConnectionError as e:
-            logging.warning("LRU: Redis connection error: {0}".format(e))
-            content = None
+        content = get_by_key(key)
 
         if content is not None:
             return content
@@ -100,6 +101,15 @@ def get(f):
     if redis_conn is None:
         return f
     return wrapper
+
+
+def get_by_key(key):
+    try:
+        content = redis_conn.get(key)
+    except redis.exceptions.ConnectionError as e:
+        logging.warning("LRU: Redis connection error: {0}".format(e))
+        return None
+    return content
 
 
 def remove(f):
