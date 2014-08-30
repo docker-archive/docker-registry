@@ -9,8 +9,8 @@ bind = '%s:%s' % (
     os.environ.get('REGISTRY_HOST', '0.0.0.0'),
     os.environ.get('REGISTRY_PORT', '5000')
 )
-graceful_timeout = int(os.environ.get('GUNICORN_GRACEFUL_TIMEOUT'), 3600)
-timeout = int(os.environ.get('GUNICORN_SILENT_TIMEOUT'), 3600)
+graceful_timeout = int(os.environ.get('GUNICORN_GRACEFUL_TIMEOUT', 3600))
+timeout = int(os.environ.get('GUNICORN_SILENT_TIMEOUT', 3600))
 worker_class = 'gevent'
 max_requests = 100
 workers = int(os.environ.get('GUNICORN_WORKERS', 4))
