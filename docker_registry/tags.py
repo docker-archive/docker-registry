@@ -70,7 +70,9 @@ def get_tags(namespace, repository):
         if not full_tag_name.startswith('tag_'):
             continue
         tag_name = full_tag_name[4:]
-        tag_content = store.get_content(fname)
+        tag_content = store.get_content(
+            store.tag_path(namespace, repository, tag_name)
+        )
         yield (tag_name, tag_content)
 
 
