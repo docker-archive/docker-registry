@@ -53,6 +53,20 @@ common: &common
     # Enable bugsnag (set the API key)
     bugsnag: _env:BUGSNAG
 
+    # CORS support is not enabled by default
+    cors:
+        origins: _env:CORS_ORIGINS:["null"]
+        methods: _env:CORS_METHODS
+        headers: _env:CORS_HEADERS:[Content-Type]
+        expose_headers: _env:CORS_EXPOSE_HEADERS
+        supports_credentials: _env:CORS_SUPPORTS_CREDENTIALS
+        max_age: _env:CORS_MAX_AGE
+        send_wildcard: _env:CORS_SEND_WILDCARD
+        always_send: _env:CORS_ALWAYS_SEND
+        automatic_options: _env:CORS_AUTOMATIC_OPTIONS
+        vary_header: _env:CORS_VARY_HEADER
+        resources: _env:CORS_RESOURCES
+
 local: &local
     <<: *common
     storage: local

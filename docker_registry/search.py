@@ -5,7 +5,6 @@ from .app import app
 from .lib import config
 from .lib import index
 import flask
-import flask_cors
 
 
 cfg = config.load()
@@ -18,7 +17,6 @@ else:
 
 
 @app.route('/v1/search', methods=['GET'])
-@flask_cors.cross_origin(methods=['GET'])  # allow all origins (*)
 def get_search():
     search_term = flask.request.args.get('q', '')
     if INDEX is None:
