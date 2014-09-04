@@ -7,10 +7,10 @@ import sys
 
 from . import toolkit
 from .extras import bugsnag
+from .extras import cors
 from .lib import config
 from .server import __version__
 import flask
-from flask.ext.cors import CORS  # noqa
 
 # configure logging prior to subsequent imports which assume
 # logging has been configured
@@ -79,11 +79,10 @@ def init():
             secure=secure_args)
         mail_handler.setLevel(logging.ERROR)
         app.logger.addHandler(mail_handler)
+    # Optional bugsnag support
     bugsnag.boot(app, cfg.bugsnag, cfg.flavor, __version__)
-    # Configure flask_cors
-    for i in cfg.cors.keys():
-        app.config['CORS_%s' % i.upper()] = cfg.cors[i]
-    CORS(app)
+    # Optional cors support
+    cors.boot(app, cfg.cors)
 
 
 def _adapt_smtp_secure(value):

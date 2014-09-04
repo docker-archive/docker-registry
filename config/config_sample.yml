@@ -56,7 +56,7 @@ common: &common
 
     # CORS support is not enabled by default
     cors:
-        origins: _env:CORS_ORIGINS:["null"]
+        origins: _env:CORS_ORIGINS
         methods: _env:CORS_METHODS
         headers: _env:CORS_HEADERS:[Content-Type]
         expose_headers: _env:CORS_EXPOSE_HEADERS

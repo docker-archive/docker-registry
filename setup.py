@@ -98,5 +98,6 @@ setuptools.setup(
     extras_require={
         'bugsnag': ['bugsnag>=2.0,<2.1'],
         'newrelic': ['newrelic>=2.22,<2.23'],
+        'cors': ['Flask-cors>=1.8,<2.0'],
     }
 )
