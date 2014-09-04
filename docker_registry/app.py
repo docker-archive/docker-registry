@@ -2,11 +2,11 @@
 
 import logging
 import logging.handlers
-import os
 import platform
 import sys
 
 from . import toolkit
+from .extras import bugsnag
 from .lib import config
 from .server import __version__
 import flask
@@ -59,22 +59,6 @@ def root():
     return toolkit.response(cfg.issue)
 
 
-def bugsnag(application, api_key, flavor, version):
-    # Configure bugsnag
-    if api_key:
-        import bugsnag
-        import bugsnag.flask
-
-        root_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-        bugsnag.configure(api_key=api_key,
-                          project_root=root_path,
-                          release_stage=flavor,
-                          notify_release_stages=[flavor],
-                          app_version=version
-                          )
-        bugsnag.flask.handle_exceptions(application)
-
-
 def init():
     # Configure the email exceptions
     info = cfg.email_exceptions
@@ -95,7 +79,7 @@ def init():
             secure=secure_args)
         mail_handler.setLevel(logging.ERROR)
         app.logger.addHandler(mail_handler)
-    bugsnag(app, cfg.bugsnag, cfg.flavor, __version__)
+    bugsnag.boot(app, cfg.bugsnag, cfg.flavor, __version__)
     # Configure flask_cors
     for i in cfg.cors.keys():
         app.config['CORS_%s' % i.upper()] = cfg.cors[i]

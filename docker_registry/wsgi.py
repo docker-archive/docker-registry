@@ -3,17 +3,9 @@
 
 import logging
 
+from .extras import newrelic
 from .server import env
-
-_new_relic_ini = env.source('NEW_RELIC_INI')
-if _new_relic_ini:
-    try:
-        import newrelic.agent
-        newrelic.agent.initialize(
-            _new_relic_ini,
-            env.source('NEW_RELIC_STAGE'))
-    except Exception as e:
-        raise(Exception('Failed to init new relic agent %s' % e))
+newrelic.boot(env.source('NEW_RELIC_INI'), env.source('NEW_RELIC_STAGE'))
 
 from .extensions import factory
 factory.boot()
