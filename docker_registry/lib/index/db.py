@@ -32,8 +32,10 @@ class Repository (Base):
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     name = sqlalchemy.Column(
-        sqlalchemy.String, nullable=False, unique=True)
-    description = sqlalchemy.Column(sqlalchemy.String)
+        sqlalchemy.String(length=30 + 1 + 64),  # namespace / respository
+        nullable=False, unique=True)
+    description = sqlalchemy.Column(
+        sqlalchemy.String(length=100))
 
     def __repr__(self):
         return "<{0}(name='{1}', description='{2}')>".format(
@@ -61,10 +63,10 @@ class SQLAlchemyIndex (Index):
 
     def _setup_database(self):
         session = self._session()
-        try:
+        if self._engine.has_table(table_name=Version.__tablename__):
             version = session.query(
                 sqlalchemy.sql.functions.max(Version.id)).first()[0]
-        except sqlalchemy.exc.OperationalError:
+        else:
             version = None
         if version:
             if version != self.version:
