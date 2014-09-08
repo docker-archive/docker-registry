@@ -33,6 +33,7 @@ Note the bugsnag "stage" will be set to the specified configuration "flavor".
 This encapsulate your registry inside the new-relic agent.
 
 You need to write a new-relic ini file, then use the following environment variables:
+
  * `NEW_RELIC_INI` to point to your ini file
  * `NEW_RELIC_STAGE` to specify what stage you want
 
