@@ -2,7 +2,8 @@
 
 from __future__ import print_function
 
-import argparse
+import argparse  # noqa
+
 import distutils.spawn
 import getpass
 import logging
