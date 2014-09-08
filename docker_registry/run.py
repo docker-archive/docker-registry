@@ -2,31 +2,14 @@
 
 from __future__ import print_function
 
-# this must happen before anything else
-import gevent.monkey
-gevent.monkey.patch_all()
-
-from argparse import ArgumentParser  # noqa
-from argparse import RawTextHelpFormatter  # noqa
-
+import argparse
 import distutils.spawn
 import getpass
 import logging
 import os
 import sys
 
-from .app import app  # noqa
-from .tags import *  # noqa
-from .images import *  # noqa
-from .lib import config
 from .server import env
-from .status import *  # noqa
-from .search import *  # noqa
-
-cfg = config.load()
-if cfg.standalone:
-    # If standalone mode is enabled, load the fake Index routes
-    from .index import *  # noqa
 
 
 logger = logging.getLogger(__name__)
@@ -54,8 +37,9 @@ def run_gunicorn():
     """
 
     # this only exists to provide help/usage text
-    parser = ArgumentParser(description=DESCRIPTION,
-                            formatter_class=RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=DESCRIPTION,
+        formatter_class=argparse.RawTextHelpFormatter)
     parser.parse_args()
 
     gunicorn_path = distutils.spawn.find_executable('gunicorn')
