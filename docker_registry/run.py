@@ -6,14 +6,11 @@ import argparse  # noqa
 
 import distutils.spawn
 import getpass
-import logging
 import os
 import sys
 
 from .server import env
 
-
-logger = logging.getLogger(__name__)
 
 DESCRIPTION = """run the docker-registry with gunicorn, honoring the following
 environment variables:
@@ -45,7 +42,7 @@ def run_gunicorn():
 
     gunicorn_path = distutils.spawn.find_executable('gunicorn')
     if not gunicorn_path:
-        print('error: gunicorn executable not found', file=sys.stderr)
+        print('ERROR: gunicorn executable not found', file=sys.stderr)
         sys.exit(1)
 
     address = '%s:%s' % (
@@ -65,7 +62,7 @@ def run_gunicorn():
         '-b', address,
     ]
 
-    if env.source('SETTINGS_FLAVOR') != 'prod':
+    if env.source('DEBUG'):
         args.append('--reload')
 
     user = env.source('GUNICORN_USER')
@@ -73,16 +70,19 @@ def run_gunicorn():
     if user or group:
         if getpass.getuser() == 'root':
             if user:
-                logger.info('Downgrading privs to user %s' % user)
+                print('INFO: Downgrading privs to user %s' % user,
+                      file=sys.stdout)
                 args.append('-u')
                 args.append(user)
 
             if group:
-                logger.info('Downgrading privs to group %s' % user)
+                print('INFO: Downgrading privs to group %s' % user,
+                      file=sys.stdout)
                 args.append('-g')
                 args.append(group)
         else:
-            logger.warn('You asked we drop priviledges, but we are not root!')
+            print('WARNING: You asked we drop priviledges, but are not root!',
+                  file=sys.stderr)
 
     args += env.source('GUNICORN_OPTS')
     args.append('docker_registry.wsgi:application')
