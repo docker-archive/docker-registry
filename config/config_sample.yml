@@ -1,6 +1,6 @@
 # All other flavors inherit the `common' config snippet
 common: &common
-    issue: '"docker-registry server"'
+    issue: docker-registry server
     # Default log level is info
     loglevel: _env:LOGLEVEL:info
     # Enable debugging (additional informations in the output of the _ping endpoint)
@@ -50,6 +50,7 @@ common: &common
         smtp_secure: _env:SMTP_SECURE:false
         from_addr: _env:SMTP_FROM_ADDR:docker-registry@localdomain.local
         to_addr: _env:SMTP_TO_ADDR:noise+dockerregistry@localdomain.local
+        subject: _env:SMTP_SUBJECT:Docker registry exception
 
     # Enable bugsnag (set the API key)
     bugsnag: _env:BUGSNAG

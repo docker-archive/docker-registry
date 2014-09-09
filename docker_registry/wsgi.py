@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# only needed if not using gunicorn gevent
+# Needs to happen before anything else, but only needed if not using gevent
 if __name__ == '__main__':
     import gevent.monkey
     gevent.monkey.patch_all()
@@ -14,21 +14,28 @@ newrelic.boot(env.source('NEW_RELIC_CONFIG_FILE'),
               env.source('NEW_RELIC_LICENSE_KEY'))
 factory.boot()
 
-import logging
+from .server import log
 
-from .app import app  # noqa
-from .tags import *  # noqa
-from .images import *  # noqa
+# Start new relic if instructed to do so
+newrelic.boot(env.source('NEW_RELIC_INI'), env.source('NEW_RELIC_STAGE'))
+
+# Get configuration
 from .lib import config
-
 cfg = config.load()
 
-if cfg.search_backend:
-    from .search import *  # noqa
+# Setup logging
+log.setup(cfg.loglevel, cfg.email_exceptions)
 
+# Get the main app and the other routes
+from .app import app
+from . import images  # noqa
+from . import tags  # noqa
+# If search is enabled, add the route
+if cfg.search_backend:
+    from . import search  # noqa
+# If standalone mode is enabled, load the fake Index routes
 if cfg.standalone:
-    # If standalone mode is enabled, load the fake Index routes
-    from .index import *  # noqa
+    from . import index  # noqa
 
 if __name__ == '__main__':
     host = env.source('REGISTRY_HOST')
@@ -36,14 +43,4 @@ if __name__ == '__main__':
     app.debug = cfg.debug
     app.run(host=host, port=port)
 else:
-    level = cfg.loglevel.upper()
-    if not hasattr(logging, level):
-        level = 'INFO'
-    level = getattr(logging, level)
-    app.logger.setLevel(level)
-    stderr_logger = logging.StreamHandler()
-    stderr_logger.setLevel(level)
-    stderr_logger.setFormatter(
-        logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))
-    app.logger.addHandler(stderr_logger)
     application = app

@@ -8,16 +8,8 @@ import logging
 from docker_registry.core import compat
 json = compat.json
 
-
-class NullHandler(logging.Handler):
-    """A logging handler that discards all logging records."""
-    def emit(self, record):
-        pass
-
-
 # Clients can add handlers if they are interested.
-log = logging.getLogger('qr')
-log.addHandler(NullHandler())
+log = logging.getLogger(__name__)
 
 
 class worker(object):

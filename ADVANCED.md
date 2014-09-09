@@ -220,10 +220,12 @@ Settings these options makes the Registry send an email on each code Exception:
   1. `smtp_port`: port number to connect to using SMTP
   1. `smtp_login`: username to use when connecting to authenticated SMTP
   1. `smtp_password`: password to use when connecting to authenticated SMTP
-  1. `smtp_secure`: boolean, true for TLS to using SMTP. this could be a path
-                    to the TLS key file for client authentication.
+  1. `smtp_secure`: boolean, true to use TLS (this is the default) (note you need to use it for gmail).
   1. `from_addr`: email address to use when sending email
-  1. `to_addr`: email address to send exceptions to
+  1. `to_addr`: email address(es) to send exceptions to. Can be a single address (eg: `foo@bar.com`), or an array of addresses (eg: `[foo@bar.com, baz@bar.com]`).
+  1. `subject`: subject line of the email
+
+Note the smtp_secure support for `keyfile` and `certfile` for client certificate auth (see http://docs.python.org/2/library/smtplib.html#smtplib.SMTP.starttls) is pending removal. If you use it, open a ticket.
 
 Example:
 
