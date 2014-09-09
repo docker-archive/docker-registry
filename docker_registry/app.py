@@ -4,30 +4,31 @@ import platform
 import sys
 
 from . import toolkit
-from .extras import bugsnag
-from .extras import cors
 from .lib import config
-from .server import __version__
 import flask
 
-from .lib import mirroring  # noqa
-
 app = flask.Flask('docker-registry')
+cfg = config.load()
 
 
 @app.route('/_ping')
 @app.route('/v1/_ping')
 def ping():
+    # Both these are used by the docker engine to determine behavior
     headers = {
-        'X-Docker-Registry-Standalone': 'mirror' if mirroring.is_mirror()
-                                        else (cfg.standalone is True)
+        'X-Docker-Registry-Standalone':
+        'mirror' if cfg.mirroring and cfg.mirroring.source
+        else cfg.standalone is True
     }
     infos = {}
+
+    # If debugging, output a bunch of infos in the body
     if cfg.debug:
-        # Versions
-        versions = infos['versions'] = {}
+        # Config flavor
         headers['X-Docker-Registry-Config'] = cfg.flavor
 
+        # Versions
+        versions = infos['versions'] = {}
         for name, module in sys.modules.items():
             if name.startswith('_'):
                 continue

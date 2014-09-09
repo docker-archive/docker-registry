@@ -37,10 +37,14 @@ if cfg.search_backend:
 if cfg.standalone:
     from . import index  # noqa
 
+# Optional bugsnag support
+bugsnag.boot(app, cfg.bugsnag, cfg.flavor, __version__)
+
+# Optional cors support
+cors.boot(app, cfg.cors)
+
+# Run standalone, or under gunicorn
 if __name__ == '__main__':
-    host = env.source('REGISTRY_HOST')
-    port = env.source('REGISTRY_PORT')
-    app.debug = cfg.debug
-    app.run(host=host, port=port)
+    app.run(host=env.source('REGISTRY_HOST'), port=env.source('REGISTRY_PORT'))
 else:
     application = app
