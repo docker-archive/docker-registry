@@ -16,7 +16,7 @@ from . import toolkit
 from .lib import config
 from .server import __version__
 import flask
-from flask.ext.cors import CORS
+from flask.ext.cors import CORS  # noqa
 
 # configure logging prior to subsequent imports which assume
 # logging has been configured
