@@ -139,7 +139,8 @@ class Base(driver.Base):
         config_args = [
             'host', 'port', 'debug',
             'proxy', 'proxy_port',
-            'proxy_user', 'proxy_pass'
+            'proxy_user', 'proxy_pass',
+            'calling_format'
         ]
         for arg in config_args:
             confkey = 'boto_' + arg
