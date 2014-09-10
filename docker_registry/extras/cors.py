@@ -4,9 +4,9 @@
 def boot(application, config):
     if config and config['origins']:
         try:
-            from flask.ext.cors import CORS
+            import flask.ext.cors as cors
             for i in config.keys():
                 application.config['CORS_%s' % i.upper()] = config[i]
-            CORS(application)
+            cors.CORS(application)
         except Exception as e:
             raise Exception('Failed to init cors support %s' % e)

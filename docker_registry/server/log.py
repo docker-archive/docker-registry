@@ -12,8 +12,8 @@ def _adapt_smtp_secure(value):
 
     """
     if isinstance(value, dict):
-        logging.warning('Key/cert support is deprecated. If you use it\
-            open a ticket on https://github.com/docker/docker-registry')
+        logging.warning("""Key/cert support is deprecated. If you use it open
+                    a ticket on https://github.com/docker/docker-registry""")
         assert set(value.keys()) == set(['keyfile', 'certfile'])
         return (value.keyfile, value.certfile)
     if value:

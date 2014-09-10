@@ -27,9 +27,11 @@ cfg = config.load()
 log.setup(cfg.loglevel, cfg.email_exceptions)
 
 # Get the main app and the other routes
-from .app import app
+from .app import app  # noqa
+
 from . import images  # noqa
 from . import tags  # noqa
+
 # If search is enabled, add the route
 if cfg.search_backend:
     from . import search  # noqa
