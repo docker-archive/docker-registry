@@ -28,8 +28,9 @@ class TestSQLAlchemyIndex(unittest.TestCase):
     def setUp(self):
         self.index = db.SQLAlchemyIndex(database="sqlite://")
 
+    @mock.patch('sqlalchemy.engine.Engine.has_table', return_value=True)
     @mock.patch('sqlalchemy.orm.query.Query.first')
-    def test_setup_database(self, first):
+    def test_setup_database(self, first, has_table):
         first = mock.Mock(  # noqa
             side_effect=db.sqlalchemy.exc.OperationalError)
         self.assertRaises(
