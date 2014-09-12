@@ -74,14 +74,14 @@ def run_gunicorn():
         '--error-logfile', env.source('GUNICORN_ERROR_LOG_FILE'),
         '--max-requests', '100',
         '-k', 'gevent',
-        '--reload', False if env.source('SETTINGS_FLAVOR') == 'prod' else True,
         '--graceful-timeout', env.source('GUNICORN_GRACEFUL_TIMEOUT'),
         '-t', env.source('GUNICORN_SILENT_TIMEOUT'),
         '-w', env.source('GUNICORN_WORKERS'),
         '-b', address,
-    ] + env.source('GUNICORN_OPTS') + [
-        'docker_registry.wsgi:application'
     ]
+
+    if env.source('SETTINGS_FLAVOR') != 'prod':
+        args.append('--reload')
 
     user = env.source('GUNICORN_USER')
     group = env.source('GUNICORN_GROUP')
@@ -99,5 +99,7 @@ def run_gunicorn():
         else:
             logger.warn('You asked we drop priviledges, but we are not root!')
 
+    args += env.source('GUNICORN_OPTS')
+    args.append('docker_registry.wsgi:application')
     # Stringify all args and call
     os.execl(*[str(v) for v in args])
