@@ -11,7 +11,7 @@ As the documentation evolves with different registry versions, be sure that befo
  * check which version of the registry you are running
  * switch to the corresponding tag to access the README that matches your product version
 
-The stable, released version is currently the [0.8.0 tag](https://github.com/docker/docker-registry/tree/0.8.0).
+The stable, released version is currently the [0.8.1 tag](https://github.com/docker/docker-registry/tree/0.8.1).
 
 
 Quick start
