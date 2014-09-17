@@ -208,14 +208,17 @@ def put_tag(namespace, repository, tag):
 def delete_tag(namespace, repository, tag):
     logger.debug("[delete_tag] namespace={0}; repository={1}; tag={2}".format(
                  namespace, repository, tag))
-    store.remove(store.tag_path(namespace, repository, tag))
+    tag_path = store.tag_path(namespace, repository, tag)
+    image = store.get_content(path=tag_path)
+    store.remove(tag_path)
     store.remove(store.repository_tag_json_path(namespace, repository,
                                                 tag))
     sender = flask.current_app._get_current_object()
     if tag == "latest":  # TODO(wking) : deprecate this for v2
         store.remove(store.repository_json_path(namespace, repository))
     signals.tag_deleted.send(
-        sender, namespace=namespace, repository=repository, tag=tag)
+        sender, namespace=namespace, repository=repository, tag=tag,
+        image=image)
 
 
 @app.route('/v1/repositories/<path:repository>/tags/<tag>',
