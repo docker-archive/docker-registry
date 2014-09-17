@@ -1,3 +1,7 @@
+This is the open-source Docker registry implementation.  If you have
+issues with the closed-source [hub][], please report them to
+`support-index@docker.com` instead of here.
+
 # Docker-Registry for developers
 
 ## Bare minimum
@@ -110,3 +114,4 @@ We don't currently run any tests for python3, as we are stuck on gevent not bein
 
 On OSX, in order for the dependencies to compile properly (inside tox venv) you might need to have extra include and lib specified. Environment variables are provided for that, namely $TOX_INCLUDE and $TOX_LIB.
 
+[hub]: https://registry.hub.docker.com/
