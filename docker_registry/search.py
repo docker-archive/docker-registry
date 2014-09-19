@@ -4,6 +4,7 @@ from . import toolkit
 from .app import app
 from .lib import config
 from .lib import index
+from .lib import mirroring
 import flask
 
 
@@ -17,6 +18,7 @@ else:
 
 
 @app.route('/v1/search', methods=['GET'])
+@mirroring.source_lookup(index_route=True, merge_results=True)
 def get_search():
     search_term = flask.request.args.get('q', '')
     if INDEX is None:
