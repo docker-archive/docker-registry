@@ -21,22 +21,23 @@ requirements = [line for line in requirements_txt]
 
 if ver < (3, 0):
     # Python 2 requires lzma backport
-    requirements.insert(0, 'backports.lzma>=0.0.2,!=0.0.4')
+    requirements.insert(0, 'backports.lzma==0.0.3,!=0.0.4')
     if ver < (2, 7):
         # Python 2.6 requires additional libraries
-        requirements.insert(0, 'argparse>=1.2.1')
-        requirements.insert(0, 'importlib>=1.0.3')
+        requirements.insert(0, 'argparse==1.2.1')
+        requirements.insert(0, 'importlib==1.0.3')
 
 # Using this will relax dependencies to semver major matching
 if 'DEPS' in os.environ and os.environ['DEPS'].lower() == 'loose':
     loose = []
     for item in requirements:
-        d = re.match(r'([^=]+)==([0-9]+)[.]([0-9]+)[.]([0-9]+)', item)
+        d = re.match(r'([^=]+)==([0-9]+)[.]([0-9]+)(?:[.]([0-9]+))?(.*)', item)
         if d:
             d = list(d.groups())
             name = d.pop(0)
             version = d.pop(0)
-            item = '%s>=%s,<%s' % (name, int(version), int(version) + 1)
+            add = d.pop()
+            item = '%s>=%s,<%s%s' % (name, int(version), int(version) + 1, add)
         loose.insert(0, item)
     requirements = loose
 
