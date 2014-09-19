@@ -154,7 +154,7 @@ docker-registry
 If you want greater control over gunicorn:
 
 ```
-gunicorn -c contrib/gunicorn.py docker_registry.wsgi:application
+gunicorn -c contrib/gunicorn_config.py docker_registry.wsgi:application
 ```
 
 or even bare
