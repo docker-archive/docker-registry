@@ -7,12 +7,11 @@ if __name__ == '__main__':
     gevent.monkey.patch_all()
 
 # start new relic if instructed to do so
+from .extensions import factory
 from .extras import newrelic
 from .server import env
 newrelic.boot(env.source('NEW_RELIC_CONFIG_FILE'),
               env.source('NEW_RELIC_LICENSE_KEY'))
-
-from .extensions import factory
 factory.boot()
 
 import logging

@@ -94,7 +94,7 @@ def _init():
 
     conf = Config(f.read())
     if flavor:
-        if not flavor in conf:
+        if flavor not in conf:
             raise exceptions.ConfigError(
                 'The specified flavor (%s) is missing in your config file (%s)'
                 % (flavor, config_path))
