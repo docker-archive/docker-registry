@@ -454,9 +454,9 @@ behind a nginx server which supports chunked transfer-encoding (nginx >= 1.3.9).
 
 #### nginx
 
-[Here is an nginx configuration file example.](https://github.com/docker/docker-registry/blob/master/contrib/nginx.conf), which applies to versions < 1.3.9 which are compiled with the [HttpChunkinModule](http://wiki.nginx.org/HttpChunkinModule). 
+[Here is an nginx configuration file example.](https://github.com/docker/docker-registry/blob/master/contrib/nginx/nginx.conf), which applies to versions < 1.3.9 which are compiled with the [HttpChunkinModule](http://wiki.nginx.org/HttpChunkinModule). 
 
-[This is another example nginx configuration file](https://github.com/docker/docker-registry/blob/master/contrib/nginx_1-3-9.conf) that applies to versions of nginx greater than 1.3.9 that have support for the chunked_transfer_encoding directive.
+[This is another example nginx configuration file](https://github.com/docker/docker-registry/blob/master/contrib/nginx/nginx_1-3-9.conf) that applies to versions of nginx greater than 1.3.9 that have support for the chunked_transfer_encoding directive.
 
 And you might want to add
 [Basic auth on Nginx](http://wiki.nginx.org/HttpAuthBasicModule) to protect it
