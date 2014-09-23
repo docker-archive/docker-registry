@@ -1,2 +1,3 @@
 boto==2.32.1
 redis==2.10.3
+setuptools==5.8
