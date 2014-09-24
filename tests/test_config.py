@@ -32,8 +32,13 @@ class TestConfig(unittest.TestCase):
 
         self.c = config.Config(open(p, 'rb').read())
 
-    def test__init__(self):
+    def test__init__parse_error(self):
         self.assertRaises(config.exceptions.ConfigError, config.Config, '\1')
+
+    def test__init__no_arg(self):
+        self.c = config.Config()
+        assert self.c['whatevertheflush'] is None
+        assert self.c.whatevertheflush is None
 
     @mock.patch('__builtin__.repr')
     def test__repr(self, r):

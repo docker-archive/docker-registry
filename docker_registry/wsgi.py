@@ -15,6 +15,8 @@ if _new_relic_ini:
     except Exception as e:
         raise(Exception('Failed to init new relic agent %s' % e))
 
+from .extensions import factory
+factory.boot()
 from .run import app
 
 if __name__ == '__main__':

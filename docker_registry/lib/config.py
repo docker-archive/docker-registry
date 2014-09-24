@@ -17,17 +17,19 @@ class Config(object):
      * interpolate from ENV
     """
 
-    def __init__(self, config=''):
-        try:
+    def __init__(self, config=None):
+        if config is None:
+            config = {}
+        if isinstance(config, compat.basestring):
+            try:
+                self._config = yaml.load(config)
+            except Exception as e:
+                # Failed yaml loading? Stop here!
+                raise exceptions.ConfigError(
+                    'Config is not valid yaml (%s): \n%s' % (e, config))
+        else:
             # Config is kept as-is...
             self._config = config
-            # ... save Strings, that are yaml loaded
-            if isinstance(config, compat.basestring):
-                self._config = yaml.load(config)
-        except Exception as e:
-            # Failed yaml loading? Stop here!
-            raise exceptions.ConfigError(
-                'Config is not valid yaml (%s): \n%s' % (e, config))
 
     def __repr__(self):
         return repr(self._config)
@@ -77,14 +79,7 @@ class Config(object):
         return key in self._config
 
 
-_config = None
-
-
-def load():
-    global _config
-    if _config is not None:
-        return _config
-
+def _init():
     flavor = os.environ.get('SETTINGS_FLAVOR', 'dev')
     config_path = os.environ.get('DOCKER_REGISTRY_CONFIG', 'config.yml')
 
@@ -97,25 +92,36 @@ def load():
         raise exceptions.FileNotFoundError(
             'Heads-up! File is missing: %s' % config_path)
 
-    _config = Config(f.read())
+    conf = Config(f.read())
     if flavor:
-        _config = _config[flavor]
-        _config.flavor = flavor
+        conf = conf[flavor]
+        conf.flavor = flavor
 
-    if _config.privileged_key:
+    if conf.privileged_key:
         try:
-            f = open(_config.privileged_key)
+            f = open(conf.privileged_key)
         except Exception:
             raise exceptions.FileNotFoundError(
-                'Heads-up! File is missing: %s' % _config.privileged_key)
+                'Heads-up! File is missing: %s' % conf.privileged_key)
 
         try:
-            _config.privileged_key = rsa.PublicKey.load_pkcs1(f.read())
+            conf.privileged_key = rsa.PublicKey.load_pkcs1(f.read())
         except Exception:
             raise exceptions.ConfigError(
-                'Key at %s is not a valid RSA key' % _config.privileged_key)
+                'Key at %s is not a valid RSA key' % conf.privileged_key)
 
-    if _config.index_endpoint:
-        _config.index_endpoint = _config.index_endpoint.strip('/')
+    if conf.index_endpoint:
+        conf.index_endpoint = conf.index_endpoint.strip('/')
+
+    return conf
+
+_config = None
+
+
+def load():
+    global _config
+
+    if not _config:
+        _config = _init()
 
     return _config
