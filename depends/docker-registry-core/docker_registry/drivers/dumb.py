@@ -122,7 +122,10 @@ class Storage(driver.Base):
         ls = []
         for k in self._storage.keys():
             if (not k == path) and k.startswith(path or ''):
-                ls.append(k)
+                prefix = '/'
+                if not k.startswith('/'):
+                    prefix = ''
+                ls.append(prefix + "/".join(k.lstrip("/").split("/")[0:2]))
 
         if not len(ls):
             raise exceptions.FileNotFoundError('%s is not there' % path)
