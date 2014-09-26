@@ -22,6 +22,7 @@ import string
 from ..core import compat
 from ..core import driver
 from ..core import exceptions
+from nose import SkipTest  # noqa
 from nose import tools
 
 logger = logging.getLogger(__name__)
@@ -284,6 +285,8 @@ class Driver(object):
                       ) == sorted(list(self._storage.list_directory(base)))
 
     def test_list_directory_with_subdir(self):
+        if self.scheme == 's3':
+            raise SkipTest("Check GH #596.")
         base = self.gen_random_string()
         dir1 = self.gen_random_string()
         dir2 = self.gen_random_string()
