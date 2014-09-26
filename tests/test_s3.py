@@ -2,7 +2,6 @@
 
 import StringIO
 import sys
-
 import time
 
 from nose import tools
@@ -155,11 +154,11 @@ class TestDriver(testing.Driver):
         content = self._storage.get_content("/FOO")
 
         waitTime = time.time() - startTime
-        assert waitTime >= 0.1, "Waiting time was less than %sms " \
-                                "(actual : %sms)" % \
-                                (0.1 * 1000, waitTime * 1000)
-        assert content == "Foo bar", "expected : %s; actual: %s" % \
-                                     ("Foo bar", content)
+        assert waitTime >= 0.1, ("Waiting time was less than %sms "
+                                 "(actual : %sms)" %
+                                 (0.1 * 1000, waitTime * 1000))
+        assert content == "Foo bar", ("expected : %s; actual: %s" %
+                                      ("Foo bar", content))
 
     @tools.raises(exceptions.FileNotFoundError)
     def test_too_many_read_retries(self):
