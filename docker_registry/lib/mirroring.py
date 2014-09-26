@@ -3,6 +3,9 @@
 import functools
 import logging
 
+from docker_registry.core import compat
+json = compat.json
+
 from .. import storage
 from .. import toolkit
 from . import cache
@@ -40,11 +43,12 @@ def lookup_source(path, stream=False, source=None):
     for k, v in flask.request.headers.iteritems():
         if k.lower() != 'location' and k.lower() != 'host':
             headers[k] = v
-    logger.debug('Request: GET {0}\nHeaders: {1}'.format(
-        source_url, headers
+    logger.debug('Request: GET {0}\nHeaders: {1}\nArgs: {2}'.format(
+        source_url, headers, flask.request.args
     ))
     source_resp = requests.get(
         source_url,
+        params=flask.request.args,
         headers=headers,
         cookies=flask.request.cookies,
         stream=stream
@@ -132,7 +136,8 @@ def source_lookup_tag(f):
     return wrapper
 
 
-def source_lookup(cache=False, stream=False, index_route=False):
+def source_lookup(cache=False, stream=False, index_route=False,
+                  merge_results=False):
     def decorator(f):
         @functools.wraps(f)
         def wrapper(*args, **kwargs):
@@ -144,7 +149,7 @@ def source_lookup(cache=False, stream=False, index_route=False):
             if index_route and mirroring_cfg.source_index:
                 source = mirroring_cfg.source_index
             logger.debug('Source provided, registry acts as mirror')
-            if resp.status_code != 404:
+            if resp.status_code != 404 and not merge_results:
                 logger.debug('Status code is not 404, no source '
                              'lookup required')
                 return resp
@@ -163,6 +168,19 @@ def source_lookup(cache=False, stream=False, index_route=False):
             if not stream:
                 logger.debug('JSON data found on source, writing response')
                 resp_data = source_resp.content
+                if merge_results:
+                    mjson = json.loads(resp_data)
+                    pjson = json.loads(resp.data)
+                    for mr in mjson["results"]:
+                        replaced = False
+                        for pi, pr in enumerate(pjson["results"]):
+                            if pr["name"] == mr["name"]:
+                                pjson["results"][pi] = mr
+                                replaced = True
+                        if not replaced:
+                            pjson["results"].extend([mr])
+                    pjson['num_results'] = len(pjson["results"])
+                    resp_data = json.dumps(pjson)
                 if cache:
                     store_mirrored_data(
                         resp_data, flask.request.url_rule.rule, kwargs,
