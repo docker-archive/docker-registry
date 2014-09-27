@@ -2,6 +2,7 @@
 
 import StringIO
 import sys
+import time
 
 from nose import tools
 
@@ -137,3 +138,38 @@ class TestDriver(testing.Driver):
 
         tag_content = store.get_content(tag_path)
         assert tag_content == 'randomdata'
+
+    def test_consistency_latency(self):
+        self.testCount = -1
+        mockKey = mock_boto.Key()
+
+        def mockExists():
+            self.testCount += 1
+            return self.testCount == 1
+        mockKey.exists = mockExists
+        mockKey.get_contents_as_string = lambda: "Foo bar"
+        self._storage.makeKey = lambda x: mockKey
+        startTime = time.time()
+
+        content = self._storage.get_content("/FOO")
+
+        waitTime = time.time() - startTime
+        assert waitTime >= 0.1, ("Waiting time was less than %sms "
+                                 "(actual : %sms)" %
+                                 (0.1 * 1000, waitTime * 1000))
+        assert content == "Foo bar", ("expected : %s; actual: %s" %
+                                      ("Foo bar", content))
+
+    @tools.raises(exceptions.FileNotFoundError)
+    def test_too_many_read_retries(self):
+        self.testCount = -1
+        mockKey = mock_boto.Key()
+
+        def mockExists():
+            self.testCount += 1
+            return self.testCount == 5
+        mockKey.exists = mockExists
+        mockKey.get_contents_as_string = lambda: "Foo bar"
+        self._storage.makeKey = lambda x: mockKey
+
+        self._storage.get_content("/FOO")
