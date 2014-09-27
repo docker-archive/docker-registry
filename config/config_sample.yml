@@ -84,6 +84,26 @@ s3: &s3
     s3_secure: _env:AWS_SECURE:true
     s3_access_key: _env:AWS_KEY
     s3_secret_key: _env:AWS_SECRET
+    boto_host: _env:AWS_HOST
+    boto_port: _env:AWS_PORT
+
+# Ceph Object Gateway Configuration
+# See http://ceph.com/docs/master/radosgw/ for details on installing this service.
+ceph-s3: &ceph-s3
+    <<: *common
+    storage: s3
+    s3_region: ~
+    s3_bucket: _env:AWS_BUCKET
+    s3_encrypt: _env:AWS_ENCRYPT:false
+    s3_secure: _env:AWS_SECURE:false
+    storage_path: _env:STORAGE_PATH:/registry
+    s3_access_key: _env:AWS_KEY
+    s3_secret_key: _env:AWS_SECRET
+    boto_bucket: _env:AWS_BUCKET
+    boto_host: _env:AWS_HOST
+    boto_port: _env:AWS_PORT
+    boto_debug: _env:AWS_DEBUG:0
+    boto_calling_format: _env:AWS_CALLING_FORMAT
 
 # Google Cloud Storage Configuration
 # See:

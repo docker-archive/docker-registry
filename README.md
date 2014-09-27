@@ -25,7 +25,7 @@ The fastest way to get running:
 That will use the
 [official image from the Docker index](https://registry.hub.docker.com/_/registry/).
 
-Here is another example that will launch a container on port 5000, and store images in an Amazon S3 bucket:  
+Here is another example that will launch a container on port 5000, and store images in an Amazon S3 bucket:
 ```
 docker run \
          -e SETTINGS_FLAVOR=s3 \
@@ -62,6 +62,7 @@ In the `config_sample.yml` file, you'll see several sample flavors:
 1. `common`: used by all other flavors as base settings
 1. `local`: stores data on the local filesystem
 1. `s3`: stores data in an AWS S3 bucket
+1. `ceph-s3`: stores data in a Ceph cluster via a Ceph Object Gateway, using the S3 API
 1. `dev`: basic configuration using the `local` flavor
 1. `test`: used by unit tests
 1. `prod`: production configuration (basically a synonym for the `s3` flavor)
@@ -156,9 +157,9 @@ When using the `config_sample.yml`, you can pass all options through as environm
 1. `boto_host`/`boto_port`: If you are using `storage: s3` the
    [standard boto config file locations](http://docs.pythonboto.org/en/latest/boto_config_tut.html#details)
    (`/etc/boto.cfg, ~/.boto`) will be used.  If you are using a
-   *non*-Amazon S3-compliant object store, in one of the boto config files'
+   *non*-Amazon S3-compliant object store (such as Ceph), in one of the boto config files'
    `[Credentials]` section, set `boto_host`, `boto_port` as appropriate for the
-   service you are using.
+   service you are using. Alternatively, set `boto_host` and `boto_port` in the config file.
 1. `bugsnag`: The bugsnag API key (note that if you don't use the official docker container, you need to install the registry with bugsnag enabled: `pip install docker-registry[bugsnag]`)
 
 ### Authentication options
@@ -184,7 +185,7 @@ When using the `config_sample.yml`, you can pass all options through as environm
 ##### Generating keys with `openssl`
 
 You will need to install the python-rsa package (`pip install rsa`) in addition to using `openssl`.
-Generating the public key using openssl will lead to producing a key in a format not supported by 
+Generating the public key using openssl will lead to producing a key in a format not supported by
 the RSA library the registry is using.
 
 Generate private key:
@@ -204,7 +205,7 @@ can configure the backend with a configuration like:
 
 The `search_backend` setting selects the search backend to use.  If
 `search_backend` is empty, no index is built, and the search endpoint always
-returns empty results.  
+returns empty results.
 
 1. `search_backend`: The name of the search backend engine to use.
    Currently supported backends are:
@@ -352,7 +353,11 @@ AWS Simple Storage Service options
       server-side by S3 and will be stored in an encrypted form while at rest
       in S3.
 1. `s3_secure`: boolean, true for HTTPS to S3
-1. `boto_bucket`: string, the bucket name
+1. `boto_bucket`: string, the bucket name for *non*-Amazon S3-compliant object store
+1. `boto_host`: string, host for *non*-Amazon S3-compliant object store
+1. `boto_port`: for *non*-Amazon S3-compliant object store
+1. `boto_debug`: for *non*-Amazon S3-compliant object store
+1. `boto_calling_format`: for *non*-Amazon S3-compliant object store
 1. `storage_path`: string, the sub "folder" where image data will be stored.
 
 Example:
@@ -390,6 +395,26 @@ docker run \
 
 NOTE: The container will try to allocate the port 5000. If the port
 is already taken, find out which container is already using it by running `docker ps`
+
+### Other *non*-Amazon S3-compliant object store (e.g. Ceph and Riak CS)
+
+```
+docker run \
+         -e SETTINGS_FLAVOR=s3 \
+         -e AWS_BUCKET=mybucket \
+         -e STORAGE_PATH=/registry \
+         -e AWS_KEY=myawskey \
+         -e AWS_SECRET=myawssecret \
+         -e SEARCH_BACKEND=sqlalchemy \
+         -p 5000:5000 \
+         -p AWS_HOST=myowns3.com \
+         -p AWS_SECURE=false \
+         -p AWS_ENCRYPT=false \
+         -p AWS_PORT=80 \
+         -p AWS_DEBUG=true \
+         -p AWS_CALLING_FORMAT=OrdinaryCallingFormat \
+         registry
+```
 
 ### Advanced: install the registry on an existing server
 
@@ -454,7 +479,7 @@ behind a nginx server which supports chunked transfer-encoding (nginx >= 1.3.9).
 
 #### nginx
 
-[Here is an nginx configuration file example.](https://github.com/docker/docker-registry/blob/master/contrib/nginx/nginx.conf), which applies to versions < 1.3.9 which are compiled with the [HttpChunkinModule](http://wiki.nginx.org/HttpChunkinModule). 
+[Here is an nginx configuration file example.](https://github.com/docker/docker-registry/blob/master/contrib/nginx/nginx.conf), which applies to versions < 1.3.9 which are compiled with the [HttpChunkinModule](http://wiki.nginx.org/HttpChunkinModule).
 
 [This is another example nginx configuration file](https://github.com/docker/docker-registry/blob/master/contrib/nginx/nginx_1-3-9.conf) that applies to versions of nginx greater than 1.3.9 that have support for the chunked_transfer_encoding directive.
 
