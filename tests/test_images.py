@@ -6,6 +6,7 @@ import base
 
 from docker_registry.core import compat
 import docker_registry.images as images
+import docker_registry.lib.signals as signals
 
 json = compat.json
 
@@ -79,3 +80,37 @@ class TestImages(base.TestCase):
         msg = 'expected size: {0}; got: {1}'.format(len(expected_data),
                                                     len(received_data))
         self.assertEqual(expected_data, received_data, msg)
+
+    def before_put_image_json_handler_ok(self, sender, image_json):
+        return None
+
+    def before_put_image_json_handler_not_ok(self, sender, image_json):
+        return "Not ok"
+
+    def test_before_put_image_json_ok(self):
+        image_id = self.gen_random_string()
+        json_obj = {
+            'id': image_id
+        }
+        json_data = compat.json.dumps(json_obj)
+        with signals.before_put_image_json.connected_to(
+                self.before_put_image_json_handler_ok):
+            resp = self.http_client.put('/v1/images/{0}/json'.format(image_id),
+                                        data=json_data)
+            self.assertEqual(resp.status_code, 200, resp.data)
+
+    def test_before_put_image_json_not_ok(self):
+        image_id = self.gen_random_string()
+        json_obj = {
+            'id': image_id
+        }
+        json_data = compat.json.dumps(json_obj)
+        with signals.before_put_image_json.connected_to(
+                self.before_put_image_json_handler_not_ok):
+            resp = self.http_client.put('/v1/images/{0}/json'.format(image_id),
+                                        data=json_data)
+            resp_data = json.loads(resp.data)
+            self.assertEqual(resp.status_code, 400, resp.data)
+            self.assertTrue('error' in resp_data,
+                            'Expected error key in response')
+            self.assertEqual(resp_data['error'], 'Not ok', resp.data)
