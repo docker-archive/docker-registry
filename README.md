@@ -88,13 +88,14 @@ in action in the example below...
 
 ```yaml
 
-common:
+common: &common
     loglevel: info
     search_backend: "_env:SEARCH_BACKEND:"
     sqlalchemy_index_database:
         "_env:SQLALCHEMY_INDEX_DATABASE:sqlite:////tmp/docker-registry.db"
 
 prod:
+    <<: *common
     loglevel: warn
     storage: s3
     s3_access_key: _env:AWS_S3_ACCESS_KEY
@@ -107,11 +108,13 @@ prod:
     to_addr: my@myself.com
 
 dev:
+    <<: *common
     loglevel: debug
     storage: local
     storage_path: /home/myself/docker
 
 test:
+    <<: *common
     storage: local
     storage_path: /tmp/tmpdockertmp
 ```
