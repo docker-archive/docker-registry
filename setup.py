@@ -47,11 +47,13 @@ requirements.insert(0, 'docker-registry-core>=2,<3')
 # Explicit packages list to avoid setup_tools funkyness
 packages = ['docker_registry',
             'docker_registry.drivers',
-            'docker_registry.server',
+            'docker_registry.extensions',
+            'docker_registry.extras',
             'docker_registry.lib',
-            'docker_registry.storage',
             'docker_registry.lib.index',
-            'docker_registry.extensions']
+            'docker_registry.server',
+            'docker_registry.storage',
+            ]
 
 namespaces = ['docker_registry', 'docker_registry.drivers']
 
@@ -98,5 +100,6 @@ setuptools.setup(
     extras_require={
         'bugsnag': ['bugsnag>=2.0,<2.1'],
         'newrelic': ['newrelic>=2.22,<2.23'],
+        'cors': ['Flask-cors>=1.8,<2.0'],
     }
 )

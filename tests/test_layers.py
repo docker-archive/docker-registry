@@ -190,9 +190,7 @@ class TestLayers(base.TestCase):
 
         layer_path = self.store.image_layer_path(layer_id)
         layer_path = os.path.join(self.store._root_path, layer_path)
-        path_parts = layer_path.split(os.sep)
-        layer_parent = os.path.join(*path_parts[:-1])
-        os.makedirs(layer_parent)
+        os.makedirs(os.path.dirname(layer_path))
 
         with open(layer_path, 'w') as fobj:
             fobj.write(tfobj.read())

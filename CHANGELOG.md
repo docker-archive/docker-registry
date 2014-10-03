@@ -7,7 +7,14 @@
  * enhanced style checking
  * enhanced testing
  * uniformized various gunicorn start stances
+ * enhanced/cleaned-up debugging
+ * removed unused endpoints and code
+ * improved documentation
+ * more complete CORS support (as en extra)
  
+## 0.8.1
+
+ * security fixes (path traversing prevention and token validation)
 
 ## 0.8.0
 

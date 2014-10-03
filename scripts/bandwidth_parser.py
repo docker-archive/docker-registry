@@ -20,14 +20,14 @@ logging_period = 60 * 24  # 24hs
 logging_interval = 15  # 15 minutes
 exp_time = 60 * 60 * 24  # Key expires in 24hs
 try:
-    with open('/home/dotcloud/environment.json') as f:
+    with open('/home/docker/environment.json') as f:
         env = json.load(f)
         # Prod
         redis_opts = {
-            'host': env['DOTCLOUD_REDIS_REDIS_HOST'],
-            'port': int(env['DOTCLOUD_REDIS_REDIS_PORT']),
+            'host': env['REDIS_HOST'],
+            'port': int(env['REDIS_PORT']),
             'db': 1,
-            'password': env['DOTCLOUD_REDIS_REDIS_PASSWORD'],
+            'password': env['REDIS_PASSWORD'],
         }
 except Exception:
     # Dev

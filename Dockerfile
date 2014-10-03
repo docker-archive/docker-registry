@@ -25,7 +25,7 @@ add ./config/boto.cfg /etc/boto.cfg
 run pip install /docker-registry/depends/docker-registry-core
 
 # Install registry
-run pip install file:///docker-registry#egg=docker-registry[bugsnag,newrelic]
+run pip install file:///docker-registry#egg=docker-registry[bugsnag,newrelic,cors]
 
 env DOCKER_REGISTRY_CONFIG /docker-registry/config/config_sample.yml
 env SETTINGS_FLAVOR dev

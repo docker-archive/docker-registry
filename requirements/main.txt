@@ -1,6 +1,5 @@
 blinker==1.3
 Flask==0.10.1
-Flask-cors==1.8.0
 gevent==1.0.1
 gunicorn==19.1
 PyYAML==3.11

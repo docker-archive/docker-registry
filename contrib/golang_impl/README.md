@@ -10,7 +10,7 @@ This implementation doesn't provide all the features that are available in the P
 
 ## Build and start docker image for registry
 
-    $ git clone https://github.com/dotcloud/docker-registry.git docker-registry.git
+    $ git clone https://github.com/docker/docker-registry.git docker-registry.git
     $ cd docker-registry.git/contrib/golang_impl
     $ docker build -t docker_registry/golang .
     $ docker run -v /data:/data -d -p 80:80 docker_registry/golang

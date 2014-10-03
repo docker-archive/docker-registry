@@ -1,9 +1,10 @@
 # All other flavors inherit the `common' config snippet
 common: &common
+    issue: '"docker-registry server"'
     # Default log level is info
     loglevel: _env:LOGLEVEL:info
-    # Enable the debugging /_versions endpoint
-    debug_versions: _env:DEBUG_VERSIONS:false
+    # Enable debugging (additional informations in the output of the _ping endpoint)
+    debug: _env:DEBUG:false
     # By default, the registry acts standalone (eg: doesn't query the index)
     standalone: _env:STANDALONE:true
     # The default endpoint to use (if NOT standalone) is index.docker.io
@@ -55,7 +56,7 @@ common: &common
 
     # CORS support is not enabled by default
     cors:
-        origins: _env:CORS_ORIGINS:["null"]
+        origins: _env:CORS_ORIGINS
         methods: _env:CORS_METHODS
         headers: _env:CORS_HEADERS:[Content-Type]
         expose_headers: _env:CORS_EXPOSE_HEADERS
@@ -139,7 +140,7 @@ swift: &swift
     swift_region_name: _env:OS_REGION_NAME
 
 # This flavor stores the images in Glance (to integrate with openstack)
-# See also: https://github.com/dotcloud/openstack-docker
+# See also: https://github.com/docker/openstack-docker
 glance: &glance
     <<: *common
     storage: glance
@@ -179,13 +180,13 @@ elliptics:
 dev: &dev
     <<: *local
     loglevel: _env:LOGLEVEL:debug
-    debug_versions: _env:DEBUG_VERSIONS:true
+    debug: _env:DEBUG:true
     search_backend: _env:SEARCH_BACKEND:sqlalchemy
 
 # This flavor is used by unit tests
 test:
     <<: *dev
-    index_endpoint: https://indexstaging-docker.dotcloud.com
+    index_endpoint: https://registry-stage.hub.docker.com
     standalone: true
     storage_path: _env:STORAGE_PATH:./tmp/test
 

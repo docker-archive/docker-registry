@@ -5,7 +5,6 @@
 *.db
 .DS_Store
 .idea
-.dotcloud
 .coverage
 .tox
 htmlcov
