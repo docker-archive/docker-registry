@@ -19,6 +19,7 @@ from .lib import cache
 from .lib import checksums
 from .lib import layers
 from .lib import mirroring
+from .lib import signals
 # this is our monkey patched snippet from python v2.7.6 'tarfile'
 # with xattr support
 from .lib.xtarfile import tarfile
@@ -370,6 +371,13 @@ def put_image_json(image_id):
     mark_path = store.image_mark_path(image_id)
     if store.exists(json_path) and not store.exists(mark_path):
         return toolkit.api_error('Image already exists', 409)
+
+    sender = flask.current_app._get_current_object()
+    signal_result = signals.before_put_image_json.send(sender, image_json=data)
+    for result_pair in signal_result:
+        if result_pair[1] is not None:
+            return toolkit.api_error(result_pair[1])
+
     # If we reach that point, it means that this is a new image or a retry
     # on a failed push
     store.put_content(mark_path, 'true')
