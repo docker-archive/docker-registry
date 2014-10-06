@@ -91,6 +91,7 @@ in action in the example below...
 ```yaml
 
 common: &common
+    standalone: true
     loglevel: info
     search_backend: "_env:SEARCH_BACKEND:"
     sqlalchemy_index_database:
