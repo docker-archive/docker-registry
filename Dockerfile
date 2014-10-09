@@ -32,4 +32,4 @@ ENV SETTINGS_FLAVOR dev
 
 EXPOSE 5000
 
-cmd ["docker-registry"]
+CMD ["docker-registry"]
