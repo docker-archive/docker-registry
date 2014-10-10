@@ -87,6 +87,7 @@ s3: &s3
     s3_secret_key: _env:AWS_SECRET
     boto_host: _env:AWS_HOST
     boto_port: _env:AWS_PORT
+    boto_calling_format: _env:AWS_CALLING_FORMAT
 
 # Ceph Object Gateway Configuration
 # See http://ceph.com/docs/master/radosgw/ for details on installing this service.
