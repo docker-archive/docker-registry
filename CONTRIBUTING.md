@@ -21,7 +21,7 @@ It provides:
 
  * exceptions
  * a driver interface describing how the registry interacts with the data storage
- * a compatibility layer (eg: abstracting behavior differences between python versions)
+ * a compatibility layer (e.g.: abstracting behavior differences between python versions)
  * common useful utility code
  * filesystem storage driver
 
@@ -71,7 +71,7 @@ Drivers must stay inside `docker_registry.drivers`.
 
 We use `nose`, `coverage`, `hacking` (for `flake`), `tox` and `travis`.
 
-Wherever you are coding (registy, core, or driver), your friends are thus:
+Wherever you are coding (registry, core, or driver), your friends are thus:
 
  * run the tests: `python setup.py nosetests`
  * check your style: `flake8`
@@ -92,7 +92,7 @@ Existing code shouldn't regress.
 
 ## Storage driver developer howto
 
-Have a look at the [elliptics driver](https://github.com/noxiouz/docker-registry-driver-elliptics) and copy its stucture.
+Have a look at the [elliptics driver](https://github.com/noxiouz/docker-registry-driver-elliptics) and copy its structure.
 
 Explore the files.
 
@@ -108,7 +108,7 @@ Pretty much:
 Drivers are expected to receive bytes and to return bytes.
 Don't try to decode or encode content.
 
-## Development environement notes
+## Development environment notes
 
 We don't currently run any tests for python3, as we are stuck on gevent not being py3 ready.
 

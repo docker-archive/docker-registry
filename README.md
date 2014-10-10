@@ -6,7 +6,7 @@ Docker-Registry
 About this document
 ===================
 
-As the documentation evolves with different registry versions, be sure that before reading any further you do:
+As the documentation evolves with different registry versions, be sure that before reading any further you:
 
  * check which version of the registry you are running
  * switch to the corresponding tag to access the README that matches your product version
@@ -134,7 +134,7 @@ When using the `config_sample.yml`, you can pass all options through as environm
 1. `loglevel`: string, level of debugging. Any of python's
    [logging](http://docs.python.org/2/library/logging.html) module levels:
    `debug`, `info`, `warn`, `error` or `critical`
-1. `debug`: boolean, make the `/_ping` endpoint output more useful informations, such as library versions and host information.
+1. `debug`: boolean, make the `/_ping` endpoint output more useful information, such as library versions and host information.
 1. `storage_redirect`: Redirect resource requested if storage engine supports
    this, e.g. S3 will redirect signed URLs, this can be used to offload the
    server.
@@ -198,7 +198,7 @@ common:
   sqlalchemy_index_database: sqlite:////tmp/docker-registry.db
 ```
 
-In this case, the module is imported, and an instance of it's `Index`
+In this case, the module is imported, and an instance of its `Index`
 class is used as the search backend.
 
 ### Mirroring Options
@@ -228,7 +228,7 @@ to spawn a [redis-server](http://redis.io/) configured in
 shows an example to enable the LRU cache using the config directive `cache_lru`.
 
 Once this feature is enabled, all small files (tags, meta-data) will be cached
-in Redis. When using a remote storage backend (like Amazon S3), it will speeds
+in Redis. When using a remote storage backend (like Amazon S3), it will speed
 things up dramatically since it will reduce roundtrips to S3.
 
 All config settings are placed in a `cache` or `cache_lru` section.
@@ -250,10 +250,10 @@ To use and install one of these alternate storages:
 
  * `pip install docker-registry-driver-NAME`
  * in the configuration set `storage` to `NAME`
- * add any other storage dependent configuraiton option to the conf file
+ * add any other storage dependent configuration option to the conf file
  * review the storage specific documentation for additional dependency or configuration instructions.
 
- Currently, we are aware of the following storage driver:
+ Currently, we are aware of the following storage drivers:
 
   * [elliptics](https://github.com/noxiouz/docker-registry-driver-elliptics)
   * [swift](https://github.com/bacongobbler/docker-registry-driver-swift)
@@ -333,7 +333,7 @@ For more features and advanced options, have a look at the [advanced features do
 For developers
 ==============
 
-Read [contribute](CONTRIBUTE.md)
+Read [contributing](CONTRIBUTING.md)
 
 [search-endpoint]: http://docs.docker.com/reference/api/docker-io_api/#search
 [SQLAlchemy]: http://docs.sqlalchemy.org/

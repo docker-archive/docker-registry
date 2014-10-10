@@ -4,13 +4,13 @@
 
 ## "extras"
 
-The registry support additional features (that require additional dependencies) that you may require at install time.
+The registry supports additional features (that require additional dependencies) that you may require at install time.
 
 ### Installation
 
 If you are using the official registry container, you don't need to do anything, as all extras are installed by default.
 
-If you are using pip, you have to explicitely request the extra you want, using pip extra syntax:
+If you are using pip, you have to explicitly request the extra you want, using pip extra syntax:
 
 `pip install docker-registry[someextra]`
 
@@ -30,7 +30,7 @@ Note the bugsnag "stage" will be set to the specified configuration "flavor".
 
 #### "newrelic"
 
-This encapsulate your registry inside the new-relic agent.
+This encapsulates your registry inside the new-relic agent.
 
 You need to write a new-relic ini file, then use the following environment variables:
 
@@ -131,7 +131,7 @@ sudo yum install python-devel libevent-devel python-pip gcc xz-devel
 ```
 
 NOTE: On RHEL and CentOS you will need the
-[EPEL](http://fedoraproject.org/wiki/EPEL) repostitories enabled. Fedora
+[EPEL](http://fedoraproject.org/wiki/EPEL) repositories enabled. Fedora
 should not require the additional repositories.
 
 Then install the Registry app:
@@ -188,9 +188,9 @@ docker run \
 
 ## Advanced configuration options
 
-### Priviledged access
+### Privileged access
 
-It's possible to allow priviledge access to your registry using an rsa key (useful for administration scripts for example).
+It's possible to allow privileged access to your registry using an RSA key (useful for administration scripts for example).
 
 To do so, specify in your config:
 
@@ -213,7 +213,7 @@ Associated public key :
 
 ### Email exceptions
 
-Settings these options makes the Registry send an email on each code Exception:
+Setting these options makes the Registry send an email on each code Exception:
 
 1. `email_exceptions`:
   1. `smtp_host`: hostname to connect to using SMTP
