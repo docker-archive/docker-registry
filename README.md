@@ -360,7 +360,7 @@ AWS Simple Storage Service options
 1. `boto_host`: string, host for *non*-Amazon S3-compliant object store
 1. `boto_port`: for *non*-Amazon S3-compliant object store
 1. `boto_debug`: for *non*-Amazon S3-compliant object store
-1. `boto_calling_format`: for *non*-Amazon S3-compliant object store
+1. `boto_calling_format`: string, the fully qualified class name of the boto calling format to use when accessing S3 or a *non*-Amazon S3-compliant object store
 1. `storage_path`: string, the sub "folder" where image data will be stored.
 
 Example:
