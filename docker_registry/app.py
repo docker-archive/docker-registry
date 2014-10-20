@@ -6,8 +6,8 @@ import platform
 import sys
 
 from . import toolkit
-from .extras import ebugsnag
 from .extras import cors
+from .extras import ebugsnag
 from .lib import config
 from .server import __version__
 import flask
