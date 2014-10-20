@@ -8,10 +8,10 @@ if __name__ == '__main__':
 
 # start new relic if instructed to do so
 from .extensions import factory
-from .extras import newrelic
+from .extras import enewrelic
 from .server import env
-newrelic.boot(env.source('NEW_RELIC_CONFIG_FILE'),
-              env.source('NEW_RELIC_LICENSE_KEY'))
+enewrelic.boot(env.source('NEW_RELIC_CONFIG_FILE'),
+               env.source('NEW_RELIC_LICENSE_KEY'))
 factory.boot()
 
 import logging
