@@ -6,7 +6,7 @@ import platform
 import sys
 
 from . import toolkit
-from .extras import bugsnag
+from .extras import ebugsnag
 from .extras import cors
 from .lib import config
 from .server import __version__
@@ -80,7 +80,7 @@ def init():
         mail_handler.setLevel(logging.ERROR)
         app.logger.addHandler(mail_handler)
     # Optional bugsnag support
-    bugsnag.boot(app, cfg.bugsnag, cfg.flavor, __version__)
+    ebugsnag.boot(app, cfg.bugsnag, cfg.flavor, __version__)
     # Optional cors support
     cors.boot(app, cfg.cors)
 
