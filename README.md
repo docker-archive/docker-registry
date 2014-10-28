@@ -183,6 +183,9 @@ common:
   search_backend: foo.registry.index.xapian
 ```
 
+In this case, the module is imported, and an instance of its `Index`
+class is used as the search backend.
+
 #### sqlalchemy
 
 Use [SQLAlchemy][] as the search backend.
@@ -197,9 +200,6 @@ common:
   search_backend: sqlalchemy
   sqlalchemy_index_database: sqlite:////tmp/docker-registry.db
 ```
-
-In this case, the module is imported, and an instance of its `Index`
-class is used as the search backend.
 
 ### Mirroring Options
 
