@@ -51,13 +51,13 @@ def put_username(username):
     return toolkit.response('', 204)
 
 
-def update_index_images(namespace, repository, data):
+def update_index_images(namespace, repository, data_arg):
     path = store.index_images_path(namespace, repository)
     sender = flask.current_app._get_current_object()
     try:
         images = {}
         # Note(dmp): unicode patch
-        data = json.loads(data.decode('utf8')) + store.get_json(path)
+        data = json.loads(data_arg.decode('utf8')) + store.get_json(path)
         for i in data:
             iid = i['id']
             if iid in images and 'checksum' in images[iid]:
@@ -76,8 +76,8 @@ def update_index_images(namespace, repository, data):
         signals.repository_created.send(
             sender, namespace=namespace, repository=repository,
             # Note(dmp): unicode patch
-            value=json.loads(data.decode('utf8')))
-        store.put_content(path, data)
+            value=json.loads(data_arg.decode('utf8')))
+        store.put_content(path, data_arg)
 
 
 @app.route('/v1/repositories/<path:repository>', methods=['PUT'])
