@@ -183,6 +183,9 @@ common:
   search_backend: foo.registry.index.xapian
 ```
 
+In this case, the module is imported, and an instance of its `Index`
+class is used as the search backend.
+
 #### sqlalchemy
 
 Use [SQLAlchemy][] as the search backend.
@@ -198,8 +201,14 @@ common:
   sqlalchemy_index_database: sqlite:////tmp/docker-registry.db
 ```
 
-In this case, the module is imported, and an instance of its `Index`
-class is used as the search backend.
+On initialization, the `SQLAlchemyIndex` class checks the database
+version.  If the database doesn't exist yet (or does exist, but lacks
+a `version` table), the `SQLAlchemyIndex` creates the database and
+required tables.  To avoid several Gunicorn workers racing to create
+the database, you should launch your registry with
+[--preload][gunicorn-preload].  For example:
+
+    $ docker run -e GUNICORN_OPTS='[--preload]' -p 5000:5000 registry
 
 ### Mirroring Options
 
@@ -338,3 +347,4 @@ Read [contributing](CONTRIBUTING.md)
 [search-endpoint]: http://docs.docker.com/reference/api/docker-io_api/#search
 [SQLAlchemy]: http://docs.sqlalchemy.org/
 [create_engine]: http://docs.sqlalchemy.org/en/latest/core/engines.html#sqlalchemy.create_engine
+[gunicorn-preload]: http://gunicorn-docs.readthedocs.org/en/latest/settings.html#preload-app
