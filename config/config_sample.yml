@@ -89,6 +89,15 @@ s3: &s3
     boto_port: _env:AWS_PORT
     boto_calling_format: _env:AWS_CALLING_FORMAT
 
+
+azureblob: &azureblob
+    <<: *common
+    storage: azureblob
+    azure_storage_account_name: _env:AZURE_STORAGE_ACCOUNT_NAME
+    azure_storage_account_key: _env:AZURE_STORAGE_ACCOUNT_KEY
+    azure_storage_container: _env:AZURE_STORAGE_CONTAINER:registry
+    azure_use_https: _env:AZURE_USE_HTTPS:true
+
 # Ceph Object Gateway Configuration
 # See http://ceph.com/docs/master/radosgw/ for details on installing this service.
 ceph-s3: &ceph-s3
