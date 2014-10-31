@@ -65,7 +65,7 @@ In the `config_sample.yml` file, you'll see several sample flavors:
 1. `local`: stores data on the local filesystem
 1. `s3`: stores data in an AWS S3 bucket
 1. `ceph-s3`: stores data in a Ceph cluster via a Ceph Object Gateway, using the S3 API
-1. `azure`: stores data in an Microsoft Azure Blob Storage
+1. `azureblob`: stores data in an Microsoft Azure Blob Storage ([(docs)](ADVANCED.md))
 1. `dev`: basic configuration using the `local` flavor
 1. `test`: used by unit tests
 1. `prod`: production configuration (basically a synonym for the `s3` flavor)

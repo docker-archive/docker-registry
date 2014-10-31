@@ -186,6 +186,29 @@ docker run \
 ```
 
 
+## Microsoft Azure Blob Storage
+
+In order to use Microsoft Azure Blob Storage Service, you need to create a
+storage account from Azure Management Portal or other management scripts.
+
+In the configuration use `azureblob` flavor.
+
+1. `azure_storage_account_name`: string, storage account name
+1. `azure_storage_account_key`: string, storage account key
+1. `azure_storage_container`: string, container name to be used or created
+1. `azure_use_https`: boolean, (default:true) use HTTPS for communication
+
+Example configuration:
+
+```yaml
+prod:
+  storage: azureblob
+  azure_storage_account_name: contoso
+  azure_storage_account_key: Fb8cgp___YOUR_KEY___/o8isRdsuHqrHF==
+  azure_storage_container: registry
+  azure_use_https: true
+```
+
 ## Advanced configuration options
 
 ### Privileged access
