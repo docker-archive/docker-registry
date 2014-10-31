@@ -182,10 +182,8 @@ docker run \
          -e AWS_DEBUG=true \
          -e AWS_CALLING_FORMAT=OrdinaryCallingFormat \
          -p 5000:5000 \
-
          registry
 ```
-
 
 ## Microsoft Azure Blob Storage
 
@@ -256,4 +254,3 @@ test:
     email_exceptions:
         smtp_host: localhost
 ```
-
