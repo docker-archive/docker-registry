@@ -9,14 +9,15 @@
 FROM ubuntu:14.04
 
 # Update
-RUN apt-get update
-RUN apt-get -y upgrade
-
+RUN apt-get update \
 # Install pip
-RUN apt-get -y install python-pip
-
-# Install deps for backports.lzma (python2 requires it)
-RUN apt-get -y install python-dev liblzma-dev libevent1-dev
+    && apt-get install -y \
+        python-pip \
+# Install deps for backports.lmza (python2 requires it)
+        python-dev \
+        liblzma-dev \
+        libevent1-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY . /docker-registry
 COPY ./config/boto.cfg /etc/boto.cfg
