@@ -175,13 +175,14 @@ docker run \
          -e AWS_KEY=myawskey \
          -e AWS_SECRET=myawssecret \
          -e SEARCH_BACKEND=sqlalchemy \
+         -e AWS_HOST=myowns3.com \
+         -e AWS_SECURE=false \
+         -e AWS_ENCRYPT=false \
+         -e AWS_PORT=80 \
+         -e AWS_DEBUG=true \
+         -e AWS_CALLING_FORMAT=OrdinaryCallingFormat \
          -p 5000:5000 \
-         -p AWS_HOST=myowns3.com \
-         -p AWS_SECURE=false \
-         -p AWS_ENCRYPT=false \
-         -p AWS_PORT=80 \
-         -p AWS_DEBUG=true \
-         -p AWS_CALLING_FORMAT=OrdinaryCallingFormat \
+
          registry
 ```
 
