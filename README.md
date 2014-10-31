@@ -65,7 +65,7 @@ In the `config_sample.yml` file, you'll see several sample flavors:
 1. `local`: stores data on the local filesystem
 1. `s3`: stores data in an AWS S3 bucket
 1. `ceph-s3`: stores data in a Ceph cluster via a Ceph Object Gateway, using the S3 API
-1. `azure`: stores data in an Microsoft Azure Blob Storage
+1. `azureblob`: stores data in an Microsoft Azure Blob Storage
 1. `dev`: basic configuration using the `local` flavor
 1. `test`: used by unit tests
 1. `prod`: production configuration (basically a synonym for the `s3` flavor)
@@ -322,6 +322,28 @@ prod:
   s3_access_key: AKIAHSHB43HS3J92MXZ
   s3_secret_key: xdDowwlK7TJajV1Y7EoOZrmuPEJlHYcNP2k4j49T
 ```
+
+### storage: azureblob
+
+In order to use Microsoft Azure Blob Storage Service, you need to create a storage account
+from Azure Management Portal or other management scripts.
+
+1. `azure_storage_account_name`: string, storage account name
+1. `azure_storage_account_key`: string, storage account key
+1. `azure_storage_container`: string, container name to be used or created
+1. `azure_use_https`: boolean, (default:true) use HTTPS for communication
+
+Example:
+
+```yaml
+prod:
+  storage: azureblob
+  azure_storage_account_name: contoso
+  azure_storage_account_key: Fb8cgp___YOUR_KEY___/o8isRdsuHqrHF==
+  azure_storage_container: registry
+  azure_use_https: true
+```
+
 
 Your own config
 ===============
