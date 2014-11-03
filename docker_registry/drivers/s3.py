@@ -7,6 +7,13 @@ This is a s3 based driver.
 
 """
 
+# This fixes an issue where boto sends unicode to gevent.socket.getaddrinfo in
+# an eventlet causing the event pool to hang in a deadlock state.
+# This initiates the unicode => idna conversion outside of getaddrinfo,
+# preventing the deadlock.
+# See https://github.com/gevent/gevent/issues/349 for context.
+u'fix for gevent deadlock'.encode('idna')
+
 import gevent.monkey
 gevent.monkey.patch_all()
 
