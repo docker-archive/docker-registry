@@ -180,7 +180,7 @@ docker run \
          -e AWS_ENCRYPT=false \
          -e AWS_PORT=80 \
          -e AWS_DEBUG=true \
-         -e AWS_CALLING_FORMAT=OrdinaryCallingFormat \
+         -e AWS_CALLING_FORMAT=boto.s3.connection.OrdinaryCallingFormat \
          -p 5000:5000 \
          registry
 ```
