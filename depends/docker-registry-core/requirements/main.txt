@@ -1,3 +1,4 @@
-boto==2.32.1
+boto==2.34.0
 redis==2.10.3
 setuptools==5.8
+simplejson==3.6.2
