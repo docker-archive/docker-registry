@@ -34,10 +34,6 @@ if ver < (2, 6):
 requirements_txt = open('./requirements/main.txt')
 requirements = [line for line in requirements_txt]
 
-# 2.6 native json raw_decode doesn't fit the bill, so add simple to our req
-if ver < (2, 7):
-    requirements.insert(0, 'simplejson==3.6.2')
-
 # Using this will relax dependencies to semver major matching
 if 'DEPS' in os.environ and os.environ['DEPS'].lower() == 'loose':
     loose = []
