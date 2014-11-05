@@ -334,12 +334,15 @@ Then, start your registry with a mount point to expose your new configuration in
 sudo docker run -p 5000:5000 -v /home/me/myfolder:/registry-conf -e DOCKER_REGISTRY_CONFIG=/registry-conf/mysuperconfig.yml registry
 ```
 
-
 Advanced use
 ============
 
 For more features and advanced options, have a look at the [advanced features documentation](ADVANCED.md) 
 
+Drivers
+=======
+
+For more backend drivers, please read [drivers.md](DRIVERS.md)
 
 For developers
 ==============
@@ -350,3 +353,4 @@ Read [contributing](CONTRIBUTING.md)
 [SQLAlchemy]: http://docs.sqlalchemy.org/
 [create_engine]: http://docs.sqlalchemy.org/en/latest/core/engines.html#sqlalchemy.create_engine
 [gunicorn-preload]: http://gunicorn-docs.readthedocs.org/en/latest/settings.html#preload-app
+
