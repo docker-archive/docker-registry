@@ -6,6 +6,7 @@ import re
 import time
 
 import flask
+import gevent
 
 from docker_registry.core import compat
 from docker_registry.core import exceptions
@@ -65,15 +66,18 @@ def get_properties(namespace, repository):
 
 def get_tags(namespace, repository):
     tag_path = store.tag_path(namespace, repository)
+    greenlets = {}
     for fname in store.list_directory(tag_path):
         full_tag_name = fname.split('/').pop()
         if not full_tag_name.startswith('tag_'):
             continue
         tag_name = full_tag_name[4:]
-        tag_content = store.get_content(
-            store.tag_path(namespace, repository, tag_name)
+        greenlets[tag_name] = gevent.spawn(
+            store.get_content,
+            store.tag_path(namespace, repository, tag_name),
         )
-        yield (tag_name, tag_content)
+    gevent.joinall(greenlets.values())
+    return dict((k, g.value) for (k, g) in greenlets.items())
 
 
 @app.route('/v1/repositories/<path:repository>/tags', methods=['GET'])
@@ -84,9 +88,7 @@ def _get_tags(namespace, repository):
     logger.debug("[get_tags] namespace={0}; repository={1}".format(namespace,
                  repository))
     try:
-        data = dict((tag_name, tag_content)
-                    for tag_name, tag_content
-                    in get_tags(namespace=namespace, repository=repository))
+        data = get_tags(namespace=namespace, repository=repository)
     except exceptions.FileNotFoundError:
         return toolkit.api_error('Repository not found', 404)
     return toolkit.response(data)
@@ -255,7 +257,7 @@ def delete_repository(namespace, repository):
                  namespace, repository))
     try:
         for tag_name, tag_content in get_tags(
-                namespace=namespace, repository=repository):
+                namespace=namespace, repository=repository).items():
             delete_tag(
                 namespace=namespace, repository=repository, tag=tag_name)
         # TODO(wking): remove images, but may need refcounting
