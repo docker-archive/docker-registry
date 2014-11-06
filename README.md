@@ -15,8 +15,28 @@ The stable, released version is the [0.9.0 tag](https://github.com/docker/docker
 
 Please also have a quick look at the [FAQ](FAQ.md) before reporting bugs.
 
-Quick start
-===========
+# Table of Contents
+- [Quick Start](#quickstart)
+- [Configuration mechanism overview](#configoverview)
+- [Configuration flavors](#configflavors)
+  - [Example config](#exampleconfig)
+- [Available configuration options](#configoptions)
+  - [General options](#generalopts)
+    - [Authentication options](#authopts)
+    - [Search-engine options](#searchopts)
+      - [sqlalchemy](#sqlalchemy)
+    - [Mirroring Options](#mirroring)
+    - [Cache options](#cacheopts)
+    - [Storage options](#storageopts)
+      - [storage: file](#storage-file)
+        - [Persistent storage](#storage-persist)
+      - [storage: s3](#storage-s3)
+- [Your own config](#yourconfig)
+- [Advanced use](#advanced)
+- [Drivers](#drivers)
+- [For developers](#developers)
+
+# Quick start
 
 The fastest way to get running:
 
@@ -40,8 +60,7 @@ docker run \
 ```
 
 
-Configuration mechanism overview
-================================
+# Configuration mechanism overview
 
 By default, the registry will use the [config_sample.yml](config/config_sample.yml) configuration to start.
 
@@ -52,8 +71,7 @@ You may also use different "flavors" from that file (see below).
 Finally, you can use your own configuration file (see below).
 
 
-Configuration flavors
-=====================
+# Configuration flavors
 
 The registry can be instructed to use a specific flavor from a configuration file.
 
@@ -87,7 +105,7 @@ with a simple syntax: `_env:VARIABLENAME[:DEFAULT]`. Check this syntax
 in action in the example below...
 
 
-#### Example config
+## Example config
 
 ```yaml
 
@@ -125,8 +143,7 @@ test:
 
 
 
-Available configuration options
-===============================
+# Available configuration options
 
 When using the `config_sample.yml`, you can pass all options through as environment variables. See [`config_sample.yml`](config/config_sample.yml) for the mapping.
 
@@ -146,7 +163,7 @@ When using the `config_sample.yml`, you can pass all options through as environm
    `[Credentials]` section, set `boto_host`, `boto_port` as appropriate for the
    service you are using. Alternatively, set `boto_host` and `boto_port` in the config file.
 
-### Authentication options
+## Authentication options
 
 1. `standalone`: boolean, run the server in stand-alone mode. This means that
    the Index service on index.docker.io will not be used for anything. This
@@ -160,7 +177,7 @@ When using the `config_sample.yml`, you can pass all options through as environm
    index. You should provide your own method of authentication (such as Basic
    auth).
 
-### Search-engine options
+## Search-engine options
 
 The Docker Registry can optionally index repository information in a
 database for the `GET /v1/search` [endpoint][search-endpoint].  You
@@ -187,7 +204,7 @@ common:
 In this case, the module is imported, and an instance of its `Index`
 class is used as the search backend.
 
-#### sqlalchemy
+### sqlalchemy
 
 Use [SQLAlchemy][] as the search backend.
 
@@ -211,7 +228,7 @@ the database, you should launch your registry with
 
     $ docker run -e GUNICORN_OPTS='[--preload]' -p 5000:5000 registry
 
-### Mirroring Options
+## Mirroring Options
 
 All mirror options are placed in a `mirroring` section.
 
@@ -230,7 +247,7 @@ common:
     tags_cache_ttl: 172800 # 2 days
 ```
 
-### Cache options
+## Cache options
 
 It's possible to add an LRU cache to access small files. In this case you need
 to spawn a [redis-server](http://redis.io/) configured in
@@ -323,8 +340,7 @@ prod:
   s3_secret_key: xdDowwlK7TJajV1Y7EoOZrmuPEJlHYcNP2k4j49T
 ```
 
-Your own config
-===============
+# Your own config
 
 Start from a copy of [config_sample.yml](config/config_sample.yml).
 
@@ -334,18 +350,15 @@ Then, start your registry with a mount point to expose your new configuration in
 sudo docker run -p 5000:5000 -v /home/me/myfolder:/registry-conf -e DOCKER_REGISTRY_CONFIG=/registry-conf/mysuperconfig.yml registry
 ```
 
-Advanced use
-============
+# Advanced use
 
 For more features and advanced options, have a look at the [advanced features documentation](ADVANCED.md) 
 
-Drivers
-=======
+# Drivers
 
 For more backend drivers, please read [drivers.md](DRIVERS.md)
 
-For developers
-==============
+# For developers
 
 Read [contributing](CONTRIBUTING.md)
 
