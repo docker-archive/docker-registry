@@ -16,25 +16,25 @@ The stable, released version is the [0.9.0 tag](https://github.com/docker/docker
 Please also have a quick look at the [FAQ](FAQ.md) before reporting bugs.
 
 # Table of Contents
-- [Quick Start](#quickstart)
-- [Configuration mechanism overview](#configoverview)
-- [Configuration flavors](#configflavors)
-  - [Example config](#exampleconfig)
-- [Available configuration options](#configoptions)
-  - [General options](#generalopts)
-    - [Authentication options](#authopts)
-    - [Search-engine options](#searchopts)
+- [Quick Start](#quick-start)
+- [Configuration mechanism overview](#configuration-mechanism-overview)
+- [Configuration flavors](#configuration-flavors)
+  - [Example config](#example-config)
+- [Available configuration options](#available-configuration-options)
+  - [General options](#general-options)
+    - [Authentication options](#authentication-options)
+    - [Search-engine options](#Search-engine-options)
       - [sqlalchemy](#sqlalchemy)
-    - [Mirroring Options](#mirroring)
-    - [Cache options](#cacheopts)
-    - [Storage options](#storageopts)
-      - [storage: file](#storage-file)
-        - [Persistent storage](#storage-persist)
-      - [storage: s3](#storage-s3)
-- [Your own config](#yourconfig)
-- [Advanced use](#advanced)
+    - [Mirroring Options](#mirroring-ptions)
+    - [Cache options](#cache-options)
+    - [Storage options](#storage-options)
+      - [storage file](#storage-file)
+        - [Persistent storage](#persistent-storage)
+      - [storage s3](#storage-s3)
+- [Your own config](#your-own-config)
+- [Advanced use](#advanced-user)
 - [Drivers](#drivers)
-- [For developers](#developers)
+- [For developers](#for-developers)
 
 # Quick start
 
@@ -288,7 +288,7 @@ To use and install one of these alternate storages:
   * [gcs](https://github.com/dmp42/docker-registry-driver-gcs)
   * [glance](https://github.com/dmp42/docker-registry-driver-glance)
 
-### storage: file
+### storage file
 
 1. `storage_path`: Path on the filesystem where to store data
 
@@ -311,7 +311,7 @@ Example:
 docker run -p 5000 -v /tmp/registry:/tmp/registry registry
 ```
 
-### storage: s3
+### storage s3
 AWS Simple Storage Service options
 
 1. `s3_access_key`: string, S3 access key
