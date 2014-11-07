@@ -54,7 +54,6 @@ docker run \
          -e STORAGE_PATH=/registry \
          -e AWS_KEY=myawskey \
          -e AWS_SECRET=myawssecret \
-         -e SEARCH_BACKEND=sqlalchemy \
          -p 5000:5000 \
          registry
 ```
