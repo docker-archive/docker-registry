@@ -225,7 +225,7 @@ required tables.  To avoid several Gunicorn workers racing to create
 the database, you should launch your registry with
 [--preload][gunicorn-preload].  For example:
 
-    $ docker run -e GUNICORN_OPTS='[--preload]' -p 5000:5000 registry
+    $ docker run -e GUNICORN_OPTS=[--preload] -p 5000:5000 registry
 
 ## Mirroring Options
 
