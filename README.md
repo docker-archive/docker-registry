@@ -23,7 +23,7 @@ Please also have a quick look at the [FAQ](FAQ.md) before reporting bugs.
 - [Available configuration options](#available-configuration-options)
   - [General options](#general-options)
     - [Authentication options](#authentication-options)
-    - [Search-engine options](#Search-engine-options)
+    - [Search-engine options](#search-engine-options)
       - [sqlalchemy](#sqlalchemy)
     - [Mirroring Options](#mirroring-options)
     - [Cache options](#cache-options)
