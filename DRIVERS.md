@@ -6,5 +6,5 @@
 * [docker-registry-driver-qiniu](https://github.com/zhangpeihao/docker-registry-driver-qiniu)
 * [docker-registry-driver-hdfs](https://github.com/lyda/docker-registry-driver-hdfs)
 * [docker-registry-driver-sinastorage](https://github.com/kerwin/docker-registry-driver-sinastorage)
-* [docker-registry-driver-alioss](https://github.com/chris-jin/docker-registry-driver-alioss.git)
+* [docker-registry-driver-oss](https://github.com/chris-jin/docker-registry-driver-alioss.git)
 

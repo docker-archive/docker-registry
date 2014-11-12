@@ -286,7 +286,7 @@ To use and install one of these alternate storages:
   * [swift](https://github.com/bacongobbler/docker-registry-driver-swift)
   * [gcs](https://github.com/dmp42/docker-registry-driver-gcs)
   * [glance](https://github.com/dmp42/docker-registry-driver-glance)
-  * [alioss](https://github.com/chris-jin/docker-registry-driver-alioss.git)
+  * [oss](https://github.com/chris-jin/docker-registry-driver-alioss.git)
 
 ### storage file
 
