@@ -184,6 +184,18 @@ elliptics:
     elliptics_logfile: _env:ELLIPTICS_LOGFILE:/dev/stderr
     elliptics_addr_family: _env:ELLIPTICS_ADDR_FAMILY:2
 
+# This flavor stores the images in Aliyun OSS
+# See:
+# https://i.aliyun.com/access_key/
+# for details on access and secret keys.
+oss: &oss
+    <<: *common
+    storage: alioss
+    storage_path: _env:STORAGE_PATH:/registry/
+    oss_bucket: _env:OSS_BUCKET
+    oss_accessid: _env:OSS_KEY
+    oss_accesskey: _env:OSS_SECRET
+
 
 
 # This is the default configuration when no flavor is specified
