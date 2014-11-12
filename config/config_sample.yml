@@ -190,7 +190,7 @@ elliptics:
 # for details on access and secret keys.
 oss: &oss
     <<: *common
-    storage: alioss
+    storage: oss
     storage_path: _env:STORAGE_PATH:/registry/
     oss_host: _env:OSS_HOST
     oss_bucket: _env:OSS_BUCKET
