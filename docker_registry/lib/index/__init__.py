@@ -62,7 +62,7 @@ class Index (object):
     def _handle_repository_deleted(self, sender, namespace, repository):
         pass
 
-    def results(self, search_term):
+    def results(self, search_term=None):
         """Return a list of results matching search_term
 
         The list elements should be dictionaries:
