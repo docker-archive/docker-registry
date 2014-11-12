@@ -114,13 +114,15 @@ class SQLAlchemyIndex (Index):
         session.commit()
         session.close()
 
-    def results(self, search_term):
+    def results(self, search_term=None):
         session = self._session()
-        like_term = '%%%s%%' % search_term
-        repositories = session.query(Repository).filter(
-            sqlalchemy.sql.or_(
-                Repository.name.like(like_term),
-                Repository.description.like(like_term)))
+        repositories = session.query(Repository)
+        if search_term:
+            like_term = '%%%s%%' % search_term
+            repositories = repositories.filter(
+                sqlalchemy.sql.or_(
+                    Repository.name.like(like_term),
+                    Repository.description.like(like_term)))
         return [
             {
                 'name': repo.name,
