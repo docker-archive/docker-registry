@@ -322,6 +322,7 @@ AWS Simple Storage Service options
       server-side by S3 and will be stored in an encrypted form while at rest
       in S3.
 1. `s3_secure`: boolean, true for HTTPS to S3
+1. `s3_use_sigv4`: boolean, true for USE_SIGV4 (boto_host needs to be set or use_sigv4 will be ignored by boto.)
 1. `boto_bucket`: string, the bucket name for *non*-Amazon S3-compliant object store
 1. `boto_host`: string, host for *non*-Amazon S3-compliant object store
 1. `boto_port`: for *non*-Amazon S3-compliant object store
