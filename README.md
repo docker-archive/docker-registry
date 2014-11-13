@@ -45,7 +45,7 @@ The fastest way to get running:
 
 That will use the [official image from the Docker hub](https://registry.hub.docker.com/_/registry/).
 
-Here is a slightly more complex example that launches a registry on port 5000, using an Amazon S3 bucket to store images with a custom path, and enables the search endpoint:  
+Here is a slightly more complex example that launches a registry on port 5000, using an Amazon S3 bucket to store images with a custom path, and enables the search endpoint:
 
 ```
 docker run \
@@ -286,6 +286,7 @@ To use and install one of these alternate storages:
   * [swift](https://github.com/bacongobbler/docker-registry-driver-swift)
   * [gcs](https://github.com/dmp42/docker-registry-driver-gcs)
   * [glance](https://github.com/dmp42/docker-registry-driver-glance)
+  * [oss](https://github.com/chris-jin/docker-registry-driver-alioss.git)
 
 ### storage file
 
@@ -351,7 +352,7 @@ sudo docker run -p 5000:5000 -v /home/me/myfolder:/registry-conf -e DOCKER_REGIS
 
 # Advanced use
 
-For more features and advanced options, have a look at the [advanced features documentation](ADVANCED.md) 
+For more features and advanced options, have a look at the [advanced features documentation](ADVANCED.md)
 
 # Drivers
 
