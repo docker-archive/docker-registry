@@ -90,6 +90,20 @@ s3: &s3
     boto_port: _env:AWS_PORT
     boto_calling_format: _env:AWS_CALLING_FORMAT
 
+cloudfronts3: &cloudfronts3
+    <<: *common
+    storage: s3
+    s3_region: _env:AWS_REGION
+    boto_bucket: _env:AWS_BUCKET
+    storage_path: _env:STORAGE_PATH:/registry
+    s3_encrypt: _env:AWS_ENCRYPT:true
+    s3_secure: _env:AWS_SECURE:true
+    s3_access_key: _env:AWS_KEY
+    s3_secret_key: _env:AWS_SECRET
+    cloudfront:
+        base: _env:CF_BASE_URL
+        keyid: _env:CF_KEYID
+        keysecret: _env:CF_KEYSECRET
 
 azureblob: &azureblob
     <<: *common
