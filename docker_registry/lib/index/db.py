@@ -123,9 +123,11 @@ class SQLAlchemyIndex (Index):
                 sqlalchemy.sql.or_(
                     Repository.name.like(like_term),
                     Repository.description.like(like_term)))
-        return [
+        results = [
             {
                 'name': repo.name,
                 'description': repo.description,
             }
             for repo in repositories]
+        session.close()
+        return results
