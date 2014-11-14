@@ -184,6 +184,32 @@ docker run \
          -p 5000:5000 \
          registry
 ```
+## S3 Storage with Cloudfront
+It is possible Cloudfront in tandem with S3 storage, you need to configure Cloudfront to point it to your S3 bucket.
+
+This flavor can be started as:
+ ```
+docker run \
+         -e SETTINGS_FLAVOR=cloudfronts3 \
+         -e AWS_BUCKET=mybucket \
+         -e STORAGE_PATH=/registry \
+         -e AWS_KEY=myawskey \
+         -e AWS_SECRET=myawssecret \
+         -e SEARCH_BACKEND=sqlalchemy \
+         -e AWS_SECURE=false \
+         -e AWS_ENCRYPT=false \
+         -e AWS_PORT=80 \
+         -e AWS_DEBUG=true \
+         -e CF_BASE_URL=cloudfront_url
+         -e CF_KEYID=cloudfront_key_id
+         -e CF_KEYSECRET=cloudfront_private_key
+         -p 5000:5000 \
+         registry
+```
+`CF_BASE_URL` is the Cloudfront base URL example: https://abcd.cloudfront.net
+`CF_KEYID` is the ID of the Cloudfront keypair you are going to use to sign the URLs so the the registry can 302 to Cloudfront.
+`CF_KEYSECRET` is either the private key as string or file location of the private key used to sign the URLS.
+
 
 ## Microsoft Azure Blob Storage
 

@@ -90,6 +90,12 @@ s3: &s3
     boto_port: _env:AWS_PORT
     boto_calling_format: _env:AWS_CALLING_FORMAT
 
+cloudfronts3: &cloudfronts3
+    <<: *s3
+    cloudfront:
+        base: _env:CF_BASE_URL
+        keyid: _env:CF_KEYID
+        keysecret: _env:CF_KEYSECRET
 
 azureblob: &azureblob
     <<: *common
