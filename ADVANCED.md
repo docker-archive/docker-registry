@@ -78,7 +78,7 @@ This is especially useful if you want to run standalone and implement your own a
 [This is another example nginx configuration file](https://github.com/docker/docker-registry/blob/master/contrib/nginx/nginx_1-3-9.conf) that applies to versions of nginx greater than 1.3.9 that have support for the chunked_transfer_encoding directive.
 
 And you might want to add
-[Basic auth on Nginx](http://wiki.nginx.org/HttpAuthBasicModule) to protect it
+[Basic auth on Nginx](http://nginx.org/en/docs/http/ngx_http_auth_basic_module.html) to protect it
 (if you're not using it on your local network):
 
 
