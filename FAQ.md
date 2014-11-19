@@ -24,3 +24,5 @@ Please insert the following into your bug report:
 Please, no "this happens to me as well" comments on tickets - not helpful.
 
 On the other hand, if you do have any useful information to provide, by all means do. 
+
+Also see [debugging](DEBUGGING.md) for more indepth information about troubleshooting and performance testing.
