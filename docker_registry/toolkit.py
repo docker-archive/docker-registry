@@ -4,6 +4,7 @@ import base64
 import distutils.version
 import functools
 import logging
+import os
 import random
 import re
 import string
@@ -275,6 +276,22 @@ def parse_repository_name(f):
             (namespace, repository) = parts
         repository = urllib.quote_plus(repository)
         return f(namespace=namespace, repository=repository, *args, **kwargs)
+    return wrapper
+
+
+def exclusive_lock(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        lock_path = os.path.join(
+            '/var/lock', 'registry.{0}.lock'.format(f.func_name)
+        )
+        if os.path.exists(lock_path):
+            return
+        lock_file = open(lock_path, 'w')
+        lock_file.close()
+        result = f(*args, **kwargs)
+        os.remove(lock_path)
+        return result
     return wrapper
 
 
