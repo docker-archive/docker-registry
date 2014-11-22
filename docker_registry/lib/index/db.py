@@ -4,6 +4,7 @@
 """
 
 from ... import storage
+from ... import toolkit
 from .. import config
 from . import Index
 import sqlalchemy
@@ -61,6 +62,7 @@ class SQLAlchemyIndex (Index):
         self._setup_database()
         super(SQLAlchemyIndex, self).__init__()
 
+    @toolkit.exclusive_lock
     def _setup_database(self):
         session = self._session()
         if self._engine.has_table(table_name=Version.__tablename__):
