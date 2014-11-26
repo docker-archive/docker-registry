@@ -3,6 +3,8 @@
 """An SQLAlchemy backend for the search endpoint
 """
 
+import logging
+
 from ... import storage
 from ... import toolkit
 from .. import config
@@ -12,6 +14,9 @@ import sqlalchemy.exc
 import sqlalchemy.ext.declarative
 import sqlalchemy.orm
 import sqlalchemy.sql.functions
+
+
+logger = logging.getLogger(__name__)
 
 
 Base = sqlalchemy.ext.declarative.declarative_base()
@@ -43,6 +48,24 @@ class Repository (Base):
             type(self).__name__, self.name, self.description)
 
 
+def retry(f):
+    def _retry(self, *args, **kwargs):
+        retry_times = 1
+        i = 0
+        while True:
+            try:
+                return f(self, *args, **kwargs)
+            except sqlalchemy.exc.DBAPIError as e:
+                if i < retry_times:
+                    logger.warn("DB is disconnected. Reconnect to it.")
+                    self.reconnect_db()
+                    i += 1
+                else:
+                    raise e
+
+    return _retry
+
+
 class SQLAlchemyIndex (Index):
     """Maintain an index of repository data
 
@@ -56,11 +79,16 @@ class SQLAlchemyIndex (Index):
         if database is None:
             cfg = config.load()
             database = cfg.sqlalchemy_index_database
+        self._database = database
         self._engine = sqlalchemy.create_engine(database)
         self._session = sqlalchemy.orm.sessionmaker(bind=self._engine)
         self.version = 1
         self._setup_database()
         super(SQLAlchemyIndex, self).__init__()
+
+    def reconnect_db(self):
+        self._engine = sqlalchemy.create_engine(self._database)
+        self._session = sqlalchemy.orm.sessionmaker(bind=self._engine)
 
     @toolkit.exclusive_lock
     def _setup_database(self):
@@ -78,6 +106,7 @@ class SQLAlchemyIndex (Index):
             self._generate_index(session=session)
         session.close()
 
+    @retry
     def _generate_index(self, session):
         store = storage.load()
         Base.metadata.create_all(self._engine)
@@ -86,6 +115,7 @@ class SQLAlchemyIndex (Index):
             session.add(Repository(**repository))
         session.commit()
 
+    @retry
     def _handle_repository_created(
             self, sender, namespace, repository, value):
         name = '{0}/{1}'.format(namespace, repository)
@@ -95,6 +125,7 @@ class SQLAlchemyIndex (Index):
         session.commit()
         session.close()
 
+    @retry
     def _handle_repository_updated(
             self, sender, namespace, repository, value):
         name = '{0}/{1}'.format(namespace, repository)
@@ -109,6 +140,7 @@ class SQLAlchemyIndex (Index):
         session.commit()
         session.close()
 
+    @retry
     def _handle_repository_deleted(self, sender, namespace, repository):
         name = '{0}/{1}'.format(namespace, repository)
         session = self._session()
@@ -116,6 +148,7 @@ class SQLAlchemyIndex (Index):
         session.commit()
         session.close()
 
+    @retry
     def results(self, search_term=None):
         session = self._session()
         repositories = session.query(Repository)
