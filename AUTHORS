@@ -1,21 +1,21 @@
-# This file lists all individuals having contributed content to the repository.
-# If you're submitting a patch, please add your name here in alphabetical order
-# as part of the patch.
-
+docker-registry was written by:
+Ahmet Alp Balkan <ahmetalpbalkan@gmail.com>
 Alissa Bonas <abonas@redhat.com>
 Allard Hoeve <allard@byte.nl>
 Anastas Semenov <anapsix@random.io>
 Anastas Semenov <asemenov@chitika.com>
 Andrew Williams <awilliams@intoxitrack.net>
-avaer <avaer@users.noreply.github.com>
+Andy Goldstein <agoldste@redhat.com>
 Brad Ison <bison@garbagebrain.org>
 Brendan Burns <bburns@google.com>
 Chas Ballew <chas.ballew@gmail.com>
+Chris Armstrong <chris@opdemand.com>
 Chris Tierney <notproperlycut@gmail.com>
 Christian Schmitt <c.schmitt@envisia.de>
 Christophe Furmaniak <christophe.furmaniak@gmail.com>
 Dan Trujillo <dtrupenn@gmail.com>
 Daniel Graña <dangra@gmail.com>
+Daniel Krook <krook@us.ibm.com>
 Daniel Kuffner <dkuffner@chilicat.net>
 Daniel Mizyrycki <mzdaniel@glidelink.net>
 David Hoyt <dhoyt@hoytsoft.org>
@@ -23,57 +23,86 @@ DenMat <DenMat tu2Bgone@gmail.com>
 Derek McGowan <derek@mcgstyle.net>
 Dr Nic Williams <drnicwilliams@gmail.com>
 Dustin Lacewell <dlacewell@gmail.com>
+Ekaterina Volkova <gloom@gloom-macbookpro2.roam.corp.google.com>
 Ekaterina Volkova <gloom@google.com>
 Endre Karlson <endre.karlson@gmail.com>
+Eric Windisch <eric@windisch.us>
 Eric Windisch <ewindisch@docker.com>
 Eunchong Yu <kroisse@gmail.com>
 Evan Hazlett <ejhazlett@gmail.com>
-fbvs <franciscovieirasantos@gmail.com>
 Flavio Castelli <fcastelli@suse.com>
+Franklin Hu <franklin@stripe.com>
+Furze <nztrooy@gmail.com>
 Gabe Rosenhouse <gabe@missionst.com>
+Gabor Nagy <mail@aigeruth.hu>
+Gabriel Monroy <gabriel@opdemand.com>
+Greg Burek <greg.burek@gmail.com>
 Greg Weber <greg@gregweber.info>
+Huayi Zhang <irachex@gmail.com>
 Ian Miell <ian.miell@openbet.com>
 Ilya Rusalowski <rivik@yandex-team.ru>
 James Carr <james.r.carr@gmail.com>
 James Turnbull <james@lovedthanlost.net>
 Jason Sommer <gatoralli69@gmail.com>
 Jigish Patel <jigish@ooyala.com>
+Jing Dong <jing.dong@activars.com>
 Joffrey F <f.joffrey@gmail.com>
 Johan Euphrosine <proppy@google.com>
 Johnny Tan <johnnydtan@gmail.com>
 Jonas Finnemann Jensen <jopsen@gmail.com>
-jschneiderhan <jon-erik.schneiderhan@meyouhealth.com>
 Ken Cochrane <kencochrane@gmail.com>
 Kevin Clark <kevinc@greplin.com>
+Kevin Littlejohn <kevin@littlejohn.id.au>
 Leon Xiang <leon.xiang@rea-group.com>
+Leonardo Lorieri <leonardo.lorieri@wal-mart.com>
 Lucas Clemente <github@clemente.io>
 Mangled Deutz <olivier@webitup.fr>
 Marc Tamsky <mtamsky@gmail.com>
 Marek Goldmann <marek.goldmann@gmail.com>
+Mariano Sorgente <marianos@stanford.edu>
 Mario Rodas <rodasmario2@gmail.com>
-Matthew Fisher <matthewf@activestate.com>
-Michael Grosser <michaelg@seetheprogress.net>
+Matt Parker <mdparker89@gmail.com>
+Matthew Fisher <matthewf@opdemand.com>
+Matthias Erll <matthias@precisdigital.com>
+Michael Grosser <development@stp-ip.net>
 Michael Hrivnak <mhrivnak@redhat.com>
 Michael Merickel <michael@merickel.org>
 Michael Neale <michael.neale@gmail.com>
-noxiouz <noxiouz@yandex.ru>
+Michael Prokop <github@michael-prokop.at>
+Misho Krastev <misho.kr@gmail.com>
+Olivier Gambier <olivier@docker.com>
+Patrick Hemmer <patrick.hemmer@gmail.com>
 Paul Durivage <pauldurivage@gmail.com>
 Phil Kates <me@philkates.com>
+Pierre Chaussalet <pierre.chaussalet@in-tact.fr>
 Raman Gupta <raman@vivosys.com>
+Raymond Barbiero <rbarbiero@yp.com>
 Roberto Aguilar <roberto@baremetal.io>
 Roberto Gandolfo Hashioka <roberto_hashioka@hotmail.com>
 Rohan Singh <rohan@spotify.com>
 Russell Smith <russ@rainforestqa.com>
 Rusty Ross <consultant@rustyross.com>
 Sam Alba <sam.alba@gmail.com>
-Shreyas Karnik <karnik.shreyas@gmail.com>
+Shreyas Karnik <skarnik@rmn.com>
 Sridatta Thatipamala <sthatipamala@gmail.com>
 Sridhar Ratnakumar <sridharr@activestate.com>
 Stefan Novak <stefan.louis.novak@gmail.com>
 Teddy Reed <teddy@prosauce.org>
 Thomas Frössman <thomasf@jossystem.se>
+Thomas Orozco <thomas@orozco.fr>
 Tobias Schwab <tobias.schwab@dynport.de>
-unclejack <unclejacksons@gmail.com>
 Vincent Batts <vbatts@redhat.com>
 W. Trevor King <wking@tremily.us>
 Walter Huf <walter.huf@corvisa.com>
+avaer <avaer@users.noreply.github.com>
+bqbn <bqbn@openken.com>
+fbvs <franciscovieirasantos@gmail.com>
+fermayo <fermayo@gmail.com>
+johanneswuerbach <johannes.wuerbach@googlemail.com>
+jschneiderhan <jon-erik.schneiderhan@meyouhealth.com>
+noxiouz <noxiouz@yandex.ru>
+odaka_to <odaka_to@worksap.co.jp>
+root <root@VM_0_68_centos.(none)>
+sathlan <chem@sathlan.org>
+tcnksm <nsd22843@gmail.com>
+unclejack <unclejacksons@gmail.com>
