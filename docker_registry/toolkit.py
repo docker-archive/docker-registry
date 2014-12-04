@@ -11,8 +11,8 @@ import string
 import urllib
 
 import flask
+from M2Crypto import RSA
 import requests
-import rsa
 
 from docker_registry.core import compat
 json = compat.json
@@ -21,6 +21,7 @@ from . import storage
 from .lib import config
 
 cfg = config.load()
+
 logger = logging.getLogger(__name__)
 _re_docker_version = re.compile('docker/([^\s]+)')
 _re_authorization = re.compile(r'(\w+)[:=][\s"]?([^",]+)"?')
@@ -232,8 +233,8 @@ def check_signature():
                        ['{}:{}'.format(k, headers[k]) for k in header_keys])
     logger.debug('Signed message: {}'.format(message))
     try:
-        return rsa.verify(message, sigdata, cfg.privileged_key)
-    except rsa.VerificationError:
+        return RSA.verify(cfg.privileged_key, sigdata, message, 'sha1')
+    except RSA.ValueError:
         return False
 
 
