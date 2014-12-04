@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import base64
-import distutils.version
 import functools
 import logging
 import os
@@ -26,17 +25,24 @@ _re_docker_version = re.compile('docker/([^\s]+)')
 _re_authorization = re.compile(r'(\w+)[:=][\s"]?([^",]+)"?')
 
 
-class DockerVersion(distutils.version.StrictVersion):
+def docker_client_version():
+    """Try and extract the client version from the User-Agent string
 
-    def __init__(self):
-        ua = flask.request.headers.get('user-agent', '')
-        m = _re_docker_version.search(ua)
-        if not m:
-            raise RuntimeError('toolkit.DockerVersion: cannot parse version')
-        version = m.group(1)
-        if '-' in version:
-            version = version.split('-')[0]
-        distutils.version.StrictVersion.__init__(self, version)
+    So we can warn older versions of the Docker engine/daemon about
+    incompatible APIs.  If we can't figure out the version (e.g. the
+    client is not a Docker engine), just return None.
+    """
+    ua = flask.request.headers.get('user-agent', '')
+    m = _re_docker_version.search(ua)
+    if not m:
+        return
+    version = m.group(1)
+    if '-' in version:
+        version = version.split('-')[0]
+    try:
+        return tuple(int(x) for x in version)
+    except ValueError:
+        return
 
 
 class SocketReader(object):

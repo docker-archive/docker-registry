@@ -194,6 +194,11 @@ def get_image_layer(image_id, headers):
 @app.route('/v1/images/<image_id>/layer', methods=['PUT'])
 @toolkit.requires_auth
 def put_image_layer(image_id):
+    client_version = toolkit.docker_client_version()
+    if client_version and client_version < (0, 10):
+        return toolkit.api_error(
+            'This endpoint does not support Docker daemons older than 0.10',
+            412)
     try:
         json_data = store.get_content(store.image_json_path(image_id))
     except exceptions.FileNotFoundError:
@@ -210,38 +215,10 @@ def put_image_layer(image_id):
     # compute checksums
     csums = []
     sr = toolkit.SocketReader(input_stream)
-    if toolkit.DockerVersion() < '0.10':
-        tmp, store_hndlr = storage.temp_store_handler()
-        sr.add_handler(store_hndlr)
     h, sum_hndlr = checksums.simple_checksum_handler(json_data)
     sr.add_handler(sum_hndlr)
     store.stream_write(layer_path, sr)
     csums.append('sha256:{0}'.format(h.hexdigest()))
-
-    if toolkit.DockerVersion() < '0.10':
-        # NOTE(samalba): After docker 0.10, the tarsum is not used to ensure
-        # the image has been transfered correctly.
-        logger.debug('put_image_layer: Tarsum is enabled')
-        tar = None
-        tarsum = checksums.TarSum(json_data)
-        try:
-            tmp.seek(0)
-            tar = tarfile.open(mode='r|*', fileobj=tmp)
-            tarfilesinfo = layers.TarFilesInfo()
-            for member in tar:
-                tarsum.append(member, tar)
-                tarfilesinfo.append(member)
-            layers.set_image_files_cache(image_id, tarfilesinfo.json())
-        except (IOError, tarfile.TarError) as e:
-            logger.debug('put_image_layer: Error when reading Tar stream '
-                         'tarsum. Disabling TarSum, TarFilesInfo. '
-                         'Error: {0}'.format(e))
-        finally:
-            if tar:
-                tar.close()
-            # All data have been consumed from the tempfile
-            csums.append(tarsum.compute())
-            tmp.close()
 
     # We store the computed checksums for a later check
     save_checksums(image_id, csums)
@@ -251,10 +228,12 @@ def put_image_layer(image_id):
 @app.route('/v1/images/<image_id>/checksum', methods=['PUT'])
 @toolkit.requires_auth
 def put_image_checksum(image_id):
-    if toolkit.DockerVersion() < '0.10':
-        checksum = flask.request.headers.get('X-Docker-Checksum')
-    else:
-        checksum = flask.request.headers.get('X-Docker-Checksum-Payload')
+    checksum = flask.request.headers.get('X-Docker-Checksum-Payload')
+    if checksum is None:
+        return toolkit.api_error(
+            ('X-Docker-Checksum-Payload not set.  If you are using the Docker '
+             'daemon, you should upgrade to version 0.10 or later'),
+            412)
     if not checksum:
         return toolkit.api_error('Missing Image\'s checksum')
     if not store.exists(store.image_json_path(image_id)):
