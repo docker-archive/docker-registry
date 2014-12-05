@@ -120,6 +120,7 @@ def _init():
         except Exception:
             raise exceptions.ConfigError(
                 'Key at %s is not a valid RSA key' % conf.privileged_key)
+        f.close()
 
     if conf.index_endpoint:
         conf.index_endpoint = conf.index_endpoint.strip('/')
