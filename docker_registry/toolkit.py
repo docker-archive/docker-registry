@@ -3,6 +3,7 @@
 import base64
 import distutils.version
 import functools
+import hashlib
 import logging
 import os
 import random
@@ -216,7 +217,8 @@ def check_token(args):
 
 
 def check_signature():
-    if not cfg.privileged_key:
+    pkey = cfg.privileged_key
+    if not pkey:
         return False
     headers = flask.request.headers
     signature = headers.get('X-Signature')
@@ -232,9 +234,11 @@ def check_signature():
     message = ','.join([flask.request.method, flask.request.path] +
                        ['{}:{}'.format(k, headers[k]) for k in header_keys])
     logger.debug('Signed message: {}'.format(message))
-    if RSA.verify(cfg.privileged_key, sigdata, message, 'sha1') is False:
+    try:
+        return pkey.verify(message_digest(message), sigdata, 'sha1')
+    except RSA.RSAError as e:
+        logger.exception(e)
         return False
-    return True
 
 
 def parse_content_signature(s):
@@ -243,6 +247,12 @@ def parse_content_signature(s):
     for k, v in lst:
         ret[k] = v
     return ret
+
+
+def message_digest(s):
+    m = hashlib.new('sha1')
+    m.update(s)
+    return m.digest()
 
 
 def requires_auth(f):
