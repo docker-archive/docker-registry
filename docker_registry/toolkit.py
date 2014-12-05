@@ -232,10 +232,9 @@ def check_signature():
     message = ','.join([flask.request.method, flask.request.path] +
                        ['{}:{}'.format(k, headers[k]) for k in header_keys])
     logger.debug('Signed message: {}'.format(message))
-    try:
-        return RSA.verify(cfg.privileged_key, sigdata, message, 'sha1')
-    except RSA.ValueError:
+    if RSA.verify(cfg.privileged_key, sigdata, message, 'sha1') is False:
         return False
+    return True
 
 
 def parse_content_signature(s):
