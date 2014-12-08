@@ -4,6 +4,6 @@ gevent==1.0.1
 gunicorn==19.1
 PyYAML==3.11
 requests==2.3.0
-rsa==3.1.4
+M2Crypto==0.22.3
 sqlalchemy==0.9.4
 setuptools==5.8

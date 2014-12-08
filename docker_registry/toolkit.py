@@ -2,6 +2,7 @@
 
 import base64
 import functools
+import hashlib
 import logging
 import os
 import random
@@ -10,8 +11,8 @@ import string
 import urllib
 
 import flask
+from M2Crypto import RSA
 import requests
-import rsa
 
 from docker_registry.core import compat
 json = compat.json
@@ -20,6 +21,7 @@ from . import storage
 from .lib import config
 
 cfg = config.load()
+
 logger = logging.getLogger(__name__)
 _re_docker_version = re.compile('docker/([^\s]+)')
 _re_authorization = re.compile(r'(\w+)[:=][\s"]?([^",]+)"?')
@@ -221,7 +223,8 @@ def check_token(args):
 
 
 def check_signature():
-    if not cfg.privileged_key:
+    pkey = cfg.privileged_key
+    if not pkey:
         return False
     headers = flask.request.headers
     signature = headers.get('X-Signature')
@@ -238,8 +241,9 @@ def check_signature():
                        ['{}:{}'.format(k, headers[k]) for k in header_keys])
     logger.debug('Signed message: {}'.format(message))
     try:
-        return rsa.verify(message, sigdata, cfg.privileged_key)
-    except rsa.VerificationError:
+        return pkey.verify(message_digest(message), sigdata, 'sha1')
+    except RSA.RSAError as e:
+        logger.exception(e)
         return False
 
 
@@ -249,6 +253,12 @@ def parse_content_signature(s):
     for k, v in lst:
         ret[k] = v
     return ret
+
+
+def message_digest(s):
+    m = hashlib.new('sha1')
+    m.update(s)
+    return m.digest()
 
 
 def requires_auth(f):

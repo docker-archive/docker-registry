@@ -2,7 +2,8 @@
 
 import os
 
-import rsa
+from M2Crypto import BIO
+from M2Crypto import RSA
 import yaml
 
 from docker_registry.core import compat
@@ -109,10 +110,17 @@ def _init():
                 'Heads-up! File is missing: %s' % conf.privileged_key)
 
         try:
-            conf.privileged_key = rsa.PublicKey.load_pkcs1(f.read())
+            pk = f.read().split('\n')
+            pk = 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A' + ''.join(pk[1:-2])
+            pk = [pk[i: i + 64] for i in range(0, len(pk), 64)]
+            pk = ('-----BEGIN PUBLIC KEY-----\n' + '\n'.join(pk) +
+                  '\n-----END PUBLIC KEY-----')
+            bio = BIO.MemoryBuffer(pk)
+            conf.privileged_key = RSA.load_pub_key_bio(bio)
         except Exception:
             raise exceptions.ConfigError(
                 'Key at %s is not a valid RSA key' % conf.privileged_key)
+        f.close()
 
     if conf.index_endpoint:
         conf.index_endpoint = conf.index_endpoint.strip('/')
