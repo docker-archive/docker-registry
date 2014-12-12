@@ -12,9 +12,11 @@ FROM ubuntu:14.04
 RUN apt-get update \
 # Install pip
     && apt-get install -y \
+        swig \
         python-pip \
 # Install deps for backports.lmza (python2 requires it)
         python-dev \
+        libssl-dev \
         liblzma-dev \
         libevent1-dev \
     && rm -rf /var/lib/apt/lists/*
