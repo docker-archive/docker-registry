@@ -92,7 +92,6 @@ setuptools.setup(
                  'Topic :: Utilities',
                  'License :: OSI Approved :: Apache Software License'],
     platforms=['Independent'],
-    license=open('./LICENSE').read(),
     zip_safe=False,
     test_suite='nose.collector',
     install_requires=requirements,
