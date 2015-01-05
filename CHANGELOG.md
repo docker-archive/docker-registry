@@ -1,5 +1,12 @@
 # Docker-registry
 
+## 0.9.1
+
+ * fixed database initialization issues
+ * move away from rsa to m2crypto
+ * s3 enhancements and bug fixes
+ * enforce additional checks on image ids
+
 ## 0.9.0
 
  * "loose" dependencies mechanism (DEPS=loose environment var will let you install without strictly versioned dependencies)
