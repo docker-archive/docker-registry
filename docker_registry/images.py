@@ -3,6 +3,7 @@
 import datetime
 import functools
 import logging
+import re
 import time
 
 import flask
@@ -27,6 +28,7 @@ from .lib.xtarfile import tarfile
 
 store = storage.load()
 logger = logging.getLogger(__name__)
+_re_hex_image_id = re.compile(r'^([a-f0-9]{16}|[a-f0-9]{64})$')
 
 
 def require_completion(f):
@@ -57,6 +59,16 @@ def set_cache_headers(f):
         kwargs['headers'] = headers
         # Prevent the Cookie to be sent when the object is cacheable
         return f(*args, **kwargs)
+    return wrapper
+
+
+def valid_image_id(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        image_id = kwargs.get('image_id', '')
+        if _re_hex_image_id.match(image_id):
+            return f(*args, **kwargs)
+        return toolkit.api_error("Invalid image ID", 404)
     return wrapper
 
 
@@ -172,6 +184,7 @@ def _valid_bytes_range(bytes_range):
 @app.route('/v1/images/<image_id>/layer', methods=['GET'])
 @toolkit.requires_auth
 @require_completion
+@valid_image_id
 @set_cache_headers
 @mirroring.source_lookup(cache=True, stream=True)
 def get_image_layer(image_id, headers):
@@ -193,6 +206,7 @@ def get_image_layer(image_id, headers):
 
 @app.route('/v1/images/<image_id>/layer', methods=['PUT'])
 @toolkit.requires_auth
+@valid_image_id
 def put_image_layer(image_id):
     client_version = toolkit.docker_client_version()
     if client_version and client_version < (0, 10):
@@ -227,6 +241,7 @@ def put_image_layer(image_id):
 
 @app.route('/v1/images/<image_id>/checksum', methods=['PUT'])
 @toolkit.requires_auth
+@valid_image_id
 def put_image_checksum(image_id):
     checksum = flask.request.headers.get('X-Docker-Checksum-Payload')
     if checksum is None:
@@ -256,6 +271,7 @@ def put_image_checksum(image_id):
 
 @app.route('/v1/images/<image_id>/json', methods=['GET'])
 @toolkit.requires_auth
+@valid_image_id
 @require_completion
 @set_cache_headers
 @mirroring.source_lookup(cache=True, stream=False)
@@ -274,6 +290,7 @@ def get_image_json(image_id, headers):
 
 @app.route('/v1/images/<image_id>/ancestry', methods=['GET'])
 @toolkit.requires_auth
+@valid_image_id
 @require_completion
 @set_cache_headers
 @mirroring.source_lookup(cache=True, stream=False)
@@ -325,6 +342,7 @@ def load_checksums(image_id):
 
 @app.route('/v1/images/<image_id>/json', methods=['PUT'])
 @toolkit.requires_auth
+@valid_image_id
 def put_image_json(image_id):
     data = None
     try:
@@ -372,6 +390,7 @@ def put_image_json(image_id):
 
 @app.route('/v1/images/<image_id>/files', methods=['GET'])
 @toolkit.requires_auth
+@valid_image_id
 @require_completion
 @set_cache_headers
 def get_image_files(image_id, headers):
@@ -392,6 +411,7 @@ def get_image_files(image_id, headers):
 
 @app.route('/v1/images/<image_id>/diff', methods=['GET'])
 @toolkit.requires_auth
+@valid_image_id
 @require_completion
 @set_cache_headers
 def get_image_diff(image_id, headers):
