@@ -8,6 +8,7 @@ import os
 import random
 import re
 import string
+import time
 import urllib
 
 import flask
@@ -299,14 +300,23 @@ def exclusive_lock(f):
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
         lock_path = os.path.join(
-            '/var/lock', 'registry.{0}.lock'.format(f.func_name)
+            './', 'registry.{0}.lock'.format(f.func_name)
         )
         if os.path.exists(lock_path):
+            x = 0
+            while os.path.exists(lock_path) and x < 100:
+                logger.warn('Another process is creating the search database')
+                x += 1
+                time.sleep(1)
+            if x == 100:
+                raise Exception('Timedout waiting for db init')
             return
         lock_file = open(lock_path, 'w')
         lock_file.close()
-        result = f(*args, **kwargs)
-        os.remove(lock_path)
+        try:
+            result = f(*args, **kwargs)
+        finally:
+            os.remove(lock_path)
         return result
     return wrapper
 
