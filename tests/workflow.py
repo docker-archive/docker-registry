@@ -100,8 +100,8 @@ class TestWorkflow(base.TestCase):
 
     def docker_push(self):
         # Test Push
-        self.image_id = self.gen_random_string()
-        self.parent_id = self.gen_random_string()
+        self.image_id = self.gen_hex_string()
+        self.parent_id = self.gen_hex_string()
         image_id = self.image_id
         parent_id = self.parent_id
         namespace = self.user_credentials[0]
