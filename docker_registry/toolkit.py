@@ -26,6 +26,17 @@ cfg = config.load()
 logger = logging.getLogger(__name__)
 _re_docker_version = re.compile('docker/([^\s]+)')
 _re_authorization = re.compile(r'(\w+)[:=][\s"]?([^",]+)"?')
+_re_hex_image_id = re.compile(r'^([a-f0-9]{16}|[a-f0-9]{64})$')
+
+
+def valid_image_id(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        image_id = kwargs.get('image_id', '')
+        if _re_hex_image_id.match(image_id):
+            return f(*args, **kwargs)
+        return api_error("Invalid image ID", 404)
+    return wrapper
 
 
 def docker_client_version():
