@@ -11,7 +11,7 @@ class TestTags(base.TestCase):
     def test_simple(self, repos_name=None):
         if repos_name is None:
             repos_name = self.gen_random_string()
-        image_id = self.gen_random_string()
+        image_id = self.gen_hex_string()
         layer_data = self.gen_random_string(1024)
         self.upload_image(image_id, parent_id=None, layer=layer_data)
 

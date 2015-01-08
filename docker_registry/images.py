@@ -172,6 +172,7 @@ def _valid_bytes_range(bytes_range):
 @app.route('/v1/images/<image_id>/layer', methods=['GET'])
 @toolkit.requires_auth
 @require_completion
+@toolkit.valid_image_id
 @set_cache_headers
 @mirroring.source_lookup(cache=True, stream=True)
 def get_image_layer(image_id, headers):
@@ -193,6 +194,7 @@ def get_image_layer(image_id, headers):
 
 @app.route('/v1/images/<image_id>/layer', methods=['PUT'])
 @toolkit.requires_auth
+@toolkit.valid_image_id
 def put_image_layer(image_id):
     client_version = toolkit.docker_client_version()
     if client_version and client_version < (0, 10):
@@ -227,6 +229,7 @@ def put_image_layer(image_id):
 
 @app.route('/v1/images/<image_id>/checksum', methods=['PUT'])
 @toolkit.requires_auth
+@toolkit.valid_image_id
 def put_image_checksum(image_id):
     checksum = flask.request.headers.get('X-Docker-Checksum-Payload')
     if checksum is None:
@@ -256,6 +259,7 @@ def put_image_checksum(image_id):
 
 @app.route('/v1/images/<image_id>/json', methods=['GET'])
 @toolkit.requires_auth
+@toolkit.valid_image_id
 @require_completion
 @set_cache_headers
 @mirroring.source_lookup(cache=True, stream=False)
@@ -274,6 +278,7 @@ def get_image_json(image_id, headers):
 
 @app.route('/v1/images/<image_id>/ancestry', methods=['GET'])
 @toolkit.requires_auth
+@toolkit.valid_image_id
 @require_completion
 @set_cache_headers
 @mirroring.source_lookup(cache=True, stream=False)
@@ -325,6 +330,7 @@ def load_checksums(image_id):
 
 @app.route('/v1/images/<image_id>/json', methods=['PUT'])
 @toolkit.requires_auth
+@toolkit.valid_image_id
 def put_image_json(image_id):
     data = None
     try:
@@ -372,6 +378,7 @@ def put_image_json(image_id):
 
 @app.route('/v1/images/<image_id>/files', methods=['GET'])
 @toolkit.requires_auth
+@toolkit.valid_image_id
 @require_completion
 @set_cache_headers
 def get_image_files(image_id, headers):
@@ -392,6 +399,7 @@ def get_image_files(image_id, headers):
 
 @app.route('/v1/images/<image_id>/diff', methods=['GET'])
 @toolkit.requires_auth
+@toolkit.valid_image_id
 @require_completion
 @set_cache_headers
 def get_image_diff(image_id, headers):
