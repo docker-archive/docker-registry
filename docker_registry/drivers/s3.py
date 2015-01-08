@@ -35,7 +35,7 @@ import boto.s3.key
 logger = logging.getLogger(__name__)
 
 
-class Cloudfront():
+class Cloudfront(object):
     def __init__(self, awsaccess, awssecret, base, keyid, privatekey):
         boto.connect_cloudfront(
             awsaccess,
