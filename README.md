@@ -1,4 +1,4 @@
-> **Notice:** *This repository hosts the classic (stable) python docker-registry. If you are looking for the next-generation of docker distribution tools (including the new golang registry), please head over to [docker/distribution](https://github.com/docker/distribution) instead.*
+> **Notice:** *This repository hosts the classic (stable and recommended) python docker-registry. If you are looking for the next-generation (unstable and experimental) of docker distribution tools (including the new golang registry), you should head over to [docker/distribution](https://github.com/docker/distribution) instead.*
 
 Docker-Registry
 ===============
