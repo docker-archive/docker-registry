@@ -105,7 +105,7 @@ If you don't want to run the registry inside a docker container, you may do so b
 Install the system requirements:
 
 ```
-sudo apt-get install python-dev libevent-dev python-pip liblzma-dev
+sudo apt-get install python-dev libevent-dev python-pip liblzma-dev swig
 ```
 
 Then install the Registry app:
@@ -127,7 +127,7 @@ Alternatively, you may clone the github repository and run `pip install .`
 Install the required dependencies:
 
 ```
-sudo yum install python-devel libevent-devel python-pip gcc xz-devel
+sudo yum install python-devel libevent-devel python-pip gcc xz-devel swig
 ```
 
 NOTE: On RHEL and CentOS you will need the
