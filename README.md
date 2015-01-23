@@ -245,6 +245,9 @@ common:
     tags_cache_ttl: 172800 # 2 days
 ```
 
+Beware that mirroring only works for the public registry. You can not create a
+mirror for a private registry.
+
 ## Cache options
 
 It's possible to add an LRU cache to access small files. In this case you need
