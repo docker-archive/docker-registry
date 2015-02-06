@@ -8,4 +8,5 @@
 * [docker-registry-driver-sinastorage](https://github.com/kerwin/docker-registry-driver-sinastorage)
 * [docker-registry-driver-oss](https://github.com/chris-jin/docker-registry-driver-alioss.git)
 * [docker-registry-driver-jss](https://github.com/zhangwei1234/docker-retistry-driver-jss.git)
+* [docker-registry-driver-huaweimos](https://github.com/ldpc/docker-registry-driver-huaweimos.git)
 
