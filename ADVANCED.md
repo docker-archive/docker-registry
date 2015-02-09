@@ -95,6 +95,37 @@ requests to the Docker Registry:
 ```
 
 
+## High Availability and Scaling
+
+It is possible to run multiple containers against the same storage
+back-end for performance and availability reasons.
+
+Here is an example using a shared s3 storage back-end, Redis cache and
+MySQL search database (all should be common across containers for
+consistency)
+
+```
+docker run \
+         -e SETTINGS_FLAVOR=s3 \
+         -e AWS_BUCKET=mybucket \
+         -e AWS_KEY=myawskey \
+         -e AWS_SECRET=myawssecret \
+         -e CACHE_REDIS_HOST=redis.host \
+         -e CACHE_REDIS_PORT=6379 \
+         -e CACHE_REDIS_DB=1 \
+         -e CACHE_LRU_REDIS_HOST=redis.host \
+         -e CACHE_LRU_REDIS_PORT=6379 \
+         -e CACHE_LRU_REDIS_DB=0 \
+         -e AWS_REGION=us-east-1 \
+         -e SEARCH_BACKEND=sqlalchemy \
+         -e SQLALCHEMY_INDEX_DATABASE=mysql://user:pass@mysql.host/db_name
+         -p 5000:5000 \
+         registry
+```
+
+_note: Depending on your version of Docker you may need to add the
+appropriate python mysql drivers to the container_
+
 ## Alternative uses
 
 If you don't want to run the registry inside a docker container, you may do so by running it directly, as follow:
