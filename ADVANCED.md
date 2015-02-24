@@ -136,7 +136,7 @@ If you don't want to run the registry inside a docker container, you may do so b
 Install the system requirements:
 
 ```
-sudo apt-get install python-dev libevent-dev python-pip liblzma-dev swig libssl-devel
+sudo apt-get install python-dev libevent-dev python-pip liblzma-dev swig libssl-dev
 ```
 
 Then install the Registry app:
