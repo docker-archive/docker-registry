@@ -128,3 +128,39 @@ class TestTags(base.TestCase):
     def test_special_chars(self):
         repos_name = '{0}%$_-test'.format(self.gen_random_string(5))
         self.test_simple(repos_name)
+
+    def test_tag_name_validation(self):
+        repos_name = self.gen_random_string()
+        image_id = self.gen_hex_string()
+        layer_data = self.gen_random_string(1024)
+        self.upload_image(image_id, parent_id=None, layer=layer_data)
+
+        headers = {'User-Agent':
+                   'docker/0.7.2-dev go/go1.2 os/ostest arch/archtest'}
+        url = lambda tag: '/v1/repositories/foo/{0}/tags/{1}'.format(
+            repos_name, tag
+        )
+
+        tag_name = '$<invalid>'
+        resp = self.http_client.put(
+            url(tag_name), headers=headers, data=json.dumps(image_id)
+        )
+        self.assertEqual(resp.status_code, 400)
+
+        tag_name = '.invalid'
+        resp = self.http_client.put(
+            url(tag_name), headers=headers, data=json.dumps(image_id)
+        )
+        self.assertEqual(resp.status_code, 400)
+
+        tag_name = '-invalid'
+        resp = self.http_client.put(
+            url(tag_name), headers=headers, data=json.dumps(image_id)
+        )
+        self.assertEqual(resp.status_code, 400)
+
+        tag_name = '_valid'
+        resp = self.http_client.put(
+            url(tag_name), headers=headers, data=json.dumps(image_id)
+        )
+        self.assertEqual(resp.status_code, 200, resp.data)
