@@ -22,6 +22,7 @@ from .lib import signals
 store = storage.load()
 logger = logging.getLogger(__name__)
 RE_USER_AGENT = re.compile('([^\s/]+)/([^\s/]+)')
+RE_VALID_TAG = re.compile('^[\w][\w.-]{0,127}$')
 
 
 @app.route('/v1/repositories/<path:repository>/properties', methods=['PUT'])
@@ -182,6 +183,10 @@ def create_tag_json(user_agent):
 def put_tag(namespace, repository, tag):
     logger.debug("[put_tag] namespace={0}; repository={1}; tag={2}".format(
                  namespace, repository, tag))
+    if not RE_VALID_TAG.match(tag):
+        return toolkit.api_error('Invalid tag name (must match {0})'.format(
+            RE_VALID_TAG.pattern
+        ))
     data = None
     try:
         # Note(dmp): unicode patch
