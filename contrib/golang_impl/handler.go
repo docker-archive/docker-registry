@@ -225,6 +225,7 @@ func NewHandler(dataDir string) (handler *Handler) {
 	handler.Map("PUT", "images/(.*?)/(.*)", handler.PutImageResource)
 
 	// repositories
+        handler.Map("GET", "repositories/library/(.*?)/tags", handler.GetRepositoryTags)
 	handler.Map("GET", "repositories/(.*?)/tags", handler.GetRepositoryTags)
 	handler.Map("GET", "repositories/(.*?)/images", handler.GetRepositoryImages)
 	handler.Map("PUT", "repositories/(.*?)/tags/(.*)", handler.PutRepositoryTags)
