@@ -29,97 +29,14 @@ Might be useful for
 import gevent.monkey
 gevent.monkey.patch_all()
 
-import copy
 import logging
-import math
 import os
-import tempfile
 
 from . import driver
 from . import lru
 from .exceptions import FileNotFoundError
 
 logger = logging.getLogger(__name__)
-
-
-class ParallelKey(object):
-
-    """This class implements parallel transfer on a key to improve speed."""
-
-    CONCURRENCY = 5
-
-    def __init__(self, key):
-        logger.info('ParallelKey: {0}; size={1}'.format(key, key.size))
-        self._boto_key = key
-        self._cursor = 0
-        self._max_completed_byte = 0
-        self._max_completed_index = 0
-        self._tmpfile = tempfile.NamedTemporaryFile(mode='rb')
-        self._completed = [0] * self.CONCURRENCY
-        self._spawn_jobs()
-
-    def __del__(self):
-        self._tmpfile.close()
-
-    def _generate_bytes_ranges(self, num_parts):
-        size = self._boto_key.size
-        chunk_size = int(math.ceil(1.0 * size / num_parts))
-        for i in range(num_parts):
-            yield (i, chunk_size * i, min(chunk_size * (i + 1) - 1, size - 1))
-
-    def _fetch_part(self, fname, index, min_cur, max_cur):
-        boto_key = copy.copy(self._boto_key)
-        with open(fname, 'wb') as f:
-            f.seek(min_cur)
-            brange = 'bytes={0}-{1}'.format(min_cur, max_cur)
-            boto_key.get_contents_to_file(f, headers={'Range': brange})
-            boto_key.close()
-        self._completed[index] = (index, max_cur)
-        self._refresh_max_completed_byte()
-
-    def _spawn_jobs(self):
-        bytes_ranges = self._generate_bytes_ranges(self.CONCURRENCY)
-        for i, min_cur, max_cur in bytes_ranges:
-            gevent.spawn(self._fetch_part, self._tmpfile.name,
-                         i, min_cur, max_cur)
-
-    def _refresh_max_completed_byte(self):
-        for v in self._completed[self._max_completed_index:]:
-            if v == 0:
-                return
-            self._max_completed_index = v[0]
-            self._max_completed_byte = v[1]
-            if self._max_completed_index >= len(self._completed) - 1:
-                percent = round(
-                    (100.0 * self._cursor) / self._boto_key.size, 1)
-                logger.info('ParallelKey: {0}; buffering complete at {1}% of '
-                            'the total transfer; now serving straight from '
-                            'the tempfile'.format(self._boto_key, percent))
-
-    def read(self, size):
-        if self._cursor >= self._boto_key.size:
-            # Read completed
-            return ''
-        sz = size
-        if self._max_completed_index < len(self._completed) - 1:
-            # Not all data arrived yet
-            if self._cursor + size > self._max_completed_byte:
-                while self._cursor >= self._max_completed_byte:
-                    # We're waiting for more data to arrive
-                    gevent.sleep(0.2)
-            if self._cursor + sz > self._max_completed_byte:
-                sz = self._max_completed_byte - self._cursor
-        # Use a low-level read to avoid any buffering (makes sure we don't
-        # read more than `sz' bytes).
-        buf = os.read(self._tmpfile.file.fileno(), sz)
-        self._cursor += len(buf)
-        if not buf:
-            message = ('ParallelKey: {0}; got en empty read on the buffer! '
-                       'cursor={1}, size={2}; Transfer interrupted.'.format(
-                           self._boto_key, self._cursor, self._boto_key.size))
-            logging.error(message)
-            raise RuntimeError(message)
-        return buf
 
 
 class Base(driver.Base):
@@ -174,11 +91,6 @@ class Base(driver.Base):
         key = self._boto_bucket.lookup(path, headers=headers)
         if not key:
             raise FileNotFoundError('%s is not there' % path)
-        if not bytes_range and key.size > 1024 * 1024:
-            # Use the parallel key only if the key size is > 1MB
-            # And if bytes_range is not enabled (since ParallelKey is already
-            # using bytes range)
-            key = ParallelKey(key)
         while True:
             buf = key.read(self.buffer_size)
             if not buf:
