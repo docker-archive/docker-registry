@@ -222,6 +222,7 @@ This flavor can be started as:
  ```
 docker run \
          -e SETTINGS_FLAVOR=cloudfronts3 \
+         -e STORAGE_REDIRECT=true \
          -e AWS_BUCKET=mybucket \
          -e STORAGE_PATH=/registry \
          -e AWS_KEY=myawskey \
