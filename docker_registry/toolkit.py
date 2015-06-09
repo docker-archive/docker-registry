@@ -253,7 +253,7 @@ def check_signature():
                        ['{}:{}'.format(k, headers[k]) for k in header_keys])
     logger.debug('Signed message: {}'.format(message))
     try:
-        return pkey.verify(message_digest(message), sigdata, 'sha1')
+        return pkey.verify(message_digest(message), sigdata, 'sha1') == 1
     except RSA.RSAError as e:
         logger.exception(e)
         return False
